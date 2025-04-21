@@ -871,13 +871,45 @@ To align participant incentives and deter abuse, Soul Bound embeds token-based e
 
 ## **8.4 Performance-Based & Spend-and-Earn Models**
 
-* **Performance-Based Rewards**  
-  * Encourage high-quality behavior by rewarding participants for verifiable contributions (e.g., sponsoring identities that survive probation, validating attestations reliably).  
-  * Rewards scale with performance metrics, not volume of referrals.  
-* **Spend-and-Earn**  
-  * Key actions (minting, endorsing, validating) require an upfront cost or bond.  
-  * Only if the action yields a positive network outcome does the actor recoup more tokens than they spent.  
-  * Prevents free-riding and aligns token outflows with genuine work.
+* **Protocol-Level Reward Mechanisms**  
+  * The protocol provides the following verifiable on-chain actions that can be used for reward calculations:  
+    * Successful identity minting (surviving probation)  
+    * Valid validation votes (matching final consensus)  
+    * Timely participation in validation rounds  
+    * Absence of slashing events  
+  * Reward distribution is handled by smart contracts that:  
+    * Track verifiable on-chain actions  
+    * Calculate reward shares based on governance parameters  
+    * Distribute rewards according to the configured schedule  
+
+* **Spend-and-Earn Model**  
+  * Key actions require upfront costs:  
+    * Minting: `S_mint` stake  
+    * Endorsing: `S_endorse` stake  
+    * Validating: `V_bond` stake  
+  * Rewards are only distributed for positive outcomes:  
+    * Successful identity minting  
+    * Correct validation votes  
+    * Honest sponsorship  
+  * The protocol ensures that:  
+    * Rewards exceed costs for honest participants  
+    * Malicious behavior results in net loss  
+    * Economic incentives align with protocol goals  
+
+* **Implementation Notes**  
+  * While the protocol provides these basic reward mechanisms, specific performance metrics and reward calculations are left to implementations.  
+  * Implementations may choose to:  
+    * Define additional metrics for reward calculation  
+    * Implement custom reward distribution curves  
+    * Add reputation-based multipliers  
+    * Create tiered reward structures  
+  * All reward mechanisms must:  
+    * Be transparent and verifiable  
+    * Align with protocol security goals  
+    * Prevent gaming or manipulation  
+    * Scale appropriately with network growth  
+
+Note: The protocol focuses on providing the basic mechanisms for verifiable actions and reward distribution. Specific performance metrics, reward calculations, and distribution policies are left to implementations to define based on their specific requirements and use cases.
 
 ## **8.5 Tiered Staking & Reputation Discounts**
 
