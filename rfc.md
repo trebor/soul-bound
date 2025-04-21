@@ -1079,19 +1079,55 @@ This section sketches a machine-checked model of the Soul Bound Protocol, useful
 
 ## **12.4 Model-Checking Results**
 
-* **Model Configuration:**  
-  * Small-scale instance with 3 validators, m = 2, 2 candidate sessions.  
-  * Abstracted time with integer counter bounded to 10 steps.  
-* **Findings:**  
-  * **No Invariant Violations:** All safety invariants held across 10,000 TLC (or Alloy Analyzer) steps.  
-  * **No Deadlocks:** Every session reached a terminal state.  
-  * **Counterexamples:** Model correctly flags attempts to reuse a nonce or submit under-staked `MintRequest`.  
-* **Next Steps:**  
-  * Scale validator count and stake parameters to test more complex topologies.  
-  * Extend the model to cover extensions (Reputation, KYC, custom slashing policies).  
-  * Integrate adversarial behaviors (delayed messages, equivocation) for stress testing.
+* **Model Scope & Limitations**  
+  * This is a reference implementation demonstrating the core protocol mechanics  
+  * The model is intentionally small-scale for clarity and initial verification  
+  * Real-world deployments would require additional security analysis  
 
-**Note:** The full TLA⁺ and Alloy source files are maintained in the protocol's formal-model repository for community review and continuous integration.
+* **Model Configuration**  
+  * Small-scale instance with 3 validators, m = 2, 2 candidate sessions  
+  * Abstracted time with integer counter bounded to 10 steps  
+  * Simplified network model (no message delays, no partitions)  
+
+* **Verified Invariants**  
+  * **Session Uniqueness**  
+    * No two active sessions share the same `sessionId`  
+    * Each `nonce` is used only once per session  
+  * **Stake Consistency**  
+    * Total stake in system equals sum of all locked stakes  
+    * No stake can be double-counted or created without minting  
+  * **Signature Validity**  
+    * All recorded messages carry valid signatures from claimed senders  
+    * No message can be modified after signing  
+  * **State Transitions**  
+    * All state changes follow the defined state machines  
+    * No invalid transitions are possible  
+  * **Quorum Rules**  
+    * Minting requires exactly m validator approvals  
+    * No identity can be minted without sufficient stake  
+
+* **Findings**  
+  * **Core Protocol Mechanics**  
+    * All specified invariants held across 10,000 model steps  
+    * No deadlocks in the basic protocol flow  
+    * Correct handling of session timeouts and retries  
+  * **Known Limitations**  
+    * Model does not cover network partitions or message delays  
+    * Simplified validator selection (no dynamic set changes)  
+    * Abstracted cryptographic primitives  
+  * **Areas for Future Analysis**  
+    * Larger validator sets and session counts  
+    * Network adversarial models  
+    * Economic game theory analysis  
+    * Implementation-specific security considerations  
+
+* **Next Steps**  
+  * Community review and extension of the formal model  
+  * Integration with implementation-specific security analysis  
+  * Development of additional models for specific threat scenarios  
+  * Continuous integration of model checking in protocol development
+
+Note: This model serves as a reference implementation and basic verification of the protocol's core mechanics. Real-world deployments should conduct additional security analysis, including implementation-specific considerations, network adversarial models, and economic game theory analysis.
 
 # **13\. Appendices**
 
