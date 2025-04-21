@@ -76,7 +76,7 @@ This specification defines the **protocol-level** rules, message flows, data for
 * **Privacy guarantees** via zero-knowledge proofs and hashed sensor data  
 * **Decoupled trust semantics**—how external applications or DAOs may interpret the public identity graph
 
-Out of scope for this document:
+Out of scope for this document (implementation domain):
 
 * **User interface** or UX design for client applications  
 * **Hardware security module** (HSM) or secure-element implementation details  
@@ -248,7 +248,7 @@ These controls ensure that every step of the protocol is both timely and tamper-
 
 # **4\. Message Types & Semantics**
 
-This section defines the core protocol messages, their senders, purposes, required fields, and key semantics.
+This section defines the core protocol messages, their senders, purposes, required fields, and key semantics. All implementations MUST support these message types exactly as specified, while being free to add implementation-specific extensions as described in Section 1.2.
 
 ## **4.1 ChallengeRequest**
 
@@ -566,7 +566,7 @@ This section describes each participant's internal state machine, listing states
 
 # **6\. Data Formats & Schemas**
 
-This section specifies the machine-readable schemas for all protocol messages and ledger records, plus some full-payload examples.
+This section specifies the machine-readable schemas for all protocol messages and ledger records, plus some full-payload examples. Implementations MUST support these schemas exactly as specified, while being free to add implementation-specific fields or optimizations as described in Section 1.2.
 
 ## **6.1 Wire Formats (JSON-Schema)**
 
@@ -866,7 +866,7 @@ These combined mechanisms ensure every action in the protocol is fresh, ordered,
 
 # **8\. Economic Mechanisms**
 
-To align participant incentives and deter abuse, Soul Bound embeds token-based economic security at every stage of identity issuance and maintenance. This section describes configurable staking, fee, slashing, and reward schemes.
+This section describes the protocol-level economic mechanisms that all implementations MUST support. While the core mechanisms are fixed by the protocol, implementations may add additional economic features as described in Section 1.2.
 
 ## **8.1 Identity-Minting Stakes & Fees**
 
@@ -1168,7 +1168,7 @@ Handling these failure modes consistently ensures clear diagnostics, correct sta
 
 # **11\. Extensions & Policy Hooks**
 
-This section describes optional interfaces and hook points where applications, DAOs, or governance modules can plug in custom logic—without changing the core Soul Bound protocol.
+This section describes optional interfaces and hook points where applications, DAOs, or governance modules can plug in custom logic—without changing the core Soul Bound protocol. These extensions are part of the implementation domain as described in Section 1.2.
 
 ## **11.1 Decoupled Trust Semantics Interface**
 
@@ -1217,8 +1217,6 @@ This section describes optional interfaces and hook points where applications, D
   * Hook points for routing portions of mint-fees or slashed funds to community treasuries, development grants, or public goods.  
 * **Governance-Controlled Modules**  
   * Deploy policy contracts that implement `RewardDistributor` and `SlashController` interfaces; allow DAOs to vote on upgrades or parameter changes.
-
-These extension points ensure that Soul Bound remains a lean, secure protocol core—while letting diverse ecosystems layer on tailored trust, reputation, and economic policies.
 
 # **12\. Formal Model (Optional)**
 
@@ -1321,6 +1319,8 @@ Note: This model serves as a reference implementation and basic verification of 
 # **13\. Appendices**
 
 ## **13.1 Parameter Recommendations (Δs, stake sizes, quorum)**
+
+The following parameters are part of the protocol domain and MUST be supported by all implementations. Implementations may add additional parameters as described in Section 1.2, but MUST NOT modify these core parameters.
 
 ```json
 {
