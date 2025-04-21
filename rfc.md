@@ -453,247 +453,246 @@ This section specifies the machine-readable schemas for all protocol messages an
 
 All off-chain protocol messages exchanged peer-to-peer or via RPC MUST conform to the JSON-Schema definitions in:
 
-{  
-  "$schema": "http://json-schema.org/draft-07/schema#",  
-  "title": "SoulBound Wire Message Schemas",  
-  "oneOf": \[  
-    { "$ref": "\#/definitions/ChallengeRequest" },  
-    { "$ref": "\#/definitions/SensorPackage" },  
-    { "$ref": "\#/definitions/SponsorAttestation" },  
-    { "$ref": "\#/definitions/MintRequest" },  
-    { "$ref": "\#/definitions/ValidationResponse" },  
-    { "$ref": "\#/definitions/RevocationRequest" },  
-    { "$ref": "\#/definitions/RewardEvent" }  
-  \],  
-  "definitions": {  
-    "ChallengeRequest": {  
-      "type": "object",  
-      "required": \["type","sponsorPubKey","sessionId","timestamp","nonce"\],  
-      "properties": {  
-        "type":       { "const": "ChallengeRequest" },  
-        "sponsorPubKey": { "type": "string" },  
-        "sessionId":  { "type": "string", "format": "uuid" },  
-        "timestamp":  { "type": "integer", "minimum": 0 },  
-        "nonce":      { "type": "string" }  
-      }  
-    },  
-    "SensorPackage": {  
-      "type": "object",  
-      "required": \["type","sessionId","accelHash","nfcHash","ambientHash","candidateSig"\],  
-      "properties": {  
-        "type":         { "const": "SensorPackage" },  
-        "sessionId":    { "type": "string", "format": "uuid" },  
-        "accelHash":    { "type": "string" },  
-        "nfcHash":      { "type": "string" },  
-        "ambientHash":  { "type": "string" },  
-        "candidateSig": { "type": "string" }  
-      }  
-    },  
-    "SponsorAttestation": {  
-      "type": "object",  
-      "required": \["type","sessionId","sensorHashes","timestamp","sponsorSig"\],  
-      "properties": {  
-        "type":         { "const": "SponsorAttestation" },  
-        "sessionId":    { "type": "string", "format": "uuid" },  
-        "sensorHashes": {  
-          "type": "array",  
-          "items": { "type": "string" },  
-          "minItems": 3,  
-          "maxItems": 3  
-        },  
-        "timestamp":    { "type": "integer", "minimum": 0 },  
-        "sponsorSig":   { "type": "string" }  
-      }  
-    },  
-    "MintRequest": {  
-      "type": "object",  
-      "required": \["type","identityPubKey","sessionId","candidateSig","sponsorSig","stake","zkProof","timestamp"\],  
-      "properties": {  
-        "type":           { "const": "MintRequest" },  
-        "identityPubKey": { "type": "string" },  
-        "sessionId":      { "type": "string", "format": "uuid" },  
-        "candidateSig":   { "type": "string" },  
-        "sponsorSig":     { "type": "string" },  
-        "stake":          { "type": "number", "minimum": 0 },  
-        "zkProof":        { "type": "string" },  
-        "timestamp":      { "type": "integer", "minimum": 0 }  
-      }  
-    },  
-    "ValidationResponse": {  
-      "type": "object",  
-      "required": \["type","sessionId","validatorPubKey","status","validatorSig","timestamp"\],  
-      "properties": {  
-        "type":            { "const": "ValidationResponse" },  
-        "sessionId":       { "type": "string", "format": "uuid" },  
-        "validatorPubKey": { "type": "string" },  
-        "status":          { "type": "string", "enum": \["approved","rejected"\] },  
-        "reason":          { "type": "string" },  
-        "validatorSig":    { "type": "string" },  
-        "timestamp":       { "type": "integer", "minimum": 0 }  
-      }  
-    },  
-    "RevocationRequest": {  
-      "type": "object",  
-      "required": \["type","identityPubKey","revokerPubKey","reason","evidence","timestamp","revokerSig"\],  
-      "properties": {  
-        "type":          { "const": "RevocationRequest" },  
-        "identityPubKey":{ "type": "string" },  
-        "revokerPubKey": { "type": "string" },  
-        "reason":        { "type": "string" },  
-        "evidence":      { "type": "string" },  
-        "timestamp":     { "type": "integer", "minimum": 0 },  
-        "revokerSig":    { "type": "string" }  
-      }  
-    },  
-    "RewardEvent": {  
-      "type": "object",  
-      "required": \["type","recipientPubKey","amount","source","reason","timestamp","contractSig"\],  
-      "properties": {  
-        "type":          { "enum": \["RewardDistribution","SlashNotification"\] },  
-        "recipientPubKey":{ "type": "string" },  
-        "amount":        { "type": "number", "minimum": 0 },  
-        "source":        { "type": "string" },  
-        "reason":        { "type": "string" },  
-        "timestamp":     { "type": "integer", "minimum": 0 },  
-        "contractSig":   { "type": "string" }  
-      }  
-    }  
-  }  
+```json
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SoulBound Wire Message Schemas",
+  "oneOf": [
+    { "$ref": "#/definitions/ChallengeRequest" },
+    { "$ref": "#/definitions/SensorPackage" },
+    { "$ref": "#/definitions/SponsorAttestation" },
+    { "$ref": "#/definitions/MintRequest" },
+    { "$ref": "#/definitions/ValidationResponse" },
+    { "$ref": "#/definitions/RevocationRequest" },
+    { "$ref": "#/definitions/RewardEvent" }
+  ],
+  "definitions": {
+    "ChallengeRequest": {
+      "type": "object",
+      "required": ["type","sponsorPubKey","sessionId","timestamp","nonce"],
+      "properties": {
+        "type":       { "const": "ChallengeRequest" },
+        "sponsorPubKey": { "type": "string" },
+        "sessionId":  { "type": "string", "format": "uuid" },
+        "timestamp":  { "type": "integer", "minimum": 0 },
+        "nonce":      { "type": "string" }
+      }
+    },
+    "SensorPackage": {
+      "type": "object",
+      "required": ["type","sessionId","accelHash","nfcHash","ambientHash","candidateSig"],
+      "properties": {
+        "type":         { "const": "SensorPackage" },
+        "sessionId":    { "type": "string", "format": "uuid" },
+        "accelHash":    { "type": "string" },
+        "nfcHash":      { "type": "string" },
+        "ambientHash":  { "type": "string" },
+        "candidateSig": { "type": "string" }
+      }
+    },
+    "SponsorAttestation": {
+      "type": "object",
+      "required": ["type","sessionId","sensorHashes","timestamp","sponsorSig"],
+      "properties": {
+        "type":         { "const": "SponsorAttestation" },
+        "sessionId":    { "type": "string", "format": "uuid" },
+        "sensorHashes": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "timestamp":    { "type": "integer", "minimum": 0 },
+        "sponsorSig":   { "type": "string" }
+      }
+    },
+    "MintRequest": {
+      "type": "object",
+      "required": ["type","identityPubKey","sessionId","candidateSig","sponsorSig","stake","zkProof","timestamp"],
+      "properties": {
+        "type":           { "const": "MintRequest" },
+        "identityPubKey": { "type": "string" },
+        "sessionId":      { "type": "string", "format": "uuid" },
+        "candidateSig":   { "type": "string" },
+        "sponsorSig":     { "type": "string" },
+        "stake":          { "type": "number", "minimum": 0 },
+        "zkProof":        { "type": "string" },
+        "timestamp":      { "type": "integer", "minimum": 0 }
+      }
+    },
+    "ValidationResponse": {
+      "type": "object",
+      "required": ["type","sessionId","validatorPubKey","status","validatorSig","timestamp"],
+      "properties": {
+        "type":            { "const": "ValidationResponse" },
+        "sessionId":       { "type": "string", "format": "uuid" },
+        "validatorPubKey": { "type": "string" },
+        "status":          { "type": "string", "enum": ["approved","rejected"] },
+        "reason":          { "type": "string" },
+        "validatorSig":    { "type": "string" },
+        "timestamp":       { "type": "integer", "minimum": 0 }
+      }
+    },
+    "RevocationRequest": {
+      "type": "object",
+      "required": ["type","identityPubKey","revokerPubKey","reason","evidence","timestamp","revokerSig"],
+      "properties": {
+        "type":          { "const": "RevocationRequest" },
+        "identityPubKey":{ "type": "string" },
+        "revokerPubKey": { "type": "string" },
+        "reason":        { "type": "string" },
+        "evidence":      { "type": "string" },
+        "timestamp":     { "type": "integer", "minimum": 0 },
+        "revokerSig":    { "type": "string" }
+      }
+    },
+    "RewardEvent": {
+      "type": "object",
+      "required": ["type","recipientPubKey","amount","source","reason","timestamp","contractSig"],
+      "properties": {
+        "type":          { "enum": ["RewardDistribution","SlashNotification"] },
+        "recipientPubKey":{ "type": "string" },
+        "amount":        { "type": "number", "minimum": 0 },
+        "source":        { "type": "string" },
+        "reason":        { "type": "string" },
+        "timestamp":     { "type": "integer", "minimum": 0 },
+        "contractSig":   { "type": "string" }
+      }
+    }
+  }
 }
+```
 
 ## **6.2 On-Ledger Record Structures**
 
 All on-chain transactions and stored records (identity nodes, edges, slashes, rewards) MUST follow the JSON-Schema in:
 
-{  
-  "$schema": "http://json-schema.org/draft-07/schema#",  
-  "title": "SoulBound On-Ledger Record Structures",  
-  "definitions": {  
-    "IdentityRecord": {  
-      "type": "object",  
-      "required": \["identityPubKey","sponsorPubKey","mintTxHash","timestamp","stake"\],  
-      "properties": {  
-        "identityPubKey": { "type": "string" },  
-        "sponsorPubKey":  { "type": "string" },  
-        "mintTxHash":     { "type": "string" },  
-        "timestamp":      { "type": "integer" },  
-        "stake":          { "type": "number" }  
-      }  
-    },  
-    "SponsorshipEdge": {  
-      "type": "object",  
-      "required": \["fromPubKey","toPubKey","timestamp"\],  
-      "properties": {  
-        "fromPubKey": { "type": "string" },  
-        "toPubKey":   { "type": "string" },  
-        "timestamp":  { "type": "integer" }  
-      }  
-    },  
-    "RevocationRecord": {  
-      "type": "object",  
-      "required": \["identityPubKey","revokerPubKey","revocationTxHash","timestamp","evidenceHash"\],  
-      "properties": {  
-        "identityPubKey":  { "type": "string" },  
-        "revokerPubKey":   { "type": "string" },  
-        "revocationTxHash":{ "type": "string" },  
-        "timestamp":       { "type": "integer" },  
-        "evidenceHash":    { "type": "string" }  
-      }  
-    },  
-    "RewardSlashRecord": {  
-      "type": "object",  
-      "required": \["recipientPubKey","amount","reason","txHash","timestamp"\],  
-      "properties": {  
-        "recipientPubKey": { "type": "string" },  
-        "amount":          { "type": "number" },  
-        "reason":          { "type": "string" },  
-        "txHash":          { "type": "string" },  
-        "timestamp":       { "type": "integer" }  
-      }  
-    }  
-  }  
+```json
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SoulBound On-Ledger Record Structures",
+  "definitions": {
+    "IdentityRecord": {
+      "type": "object",
+      "required": ["identityPubKey","sponsorPubKey","mintTxHash","timestamp","stake"],
+      "properties": {
+        "identityPubKey": { "type": "string" },
+        "sponsorPubKey":  { "type": "string" },
+        "mintTxHash":     { "type": "string" },
+        "timestamp":      { "type": "integer" },
+        "stake":          { "type": "number" }
+      }
+    },
+    "SponsorshipEdge": {
+      "type": "object",
+      "required": ["fromPubKey","toPubKey","timestamp"],
+      "properties": {
+        "fromPubKey": { "type": "string" },
+        "toPubKey":   { "type": "string" },
+        "timestamp":  { "type": "integer" }
+      }
+    },
+    "RevocationRecord": {
+      "type": "object",
+      "required": ["identityPubKey","revokerPubKey","revocationTxHash","timestamp","evidenceHash"],
+      "properties": {
+        "identityPubKey":  { "type": "string" },
+        "revokerPubKey":   { "type": "string" },
+        "revocationTxHash":{ "type": "string" },
+        "timestamp":       { "type": "integer" },
+        "evidenceHash":    { "type": "string" }
+      }
+    },
+    "RewardSlashRecord": {
+      "type": "object",
+      "required": ["recipientPubKey","amount","reason","txHash","timestamp"],
+      "properties": {
+        "recipientPubKey": { "type": "string" },
+        "amount":          { "type": "number" },
+        "reason":          { "type": "string" },
+        "txHash":          { "type": "string" },
+        "timestamp":       { "type": "integer" }
+      }
+    }
+  }
 }
+```
 
 ## **6.3 Example Messages**
 
 To see concrete payloads for each message type, consult:
 
-{  
-  "ChallengeRequest": {  
-    "type": "ChallengeRequest",  
-    "sponsorPubKey": "0xA1B2C3D4...",  
-    "sessionId": "550e8400-e29b-41d4-a716-446655440000",  
-    "timestamp": 1633046400,  
-    "nonce": "f47ac10b-58cc-4372-a567-0e02b2c3d479"  
+```json
+{
+  "ChallengeRequest": {
+    "type": "ChallengeRequest",
+    "sponsorPubKey": "0xA1B2C3D4...",
+    "sessionId": "550e8400-e29b-41d4-a716-446655440000",
+    "timestamp": 1633046400,
+    "nonce": "f47ac10b-58cc-4372-a567-0e02b2c3d479"
   },
-
-  "SensorPackage": {  
-    "type": "SensorPackage",  
-    "sessionId": "550e8400-e29b-41d4-a716-446655440000",  
-    "accelHash": "3f5d8e2a...",  
-    "nfcHash": "a1b2c3d4...",  
-    "ambientHash": "9f8e7d6c...",  
-    "candidateSig": "3045022100..."  
+  "SensorPackage": {
+    "type": "SensorPackage",
+    "sessionId": "550e8400-e29b-41d4-a716-446655440000",
+    "accelHash": "3f5d8e2a...",
+    "nfcHash": "a1b2c3d4...",
+    "ambientHash": "9f8e7d6c...",
+    "candidateSig": "3045022100..."
   },
-
-  "SponsorAttestation": {  
-    "type": "SponsorAttestation",  
-    "sessionId": "550e8400-e29b-41d4-a716-446655440000",  
-    "sensorHashes": \["3f5d8e2a...","a1b2c3d4...","9f8e7d6c..."\],  
-    "timestamp": 1633046410,  
-    "sponsorSig": "3046022100..."  
+  "SponsorAttestation": {
+    "type": "SponsorAttestation",
+    "sessionId": "550e8400-e29b-41d4-a716-446655440000",
+    "sensorHashes": ["3f5d8e2a...","a1b2c3d4...","9f8e7d6c..."],
+    "timestamp": 1633046410,
+    "sponsorSig": "3046022100..."
   },
-
-  "MintRequest": {  
-    "type": "MintRequest",  
-    "identityPubKey": "0xDEADBEEF...",  
-    "sessionId": "550e8400-e29b-41d4-a716-446655440000",  
-    "candidateSig": "3045022100...",  
-    "sponsorSig": "3046022100...",  
-    "stake": 100,  
-    "zkProof": "zkSNARK_proof_blob...",  
-    "timestamp": 1633046420  
+  "MintRequest": {
+    "type": "MintRequest",
+    "identityPubKey": "0xDEADBEEF...",
+    "sessionId": "550e8400-e29b-41d4-a716-446655440000",
+    "candidateSig": "3045022100...",
+    "sponsorSig": "3046022100...",
+    "stake": 100,
+    "zkProof": "zkSNARK_proof_blob...",
+    "timestamp": 1633046420
   },
-
-  "ValidationResponse": {  
-    "type": "ValidationResponse",  
-    "sessionId": "550e8400-e29b-41d4-a716-446655440000",  
-    "validatorPubKey": "0xFEEDFACE...",  
-    "status": "approved",  
-    "validatorSig": "3044022079...",  
-    "timestamp": 1633046430  
+  "ValidationResponse": {
+    "type": "ValidationResponse",
+    "sessionId": "550e8400-e29b-41d4-a716-446655440000",
+    "validatorPubKey": "0xFEEDFACE...",
+    "status": "approved",
+    "validatorSig": "3044022079...",
+    "timestamp": 1633046430
   },
-
-  "RevocationRequest": {  
-    "type": "RevocationRequest",  
-    "identityPubKey": "0xDEADBEEF...",  
-    "revokerPubKey": "0xBADF00D...",  
-    "reason": "fraud-detected",  
-    "evidence": "evidence_hash_or_ZK_proof",  
-    "timestamp": 1633046500,  
-    "revokerSig": "3045022100..."  
+  "RevocationRequest": {
+    "type": "RevocationRequest",
+    "identityPubKey": "0xDEADBEEF...",
+    "revokerPubKey": "0xBADF00D...",
+    "reason": "fraud-detected",
+    "evidence": "evidence_hash_or_ZK_proof",
+    "timestamp": 1633046500,
+    "revokerSig": "3045022100..."
   },
-
-  "RewardDistribution": {  
-    "type": "RewardDistribution",  
-    "recipientPubKey": "0xFEEDFACE...",  
-    "amount": 5,  
-    "source": "mint-fee-pool",  
-    "reason": "mint-reward",  
-    "timestamp": 1633046600,  
-    "contractSig": "0xCAFEBABE..."  
+  "RewardDistribution": {
+    "type": "RewardDistribution",
+    "recipientPubKey": "0xFEEDFACE...",
+    "amount": 5,
+    "source": "mint-fee-pool",
+    "reason": "mint-reward",
+    "timestamp": 1633046600,
+    "contractSig": "0xCAFEBABE..."
   },
-
-  "SlashNotification": {  
-    "type": "SlashNotification",  
-    "recipientPubKey": "0xBADF00D...",  
-    "amount": 50,  
-    "source": "slashed-stake",  
-    "reason": "sponsor-slash",  
-    "timestamp": 1633046700,  
-    "contractSig": "0xDEADCAFE..."  
-  }  
+  "SlashNotification": {
+    "type": "SlashNotification",
+    "recipientPubKey": "0xBADF00D...",
+    "amount": 50,
+    "source": "slashed-stake",
+    "reason": "sponsor-slash",
+    "timestamp": 1633046700,
+    "contractSig": "0xDEADCAFE..."
+  }
 }
+```
 
 # **7\. Timing & Anti-Replay Mechanisms**
 
@@ -1060,79 +1059,83 @@ This section sketches a machine-checked model of the Soul Bound Protocol, useful
 
 ## **13.1 Parameter Recommendations (Δs, stake sizes, quorum)**
 
-{  
-  "deltaTimes": {  
-    "challengeResponseWindow": 120,  
-    "sensorToAttestationWindow": 60,  
-    "attestationToMintWindow": 300,  
-    "validationResponseWindow": 600,  
-    "clockSkew": 120  
-  },  
-  "stakeSizes": {  
-    "S_mint": 100,  
-    "S_endorse": 10,  
-    "validatorBond": 50  
-  },  
-  "quorum": {  
-    "n": 5,  
-    "m": 3  
-  }  
+```json
+{
+  "deltaTimes": {
+    "challengeResponseWindow": 120,
+    "sensorToAttestationWindow": 60,
+    "attestationToMintWindow": 300,
+    "validationResponseWindow": 600,
+    "clockSkew": 120
+  },
+  "stakeSizes": {
+    "S_mint": 100,
+    "S_endorse": 10,
+    "validatorBond": 50
+  },
+  "quorum": {
+    "n": 5,
+    "m": 3
+  }
 }
+```
 
 ## **13.2 Example API Endpoints & RPC Definitions**
 
-{  
-  "endpoints": \[  
-    {  
-      "path": "/api/v1/challenge",  
-      "method": "POST",  
-      "description": "Sponsor issues a new ChallengeRequest",  
-      "requestSchema": "ChallengeRequest",  
-      "responseSchema": "ChallengeAck"  
-    },  
-    {  
-      "path": "/api/v1/sensor",  
-      "method": "POST",  
-      "description": "Candidate submits SensorPackage",  
-      "requestSchema": "SensorPackage",  
-      "responseSchema": "SensorAck"  
-    },  
-    {  
-      "path": "/api/v1/attestation",  
-      "method": "POST",  
-      "description": "Sponsor submits SponsorAttestation",  
-      "requestSchema": "SponsorAttestation",  
-      "responseSchema": "AttestationAck"  
-    },  
-    {  
-      "path": "/api/v1/mint",  
-      "method": "POST",  
-      "description": "Candidate submits MintRequest",  
-      "requestSchema": "MintRequest",  
-      "responseSchema": "MintResponse"  
-    },  
-    {  
-      "path": "/api/v1/validate",  
-      "method": "POST",  
-      "description": "Validator submits ValidationResponse",  
-      "requestSchema": "ValidationResponse",  
-      "responseSchema": "ValidateAck"  
-    },  
-    {  
-      "path": "/api/v1/revoke",  
-      "method": "POST",  
-      "description": "Submit a RevocationRequest",  
-      "requestSchema": "RevocationRequest",  
-      "responseSchema": "RevokeAck"  
-    },  
-    {  
-      "path": "/api/v1/events",  
-      "method": "GET",  
-      "description": "Subscribe to RewardDistribution and SlashNotification events",  
-      "responseSchema": "RewardEvent"  
-    }  
-  \]  
+```json
+{
+  "endpoints": [
+    {
+      "path": "/api/v1/challenge",
+      "method": "POST",
+      "description": "Sponsor issues a new ChallengeRequest",
+      "requestSchema": "ChallengeRequest",
+      "responseSchema": "ChallengeAck"
+    },
+    {
+      "path": "/api/v1/sensor",
+      "method": "POST",
+      "description": "Candidate submits SensorPackage",
+      "requestSchema": "SensorPackage",
+      "responseSchema": "SensorAck"
+    },
+    {
+      "path": "/api/v1/attestation",
+      "method": "POST",
+      "description": "Sponsor submits SponsorAttestation",
+      "requestSchema": "SponsorAttestation",
+      "responseSchema": "AttestationAck"
+    },
+    {
+      "path": "/api/v1/mint",
+      "method": "POST",
+      "description": "Candidate submits MintRequest",
+      "requestSchema": "MintRequest",
+      "responseSchema": "MintResponse"
+    },
+    {
+      "path": "/api/v1/validate",
+      "method": "POST",
+      "description": "Validator submits ValidationResponse",
+      "requestSchema": "ValidationResponse",
+      "responseSchema": "ValidateAck"
+    },
+    {
+      "path": "/api/v1/revoke",
+      "method": "POST",
+      "description": "Submit a RevocationRequest",
+      "requestSchema": "RevocationRequest",
+      "responseSchema": "RevokeAck"
+    },
+    {
+      "path": "/api/v1/events",
+      "method": "GET",
+      "description": "Subscribe to RewardDistribution and SlashNotification events",
+      "responseSchema": "RewardEvent"
+    }
+  ]
 }
+```
 
 ## **13.3 Glossary of Terms**
 
