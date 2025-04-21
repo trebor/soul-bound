@@ -959,13 +959,13 @@ This section states the core security guarantees and invariants that any Soul Bo
   * Validators enforce `|localTime − timestamp| ≤ ΔT` and "submit within N blocks" constraints.  
   * Nonces and sequence numbers prohibit replay or reordering of messages.
 
-## **9.3 Sybil-Resistance Bounds**
+## **9.3 Identity Fraud Resistance Bounds**
 
-* **Invariant:** The cost (physical effort + economic stake) to create N identities grows at least linearly in N, making large-scale Sybil attacks economically irrational.  
+* **Invariant:** The cost (physical effort + economic stake) to create N identities grows at least linearly in N, making large-scale identity fraud economically irrational.  
 * **Mechanisms:**  
   * Real-world in-person verification cannot be parallelized at zero marginal cost.  
   * Token stakes (`S_mint`, `S_endorse`) and slashing penalties ensure each new identity carries a significant financial risk.  
-  * Protocol-level graph analysis tools provide the following capabilities for detecting potential Sybil attacks:  
+  * Protocol-level graph analysis tools provide the following capabilities for detecting potential identity fraud:  
     * **Degree Limits**  
       * Maximum number of concurrent sponsorships per identity (configurable via governance)  
       * Rate-limiting of new sponsorships over time windows  
@@ -981,7 +981,7 @@ This section states the core security guarantees and invariants that any Soul Bo
     * Mandatory cooling-off periods between sponsorships  
     * Enhanced verification requirements for suspicious patterns
 
-Note: While the protocol provides these basic Sybil-resistance mechanisms, specific trust models, reputation scoring, and detailed behavioral analysis are left to application-layer implementations. This separation allows different use cases to apply their own trust policies while maintaining the core security guarantees of the protocol.
+Note: While the protocol provides these basic identity fraud resistance mechanisms, specific trust models, reputation scoring, and detailed behavioral analysis are left to application-layer implementations. This separation allows different use cases to apply their own trust policies while maintaining the core security guarantees of the protocol.
 
 ## **9.4 Privacy: ZK-Proof Guarantees**
 
@@ -1116,25 +1116,14 @@ This section enumerates expected error conditions, how each actor should detect 
 * **Equivocation by Validators**  
   * If a Validator signs conflicting `ValidationResponse` for the same `sessionId`, that Validator's bond (`V_bond`) is slashed for double-voting.  
   * The protocol enforces slashing of the validator's bond, with the exact amount determined by governance parameters.  
+  * Slashing occurs after the validator reconfiguration window (Δᵣ) to allow for appeals.
 
 * **Censorship or Non-Participation**  
   * Validators that repeatedly fail to vote or respond within time windows face protocol-enforced penalties:  
     * Slashing of bond proportional to missed validations  
     * Temporary suspension after multiple violations  
     * Removal from active validator set after severe offenses  
-
-* **Malicious Sponsorship**  
-  * If a Sponsor is found to have endorsed multiple revoked identities:  
-    * Slashing of endorsement stake (`S_endorse`)  
-    * Increased stake requirements for future endorsements  
-    * Potential suspension of sponsorship rights  
-
-* **Appeals & Dispute Resolution**  
-  * The protocol provides a time window for appeals before slashing is executed.  
-  * Successful appeals restore slashed funds.  
-  * Appeals require cryptographic proof of the claimed condition.
-
-Note: While the protocol enforces these basic penalties and slashing conditions, specific reputation models and their impacts on validator selection, reward distribution, or other network participation are left to application-layer implementations. This separation allows different use cases to apply their own trust and reputation policies while maintaining the core security guarantees of the protocol.
+  * Detection occurs within the partition detection window (Δₚ)
 
 ## **10.6 Error Reporting Conventions:**
 
@@ -1308,12 +1297,15 @@ Note: This model serves as a reference implementation and basic verification of 
     "sensorToAttestationWindow": 60,
     "attestationToMintWindow": 300,
     "validationResponseWindow": 600,
-    "clockSkew": 120
+    "clockSkew": 120,
+    "partitionDetectionWindow": 300,
+    "validatorReconfigurationWindow": 3600
   },
   "stakeSizes": {
     "S_mint": 100,
     "S_endorse": 10,
-    "validatorBond": 50
+    "validatorBond": 50,
+    "minimumStakeIncrement": 1
   },
   "quorum": {
     "n": 5,
@@ -1321,7 +1313,8 @@ Note: This model serves as a reference implementation and basic verification of 
     "scaling": {
       "minValidators": 3,
       "maxValidators": 100,
-      "faultTolerance": 0.33
+      "faultTolerance": 0.33,
+      "validatorRotationPeriod": 86400
     }
   }
 }
@@ -1333,6 +1326,13 @@ Note: This model serves as a reference implementation and basic verification of 
     * Network latency and geographic distribution  
     * Expected device performance  
     * Security requirements for specific use cases  
+  * All timing parameters referenced in the document should use these values:
+    * Δ₁ (challenge response): 120 seconds
+    * Δ₂ (sensor to attestation): 60 seconds
+    * Δ₃ (attestation to mint): 300 seconds
+    * ΔT (clock skew): 120 seconds
+    * Δₚ (partition detection): 300 seconds
+    * Δᵣ (validator reconfiguration): 3600 seconds
 
 * **Stake Sizes**  
   * Example values shown are relative units  
