@@ -817,21 +817,43 @@ To see concrete payloads for each message type, consult:
 
 To guarantee message freshness and prevent replay attacks, the protocol mandates unforgeable, verifiable time- and order-proofs on every step—both off-chain and on-chain.
 
-## **7.1 Signed Timestamps & Block Heights**
+## **7.1 Timing Parameters & Windows**
 
-* **Off-chain messages**  
-  * Every protocol message (ChallengeRequest, SensorPackage, etc.) carries a  
-    `timestamp` (Unix epoch) signed by the sender.  
-  * Validators reject messages when  
-    `|localTime – timestamp| > ΔT` (where ΔT is the maximum allowed clock skew, defined in Section 13.1 as 120 seconds).  
-* **On-chain transactions**  
-  * MintRequests, RevocationRequests and staking operations reference  
-    `blockHeight` as the time anchor.  
-  * Smart contracts enforce windows like "submit within N blocks of challenge"  
-    or "unlock stake after M blocks of no revocation."  
-* **Freshness guarantees**  
-  * Signatures bind the timestamp or blockHeight into the signed payload.  
-  * Any outdated or future-dated message is automatically invalid.
+The protocol defines several timing parameters that all implementations MUST support. These parameters are critical for ensuring message freshness and preventing replay attacks.
+
+* **Protocol-Level Timing Parameters**  
+  * Δ₁ (Challenge Response Window): 120 seconds  
+    * Time allowed for Candidate to respond to ChallengeRequest  
+    * Used in: ChallengeRequest → SensorPackage transition  
+  * Δ₂ (Sensor to Attestation Window): 60 seconds  
+    * Time allowed for Sponsor to verify and attest sensor data  
+    * Used in: SensorPackage → SponsorAttestation transition  
+  * Δ₃ (Attestation to Mint Window): 300 seconds  
+    * Time allowed for Candidate to submit MintRequest  
+    * Used in: SponsorAttestation → MintRequest transition  
+  * ΔT (Clock Skew): 120 seconds  
+    * Maximum allowed difference between local and message timestamps  
+    * Used in: All message validation  
+  * ΔV (Validation Response Window): 600 seconds  
+    * Time allowed for validators to respond to MintRequest  
+    * Used in: MintRequest → ValidationResponse transition  
+
+* **Network-Level Timing Parameters**  
+  * Δₚ (Partition Detection Window): 300 seconds  
+    * Time to detect network partitions  
+    * Used in: Validator state machine  
+  * Δᵣ (Validator Reconfiguration Window): 3600 seconds  
+    * Time allowed for validator set changes  
+    * Used in: Validator rotation and reconfiguration  
+
+* **Implementation-Specific Windows**  
+  The following windows are left to implementations to define based on their specific requirements:  
+  * Appeals window (for disputing slashing)  
+  * Probation window (for new identities)  
+  * Cooling-off period (between sponsorships)  
+  * Stake lock period (for escrowed tokens)  
+
+Note: All protocol-level timing parameters are defined in Section 13.1 and MUST be supported by all implementations. Implementation-specific windows may vary between deployments but should be clearly documented.
 
 ## **7.2 Nonces & Sequence Numbers**
 
