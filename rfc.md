@@ -32,7 +32,39 @@ While no system can guarantee absolute prevention of fraud, the protocol's desig
 
 By adhering to this spec, all participants—regardless of implementation language or platform—will interoperate seamlessly, maintain strong defenses against identity fraud, and preserve user privacy, while leaving high-level trust decisions flexible for downstream applications.
 
-## **1.2 Scope**
+## **1.2 Protocol vs. Implementation Domains**
+
+This document clearly separates requirements into two distinct domains:
+
+**Protocol Domain**
+* Core message types and their semantics
+* Cryptographic primitives and security properties
+* Economic mechanisms and stake requirements
+* Validation rules and quorum requirements
+* Timing parameters and anti-replay mechanisms
+* Privacy guarantees and zero-knowledge proof requirements
+* State machine definitions and transitions
+* On-chain record structures and schemas
+
+**Implementation Domain**
+* User interface design and experience
+* Client application architecture
+* Local storage and caching strategies
+* Performance optimizations
+* Hardware security module (HSM) implementations
+* Off-chain trust and reputation algorithms
+* Specific blockchain deployment details
+* Network parameters and gas optimizations
+* Custom reward distribution curves
+* Additional security features beyond protocol requirements
+
+This separation ensures that:
+* The protocol remains focused on essential security and interoperability requirements
+* Implementations have freedom to innovate and optimize
+* Different communities can build diverse solutions while maintaining compatibility
+* Core security properties are preserved across all implementations
+
+## **1.3 Scope**
 
 This specification defines the **protocol-level** rules, message flows, data formats, and economic mechanisms required to create, validate, and manage Soul Bound identities on a distributed ledger. It covers:
 
@@ -52,7 +84,7 @@ Out of scope for this document:
 * **Formal machine-checked models** (e.g. TLA⁺, Alloy) – see Section 12 for reference, if desired  
 * **Specific blockchain deployment** details (network parameters, gas costs, layer-2 integrations)
 
-## **1.3 Design Goals**
+## **1.4 Design Goals**
 
 The Soul Bound Protocol is architected to achieve the following core objectives:
 
@@ -67,9 +99,9 @@ The Soul Bound Protocol is architected to achieve the following core objectives:
 * **Economic alignment (staking & rewards)**  
   Introduce token-based stakes, slashing conditions, and performance-based rewards so participants incur real economic risk when vouching for or validating identities, aligning incentives toward honest behavior.
 
-## **1.4 Assumptions & Threat Model**
+## **1.5 Assumptions & Threat Model**
 
-### **1.4.1 Assumptions**
+### **1.5.1 Assumptions**
 
 * **Secure Key Storage**  
   Each participant's device securely holds its private keys and protects them from extraction or tampering (e.g., via Secure Enclave or equivalent).  
@@ -84,7 +116,7 @@ The Soul Bound Protocol is architected to achieve the following core objectives:
 * **Independent Validators**  
   A critical mass of validator nodes operate honestly and independently, preventing any single party or small colluding group from unilaterally approving fraudulent identities.
 
-### **1.4.2 Threat Model**
+### **1.5.2 Threat Model**
 
 #### **Adversary Goals**
 
