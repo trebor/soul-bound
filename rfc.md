@@ -410,7 +410,9 @@ This section describes each participant's internal state machine, listing states
 * **IDLE**  
 * **VERIFY_MINT**  
 * **VOTE**  
-* **COMMIT**
+* **COMMIT**  
+* **PARTITIONED** (temporary state during network issues)  
+* **RECONFIGURING** (temporary state during validator set changes)
 
 **Transitions**
 
@@ -421,17 +423,72 @@ This section describes each participant's internal state machine, listing states
      * Signatures valid  
      * Stake ≥ S_mint  
      * `zkProof` verifies  
-     * `timestamp` or `blockHeight` within window  
+     * `timeAnchor` within window  
    * Failure: Any check fails ⇒ emit `ValidationResponse(status="rejected")` and return to **IDLE**.  
 3. **VOTE → COMMIT**  
    * Trigger: Validator signs and broadcasts `ValidationResponse(status="approved")`.  
 4. **COMMIT → IDLE**  
    * Trigger: After observing a quorum of m "approved" responses, optionally submit the on-chain transaction to the Ledger, then return to **IDLE**.
 
+**Network Partition Handling**
+
+* **Detection**  
+  * Validators monitor peer connectivity and message propagation  
+  * Partition detected when:  
+    * Unable to reach ≥ m validators for duration Δₚ  
+    * Observing conflicting chain states  
+    * Receiving inconsistent validator sets  
+
+* **Partition Response**  
+  1. Enter **PARTITIONED** state  
+  2. Suspend new validations  
+  3. Continue processing existing validations if quorum possible  
+  4. Monitor network status  
+  5. Return to normal operation when:  
+     * Connectivity restored to ≥ m validators  
+     * Chain state reconciled  
+     * Validator sets consistent  
+
+* **Recovery Protocol**  
+  * Reconcile missed transactions  
+  * Revalidate pending requests  
+  * Update local validator set  
+  * Resume normal operation
+
+**Validator Set Changes**
+
+* **Initiation**  
+  * Triggered by:  
+    * Governance proposal  
+    * Automatic rotation schedule  
+    * Validator performance metrics  
+    * Network size changes  
+
+* **Change Protocol**  
+  1. Enter **RECONFIGURING** state  
+  2. Complete all pending validations  
+  3. Update local validator set  
+  4. Verify new set meets quorum requirements  
+  5. Resume normal operation  
+
+* **Safety Checks**  
+  * Ensure m-of-n quorum possible in new set  
+  * Verify stake requirements met  
+  * Confirm geographic distribution maintained  
+  * Validate new validators' credentials
+
 **Notes**
 
 * Validators must guard against equivocation (voting both approve and reject on the same session).  
-* In COMMIT, the validator may include finalization metadata (e.g., block hash).
+* In COMMIT, the validator may include finalization metadata (e.g., block hash).  
+* During partitions or reconfigurations, validators should:  
+  * Maintain logs of missed transactions  
+  * Track state divergence  
+  * Report anomalies to governance  
+* Validator set changes require:  
+  * Sufficient notice period  
+  * Graceful transition  
+  * Fallback mechanisms if change fails
 
 ## **5.4 Ledger State Machine (ACCEPT | REJECT → UPDATE GRAPH)**
 
