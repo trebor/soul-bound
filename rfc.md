@@ -1149,10 +1149,57 @@ Note: This model serves as a reference implementation and basic verification of 
   },
   "quorum": {
     "n": 5,
-    "m": 3
+    "m": 3,
+    "scaling": {
+      "minValidators": 3,
+      "maxValidators": 100,
+      "faultTolerance": 0.33
+    }
   }
 }
 ```
+
+* **Time Windows (Δs)**  
+  * Values are in seconds and represent reasonable defaults for most networks  
+  * Should be adjusted based on:  
+    * Network latency and geographic distribution  
+    * Expected device performance  
+    * Security requirements for specific use cases  
+
+* **Stake Sizes**  
+  * Example values shown are relative units  
+  * Actual values should be set based on:  
+    * Token economics and market conditions  
+    * Desired security level  
+    * Network participation requirements  
+  * Governance should allow dynamic adjustment of these parameters  
+
+* **Quorum Parameters**  
+  * The example configuration (n=5, m=3) provides:  
+    * Basic fault tolerance (withstands 2 faulty validators)  
+    * Reasonable latency for small networks  
+    * Balance between security and performance  
+  * For larger networks, quorum parameters should scale according to:  
+    * `n = max(3, min(100, ceil(total_validators * 0.2)))`  
+    * `m = ceil(n * (1 - fault_tolerance))`  
+    * Where `fault_tolerance` is typically 0.33 (one-third)  
+  * Considerations for quorum scaling:  
+    * Network size and geographic distribution  
+    * Expected validator reliability  
+    * Desired fault tolerance  
+    * Performance requirements  
+    * Economic security requirements  
+
+* **Implementation Notes**  
+  * All parameters should be configurable via governance  
+  * Parameters may need adjustment based on:  
+    * Network growth and validator set changes  
+    * Security incident analysis  
+    * Performance monitoring  
+    * Economic conditions  
+  * Regular parameter review should be part of network governance
+
+Note: These parameters are example values for a small-scale deployment. Real-world implementations should conduct thorough analysis of their specific requirements and adjust parameters accordingly. The scaling formulas provided are starting points that should be validated through simulation and real-world testing.
 
 ## **13.2 Example API Endpoints & RPC Definitions**
 
