@@ -884,31 +884,14 @@ This section describes the protocol-level economic mechanisms that all implement
   * A small, non-refundable portion of `S_mint` is immediately deducted and sent to a fee pool for validators.  
   * Discourages frivolous or automated mint attempts.  
 
-* **Refund & Reward Conditions**  
-  * If the new identity survives the probation period (defined in Section 13.1), the staker receives:  
-    * Full refund of remaining stake if no suspicious activity detected  
-    * Partial refund (50-75%) if minor anomalies detected but below revocation threshold  
-    * No refund if identity is revoked during probation  
-  * Additionally, a bonus reward (5-10% of original stake) is paid from the fee pool for identities that:  
-    * Complete probation without any anomalies  
-    * Maintain active participation in the network  
-    * Successfully sponsor other identities  
-
-* **Slashing Conditions**  
-  * If the identity is later revoked for fraud, up to 100% of `S_mint` is forfeited (burned or redistributed per policy).  
-  * The exact slash percentage depends on the severity of the fraud and the identity's history.
-
 ## **8.2 Sponsor-Endorsement Stakes & Slashing**
 
 * **Endorsement Stake (`S_endorse`)**  
   * Each time a Sponsor vouches for a Candidate, they must lock `S_endorse` tokens.  
   * Calibrated lower than `S_mint` but still meaningful.  
 * **Stake Release / Slash**  
-  * If the sponsee remains in good standing past the revocation window, `S_endorse` is released back to the Sponsor (possibly with a small bonus).  
+  * If the sponsee remains in good standing past the revocation window, `S_endorse` is released back to the Sponsor.  
   * If the sponsee is revoked, the Sponsor's stake is partially or fully slashed.  
-* **Batching & Caps**  
-  * Sponsors may batch multiple endorsements into a single stake lock to reduce transaction costs.  
-  * Maximum concurrent endorsements per Sponsor can be limited to control systemic risk.
 
 ## **8.3 Validator Bonds & Reward Schemes**
 
@@ -917,71 +900,10 @@ This section describes the protocol-level economic mechanisms that all implement
   * Ensures validators have skin in the game.  
 * **Reward Distribution**  
   * Validators earn a share of minting fees and a portion of slashed stakes when they correctly vote to approve or reject.  
-  * Rewards are proportional to uptime, accuracy, and stake share.  
 * **Penalties**  
   * Validators that equivocate or fail to participate can be slashed on part of their bond.  
-  * Encourages reliable, honest operation.
 
-## **8.4 Performance-Based & Spend-and-Earn Models**
-
-* **Protocol-Level Reward Mechanisms**  
-  * The protocol provides the following verifiable on-chain actions that can be used for reward calculations:  
-    * Successful identity minting (surviving probation)  
-    * Valid validation votes (matching final consensus)  
-    * Timely participation in validation rounds  
-    * Absence of slashing events  
-  * Reward distribution is handled by smart contracts that:  
-    * Track verifiable on-chain actions  
-    * Calculate reward shares based on governance parameters  
-    * Distribute rewards according to the configured schedule  
-
-* **Spend-and-Earn Model**  
-  * Key actions require upfront costs:  
-    * Minting: `S_mint` stake  
-    * Endorsing: `S_endorse` stake  
-    * Validating: `V_bond` stake  
-  * Rewards are only distributed for positive outcomes:  
-    * Successful identity minting  
-    * Correct validation votes  
-    * Honest sponsorship  
-  * The protocol ensures that:  
-    * Rewards exceed costs for honest participants  
-    * Malicious behavior results in net loss  
-    * Economic incentives align with protocol goals  
-
-* **Implementation Notes**  
-  * While the protocol provides these basic reward mechanisms, specific performance metrics and reward calculations are left to implementations.  
-  * Implementations may choose to:  
-    * Define additional metrics for reward calculation  
-    * Implement custom reward distribution curves  
-    * Add reputation-based multipliers  
-    * Create tiered reward structures  
-  * All reward mechanisms must:  
-    * Be transparent and verifiable  
-    * Align with protocol security goals  
-    * Prevent gaming or manipulation  
-    * Scale appropriately with network growth  
-
-Note: The protocol focuses on providing the basic mechanisms for verifiable actions and reward distribution. Specific performance metrics, reward calculations, and distribution policies are left to implementations to define based on their specific requirements and use cases.
-
-## **8.5 Tiered Staking & Reputation Discounts**
-
-* **Reputation Score**  
-  * Each actor accumulates a reputation metric based on past behavior (successful endorsements, no slashes, validator accuracy).  
-* **Tier Levels**  
-  * Define discrete tiers (e.g., Bronze, Silver, Gold) with progressively lower stake requirements.  
-  * Actors automatically unlock higher tiers as their reputation crosses thresholds.  
-* **Dynamic Stake Adjustments**  
-  * High-reputation Sponsors may pay a discounted `S_endorse`.  
-  * Trusted Validators can reduce their `V_bond` requirements.  
-  * New or low-reputation actors face higher stakes to deter risk.
-
----
-
-**Parameterization & Governance:**  
-All economic parameters (`S_mint`, `S_endorse`, `V_bond`, fee fractions, reward rates, probation periods) should be configurable via on-chain governance or decentralized parameter proposals, allowing the community to adjust incentives as the network evolves.
-
-## **8.6 Identity Maintenance Requirements**
+## **8.4 Identity Maintenance Requirements**
 
 The following are the strict requirements for maintaining a valid Soul Bound identity. Violation of these requirements may result in slashing of escrowed stake or revocation of identity.
 
