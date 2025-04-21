@@ -872,10 +872,18 @@ This section describes the protocol-level economic mechanisms that all implement
 
 * **Stake Requirement (`S_mint`)**  
   * Before submitting a `MintRequest`, the Candidate or their Sponsor must lock up at least `S_mint` tokens.  
-  * Ensures real economic cost to create a new identity.  
+  * The stake is immediately placed in protocol-controlled escrow upon commitment
+  * Once in escrow, the stake cannot be spent, transferred, or otherwise accessed by the staker
+  * The stake remains locked until:
+    * The probation period completes successfully (partial or full release)
+    * The identity is revoked (slashing)
+    * The minting process fails (full refund)
+  * Ensures real economic cost to create and maintain a new identity.  
+
 * **Minting Fee**  
   * A small, non-refundable portion of `S_mint` is immediately deducted and sent to a fee pool for validators.  
   * Discourages frivolous or automated mint attempts.  
+
 * **Refund & Reward Conditions**  
   * If the new identity survives the probation period (defined in Section 13.1), the staker receives:  
     * Full refund of remaining stake if no suspicious activity detected  
@@ -885,6 +893,7 @@ This section describes the protocol-level economic mechanisms that all implement
     * Complete probation without any anomalies  
     * Maintain active participation in the network  
     * Successfully sponsor other identities  
+
 * **Slashing Conditions**  
   * If the identity is later revoked for fraud, up to 100% of `S_mint` is forfeited (burned or redistributed per policy).  
   * The exact slash percentage depends on the severity of the fraud and the identity's history.
@@ -971,6 +980,55 @@ Note: The protocol focuses on providing the basic mechanisms for verifiable acti
 
 **Parameterization & Governance:**  
 All economic parameters (`S_mint`, `S_endorse`, `V_bond`, fee fractions, reward rates, probation periods) should be configurable via on-chain governance or decentralized parameter proposals, allowing the community to adjust incentives as the network evolves.
+
+## **8.6 Identity Maintenance Requirements**
+
+The following are the strict requirements for maintaining a valid Soul Bound identity. Violation of these requirements may result in slashing of escrowed stake or revocation of identity.
+
+* **Core Requirements**
+  * Do not attempt to create multiple identities
+  * Do not sponsor fraudulent identities
+  * Do not violate protocol rules during verification
+  * Maintain sufficient stake for any active sponsorships
+  * Do not share private keys or verification devices
+
+* **Optional Features & Incentives**
+  The protocol provides the following optional features and incentives to encourage participation, but these are not requirements:
+
+  * **Active Participation Benefits**
+    * Earn rewards for successful sponsorships
+    * Build reputation for future sponsorships
+    * Access to additional protocol features
+    * Reduced stake requirements over time
+
+  * **Security Best Practices**
+    * Use hardware security modules (HSM)
+    * Implement key backup procedures
+    * Report lost or stolen devices
+    * Use biometric authentication
+
+  * **Economic Incentives**
+    * Higher rewards for consistent participation
+    * Lower stake requirements for proven identities
+    * Bonus rewards for successful sponsorship chains
+    * Fee discounts for active participants
+
+* **Inactive Status**
+  * No requirements for maintaining active status
+  * Existing sponsorships remain valid indefinitely
+  * Can return to active participation at any time
+  * May need to meet current stake requirements upon return
+
+* **Consequences**
+  The following consequences only apply to violations of core requirements:
+  * Slashing of escrowed stake for:
+    * Fraudulent behavior
+    * Protocol rule violations
+    * Sponsorship fraud
+  * Temporary suspension of verification rights (only during investigation)
+  * Required additional security measures (if security is compromised)
+
+Note: These are the minimum protocol-level requirements. Implementations may add additional requirements or maintenance tasks as described in Section 1.2.
 
 # **9\. Security Properties & Invariants**
 
