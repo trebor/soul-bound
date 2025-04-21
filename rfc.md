@@ -947,13 +947,26 @@ This section enumerates expected error conditions, how each actor should detect 
 
 * **Equivocation by Validators**  
   * If a Validator signs conflicting `ValidationResponse` for the same `sessionId`, that Validator's bond (`V_bond`) is slashed for double-voting.  
+  * The protocol enforces slashing of the validator's bond, with the exact amount determined by governance parameters.  
+
 * **Censorship or Non-Participation**  
-  * Validators that repeatedly fail to vote or respond within time windows can lose reputation and be slashed per governance policy.  
+  * Validators that repeatedly fail to vote or respond within time windows face protocol-enforced penalties:  
+    * Slashing of bond proportional to missed validations  
+    * Temporary suspension after multiple violations  
+    * Removal from active validator set after severe offenses  
+
 * **Malicious Sponsorship**  
-  * If a Sponsor is found to have endorsed multiple revoked identities, their cumulative stake may be slashed and reputation score reduced or banned.  
+  * If a Sponsor is found to have endorsed multiple revoked identities:  
+    * Slashing of endorsement stake (`S_endorse`)  
+    * Increased stake requirements for future endorsements  
+    * Potential suspension of sponsorship rights  
+
 * **Appeals & Dispute Resolution**  
-  * Implementations MAY provide an on-chain or off-chain appeal mechanism within a time window before slashing is executed.  
-  * Successful appeals restore slashed funds and reputation.
+  * The protocol provides a time window for appeals before slashing is executed.  
+  * Successful appeals restore slashed funds.  
+  * Appeals require cryptographic proof of the claimed condition.
+
+Note: While the protocol enforces these basic penalties and slashing conditions, specific reputation models and their impacts on validator selection, reward distribution, or other network participation are left to application-layer implementations. This separation allows different use cases to apply their own trust and reputation policies while maintaining the core security guarantees of the protocol.
 
 ## **10.6 Error Reporting Conventions:**
 
