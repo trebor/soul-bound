@@ -974,9 +974,60 @@ Note: While the protocol provides these basic Sybil-resistance mechanisms, speci
 ## **9.4 Privacy: ZK-Proof Guarantees**
 
 * **Invariant:** No raw biometric or environmental sensor data is revealed on-chain or to validators; only zero-knowledge proofs and hashes are published.  
-* **Mechanisms:**  
-  * ZK proofs attest that the protocol steps (e.g. matching hashes) were executed correctly, without leaking underlying data.  
-  * Sensor packages carry only hashes of data; all proofs bind these hashes cryptographically.
+* **ZK Proof Security Parameters**  
+  * Proof System Requirements:  
+    * Soundness error ≤ 2⁻¹²⁸  
+    * Knowledge soundness against polynomial-time adversaries  
+    * Statistical zero-knowledge  
+  * Circuit Parameters:  
+    * Field size ≥ 256 bits  
+    * Constraint count appropriate for sensor data size  
+    * Efficient prover time (≤ 1 second on mobile devices)  
+  * Implementation Requirements:  
+    * Constant-time arithmetic operations  
+    * Memory-hard hashing for witness generation  
+    * Side-channel resistant proof generation  
+
+* **Privacy-Preserving Mechanisms**  
+  * **Sensor Data Protection**  
+    * Raw sensor readings never leave the device  
+    * Only hashes of sensor data are exchanged  
+    * ZK proofs attest to correct hash computation  
+  * **Biometric Data Protection**  
+    * Biometric templates stored only on device  
+    * Matching performed locally  
+    * Only match/no-match result included in proof  
+  * **Environmental Data Protection**  
+    * Location data generalized to region level  
+    * Time data rounded to nearest minute  
+    * Ambient data aggregated into categories  
+
+* **Side-Channel Attack Mitigations**  
+  * **Timing Attacks**  
+    * Constant-time cryptographic operations  
+    * Randomized proof generation delays  
+    * Uniform memory access patterns  
+  * **Power Analysis**  
+    * Power-balanced circuit design  
+    * Randomized execution paths  
+    * Hardware security module usage recommended  
+  * **Memory Attacks**  
+    * Secure memory erasure after use  
+    * Encrypted memory for sensitive data  
+    * Memory access pattern randomization  
+
+* **Implementation Requirements**  
+  * All implementations must:  
+    * Use audited cryptographic libraries  
+    * Implement constant-time operations  
+    * Provide secure memory management  
+    * Support hardware security features  
+  * Mobile implementations should:  
+    * Utilize secure enclaves when available  
+    * Implement proper key storage  
+    * Handle background/foreground transitions securely  
+
+Note: While the protocol specifies these security parameters and requirements, specific ZK proof system choices (e.g., Bulletproofs, zk-SNARKs) and implementation details are left to individual deployments based on their security requirements and performance constraints.
 
 ## **9.5 Revocation & Slash Soundness**
 
