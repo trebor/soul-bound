@@ -457,8 +457,6 @@ This section describes each participant's internal state machine, listing states
 * **VERIFY_MINT**  
 * **VOTE**  
 * **COMMIT**  
-* **PARTITIONED** (temporary state during network issues)  
-* **RECONFIGURING** (temporary state during validator set changes)
 
 **Transitions**
 
@@ -476,52 +474,50 @@ This section describes each participant's internal state machine, listing states
 4. **COMMIT → IDLE**  
    * Trigger: After observing a quorum of m "approved" responses, optionally submit the on-chain transaction to the Ledger, then return to **IDLE**.
 
-**Network Partition Handling**
+**Validator Set Management**
 
-* **Detection**  
-  * Validators monitor peer connectivity and message propagation  
-  * Partition detected when:  
-    * Unable to reach ≥ m validators for duration Δₚ  
-    * Observing conflicting chain states  
-    * Receiving inconsistent validator sets  
+* **Entry Requirements**
+  * Must lock sufficient stake (V_bond)
+  * Must verify messages correctly
+  * Must maintain correct stake requirements
+  * Must enforce quorum rules (m-of-n)
+  * Must protect private keys and sensor data
 
-* **Partition Response**  
-  1. Enter **PARTITIONED** state  
-  2. Suspend new validations  
-  3. Continue processing existing validations if quorum possible  
-  4. Monitor network status  
-  5. Return to normal operation when:  
-     * Connectivity restored to ≥ m validators  
-     * Chain state reconciled  
-     * Validator sets consistent  
+* **Set Changes**
+  * Changes require:
+    * Governance proposal and vote
+    * Stake lock period
+    * Gradual rotation schedule
+    * Protocol-enforced limits:
+      * Maximum rotation rate per epoch
+      * Minimum stake lock period
+      * Required quorum for all changes
+    * No exceptions or emergency powers
+    * All changes must follow standard governance process
 
-* **Recovery Protocol**  
-  * Reconcile missed transactions  
-  * Revalidate pending requests  
-  * Update local validator set  
-  * Resume normal operation
+* **Monitoring & Enforcement**
+  * Protocol-enforced monitoring:
+    * On-chain tracking of validator votes and responses
+    * Automatic detection of equivocation (conflicting votes)
+    * Timestamp validation for all messages
+    * Stake requirement verification
+    * Quorum rule enforcement
+  * Protocol automatically slashes stake for:
+    * Invalid message acceptance
+    * Protocol violations
+    * Security incidents
+  * Protocol-level metrics:
+    * Response time compliance
+    * Vote consistency
+    * Stake maintenance
+    * Quorum participation
 
-**Validator Set Changes**
-
-* **Initiation**  
-  * Triggered by:  
-    * Governance proposal  
-    * Automatic rotation schedule  
-    * Validator performance metrics  
-    * Network size changes  
-
-* **Change Protocol**  
-  1. Enter **RECONFIGURING** state  
-  2. Complete all pending validations  
-  3. Update local validator set  
-  4. Verify new set meets quorum requirements  
-  5. Resume normal operation  
-
-* **Safety Checks**  
-  * Ensure m-of-n quorum possible in new set  
-  * Verify stake requirements met  
-  * Confirm geographic distribution maintained  
-  * Validate new validators' credentials
+* **Recovery Protocol**
+  * Graceful degradation during incidents
+  * Automatic stake slashing for violations
+  * Standard governance process for validator rotation
+  * Incident response coordination
+  * Post-incident analysis and parameter adjustment
 
 **Notes**
 
@@ -894,38 +890,45 @@ This section describes the protocol-level economic mechanisms that all implement
 
 ## **8.1 Identity-Minting Stakes & Fees**
 
-* **Stake Requirement (`S_mint`)**  
-  * Before submitting a `MintRequest`, the Candidate or their Sponsor must lock up at least `S_mint` tokens.  
-  * The stake is immediately placed in protocol-controlled escrow upon commitment
-  * Once in escrow, the stake cannot be spent, transferred, or otherwise accessed by the staker
-  * The stake remains locked until:
-    * The probation period completes successfully (partial or full release)
-    * The identity is revoked (slashing)
-    * The minting process fails (full refund)
-  * Ensures real economic cost to create and maintain a new identity.  
+* **Minting Stake (S_mint)**
+  * Must be locked for identity lifetime
+  * Slashed for protocol violations
+  * Cannot be withdrawn while identity active
 
-* **Minting Fee**  
-  * A small, non-refundable portion of `S_mint` is immediately deducted and sent to a fee pool for validators.  
-  * Discourages frivolous or automated mint attempts.  
+* **Minting Fee (F_mint)**
+  * Paid to validators
+  * Covers verification costs
+  * Distributed based on validation accuracy
 
 ## **8.2 Sponsor-Endorsement Stakes & Slashing**
 
-* **Endorsement Stake (`S_endorse`)**  
-  * Each time a Sponsor vouches for a Candidate, they must lock `S_endorse` tokens.  
-  * Calibrated lower than `S_mint` but still meaningful.  
-* **Stake Release / Slash**  
-  * If the sponsee remains in good standing past the revocation window, `S_endorse` is released back to the Sponsor.  
-  * If the sponsee is revoked, the Sponsor's stake is partially or fully slashed.  
+* **Sponsor Stake (S_sponsor)**
+  * Must exceed S_mint
+  * Locked for endorsement duration
+  * Slashed for invalid endorsements
 
-## **8.3 Validator Bonds & Reward Schemes**
+* **Endorsement Fee (F_endorse)**
+  * Paid to validators
+  * Covers verification costs
+  * Distributed based on validation accuracy
 
-* **Validator Bond (`V_bond`)**  
-  * To join the validation quorum, a node must lock `V_bond` tokens.  
-  * Ensures validators have skin in the game.  
-* **Reward Distribution**  
-  * Validators earn a share of minting fees and a portion of slashed stakes when they correctly vote to approve or reject.  
-* **Penalties**  
-  * Validators that equivocate or fail to participate can be slashed on part of their bond.  
+## **8.3 Validator Bonds & Rewards**
+
+* **Validator Bond (V_bond)**
+  * Must exceed S_mint × 10
+  * Locked for validator duration
+  * Slashed for protocol violations
+
+* **Validator Rewards**
+  * Base reward for honest validation
+  * Penalty for invalid validations
+  * Distributed based on validation accuracy
+
+* **Economic Parameters**
+  * Must ensure:
+    * Honest behavior more profitable
+    * Malicious behavior unprofitable
+    * Cost of attack exceeds benefits
 
 ## **8.4 Identity Maintenance Requirements**
 
@@ -955,67 +958,78 @@ This section states the core security guarantees and invariants that any Soul Bo
 
 ## **9.1 Unforgeability of Attestations**
 
-* **Invariant:** No party (malicious client, network adversary) can produce a valid `SponsorAttestation` or `SensorPackage` without physically co-locating two devices and holding the correct private keys.  
+* **Invariant:** No party can produce a valid `SponsorAttestation` or `SensorPackage` without physically co-locating two devices and holding the correct private keys.  
 * **Mechanisms:**  
-  * All sensor hashes and session nonces are included in signatures by Candidate and Sponsor.  
-  * Validators reject any attestation whose signature fails verification or whose hashes do not match recorded sensor proofs.
-  * Validators only check observable properties (signatures, hashes, timestamps) and do not rely on implementation details
-  * Economic incentives ensure validators have strong motivation to check these properties correctly
+  * All sensor hashes and session nonces are included in signatures
+  * Validators reject any attestation whose signature fails verification
+  * Economic incentives ensure validators check signatures correctly
 
 ## **9.2 Freshness & Liveness Guarantees**
 
-* **Invariant:** Every protocol step must occur within its configured time window; no stale or future-dated messages are accepted.  
+* **Invariant:** Every protocol step must occur within its configured time window.  
 * **Mechanisms:**  
-  * Off-chain messages include signed timestamps; on-chain actions reference block heights.  
-  * Validators enforce `|localTime − timestamp| ≤ ΔT` and "submit within N blocks" constraints.  
-  * Nonces and sequence numbers prohibit replay or reordering of messages.
+  * Messages include signed timestamps
+  * Validators enforce time windows
+  * Nonces prevent replay attacks
 
-## **9.3 Identity Fraud Resistance Bounds**
+## **9.3 Identity Fraud Resistance**
 
-* **Invariant:** The cost (physical effort + economic stake) to create N identities grows at least linearly in N, making large-scale identity fraud economically irrational.  
+* **Invariant:** The cost to create N identities grows linearly in N.  
 * **Mechanisms:**  
-  * Real-world in-person verification cannot be parallelized at zero marginal cost.  
-  * Token stakes (`S_mint`, `S_endorse`) and slashing penalties ensure each new identity carries a significant financial risk.  
-  * Protocol enforces the following core limits:  
-    * Maximum concurrent sponsorships per identity  
-    * Minimum time between sponsorships from the same identity  
-    * Required physical co-location for verification  
-  * Violations of these limits result in automatic rejection of requests
-  * Economic incentives are structured so that:
-    * Honest validation is more profitable than dishonest validation
-    * The cost of breaking the rules exceeds any potential benefit
-    * Validators have strong motivation to detect and reject fraudulent identities
-    * Sponsors have strong motivation to verify identities carefully
+  * In-person verification required
+  * Token stakes and slashing
+  * Protocol-enforced limits on sponsorships
 
-## **9.4 Privacy: ZK-Proof Guarantees**
+## **9.4 Privacy Guarantees**
 
-* **Invariant:** No raw biometric or environmental sensor data is revealed on-chain or to validators; only zero-knowledge proofs and hashes are published.  
-* **Core Requirements:**  
-  * Raw sensor readings never leave the device  
-  * Only hashes of sensor data are exchanged  
-  * ZK proofs attest to correct hash computation  
-  * Biometric matching performed locally  
-  * Only match/no-match results included in proofs  
-  * Location data generalized to region level  
-  * Time data rounded to nearest minute  
-  * Ambient data aggregated into categories  
-
-* **Security Parameters**  
-  * Soundness error ≤ 2⁻¹²⁸  
-  * Knowledge soundness against polynomial-time adversaries  
-  * Statistical zero-knowledge  
-  * Field size ≥ 256 bits  
-  * Constraint count appropriate for sensor data size  
-
-Note: Specific ZK proof system choices, implementation details, and side-channel attack mitigations are left to individual deployments based on their security requirements and performance constraints. See Section 11 for implementation guidance.
-
-## **9.5 Revocation & Slash Soundness**
-
-* **Invariant:** When an identity is revoked for valid cause, the associated stakes are reliably confiscated or burned; conversely, honest actors are never slashed without due evidence.  
+* **Invariant:** No raw biometric or sensor data is revealed on-chain.  
 * **Mechanisms:**  
-  * RevocationRequests include signed evidence or ZK proof of fraud.  
-  * Validators follow a quorum rule to approve or reject revocation; smart contracts enforce slashing and optional redistribution.  
-  * Governance or appeals windows can overturn false positives before slashing is executed.
+  * Raw sensor readings never leave device
+  * Only hashes of sensor data are exchanged
+  * ZK proofs attest to correct hash computation
+
+## **9.5 Revocation & Slashing**
+
+* **Invariant:** When an identity is revoked, its stake is slashed.  
+* **Mechanisms:**  
+  * RevocationRequests include evidence
+  * Validators follow quorum rule
+  * Smart contracts enforce slashing
+
+## **9.6 Protocol-Level Enforcement**
+
+* **Core Security Properties**
+  * All implementations MUST:
+    * Follow the protocol message formats exactly
+    * Enforce all timing windows (Δ₁, Δ₂, Δ₃, ΔT)
+    * Verify all signatures and proofs
+    * Maintain correct stake requirements
+    * Enforce quorum rules (m-of-n)
+    * Protect private keys and sensor data
+
+* **Economic Enforcement**
+  * Validators are incentivized to:
+    * Verify messages correctly (rewards for honest validation)
+    * Reject invalid messages (penalties for invalid acceptance)
+    * Maintain sufficient stake (V_bond)
+    * Follow protocol rules (slashing for violations)
+  * Sponsors are incentivized to:
+    * Verify identities carefully (rewards for honest sponsorship)
+    * Reject fraudulent identities (penalties for invalid endorsements)
+    * Maintain sufficient stake (S_sponsor)
+    * Follow protocol rules (slashing for violations)
+
+* **Protocol Rules**
+  * Messages that violate protocol rules are rejected
+  * Validators that accept invalid messages are slashed
+  * Sponsors that endorse invalid identities are slashed
+  * Stake requirements ensure honest behavior is more profitable
+
+* **Monitoring & Response**
+  * Validators monitor each other's behavior
+  * Protocol automatically slashes stake for violations
+  * Network can vote to remove misbehaving validators
+  * Economic incentives naturally align behavior
 
 ---
 
