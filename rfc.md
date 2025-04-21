@@ -848,7 +848,23 @@ This section states the core security guarantees and invariants that any Soul Bo
 * **Mechanisms:**  
   * Real-world in-person verification cannot be parallelized at zero marginal cost.  
   * Token stakes (`S_mint`, `S_endorse`) and slashing penalties ensure each new identity carries a significant financial risk.  
-  * Graph-analysis tools and anomaly detection flag unusual sponsorship patterns.
+  * Protocol-level graph analysis tools provide the following capabilities for detecting potential Sybil attacks:  
+    * **Degree Limits**  
+      * Maximum number of concurrent sponsorships per identity (configurable via governance)  
+      * Rate-limiting of new sponsorships over time windows  
+    * **Temporal Controls**  
+      * Minimum time between sponsorships from the same identity  
+      * Maximum sponsorship rate per time window  
+    * **Geographic Verification**  
+      * Required physical co-location for verification (enforced via sensor data)  
+      * Minimum distance between verification events  
+  * **Response Mechanisms**  
+    * Automatic rejection of requests violating protocol limits  
+    * Increased stake requirements for high-frequency sponsors  
+    * Mandatory cooling-off periods between sponsorships  
+    * Enhanced verification requirements for suspicious patterns
+
+Note: While the protocol provides these basic Sybil-resistance mechanisms, specific trust models, reputation scoring, and detailed behavioral analysis are left to application-layer implementations. This separation allows different use cases to apply their own trust policies while maintaining the core security guarantees of the protocol.
 
 ## **9.4 Privacy: ZK-Proof Guarantees**
 
