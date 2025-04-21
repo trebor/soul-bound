@@ -706,7 +706,7 @@ To guarantee message freshness and prevent replay attacks, the protocol mandates
   * Every protocol message (ChallengeRequest, SensorPackage, etc.) carries a  
     `timestamp` (Unix epoch) signed by the sender.  
   * Validators reject messages when  
-    `|localTime – timestamp| > ΔT` (configurable skew, e.g. ±2 minutes).  
+    `|localTime – timestamp| > ΔT` (where ΔT is the maximum allowed clock skew, defined in Section 13.1 as 120 seconds).  
 * **On-chain transactions**  
   * MintRequests, RevocationRequests and staking operations reference  
     `blockHeight` as the time anchor.  
