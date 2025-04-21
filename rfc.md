@@ -160,7 +160,7 @@ The Soul Bound Protocol is architected to achieve the following core objectives:
 
 ## **3.1 High‑Level Sequence Diagram**
 
-## **![][image1]**
+[sequence diagram to be added later]
 
 ## **3.2 End‑to‑End Flow Summary**
 
