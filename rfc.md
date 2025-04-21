@@ -2,10 +2,9 @@
 
 ## **1.1 Purpose & Audience**
 
-This document defines the **Soul Bound Protocol**, a decentralized, privacy‑preserving framework for creating Sybil‑resistant digital identities anchored in real‑world, in‑person verification events. By treating Soul Bound as a *protocol* rather than a single software product, we enable multiple interoperable implementations to:
+This document defines the **Soul Bound Protocol**, a decentralized, privacy-preserving framework for creating Sybil-resistant digital identities anchored in real-world, in-person verification events. By treating Soul Bound as a *protocol* rather than a single software product, we enable multiple interoperable implementations to:
 
-* Perform secure, multi‑sensor physical attestations  
-* Generate and manage non‑transferable identity tokens on a distributed ledger  
+* Generate and manage non-transferable identity tokens on a distributed ledger  
 * Record sponsorship and reputation stakes in a standardized, auditable format  
 * Decouple "trust semantics" (how applications interpret the identity graph) from the core verification mechanics  
 * Embed economic incentives (staking, slashing, performance rewards) to align honest behavior and deter fraud
@@ -14,41 +13,41 @@ This document defines the **Soul Bound Protocol**, a decentralized, privacy‑pr
 
 * **Protocol designers** defining or extending message flows, data formats, and security properties  
 * **Client developers** building mobile, desktop, or embedded apps that perform verifications or consume identity data  
-* **Validator implementers** running nodes that verify attestations, enforce time‑bounds, and manage stakes  
-* **Smart‑contract engineers** integrating on‑chain logic for minting, slashing, and reward distribution  
-* **Security auditors & researchers** assessing Sybil‑resistance, privacy guarantees, and economic soundness  
-* **Community architects** (DAOs, voting platforms, social networks) building trust‑scoring or governance models atop the identity graph
+* **Validator implementers** running nodes that verify attestations, enforce time-bounds, and manage stakes  
+* **Smart-contract engineers** integrating on-chain logic for minting, slashing, and reward distribution  
+* **Security auditors & researchers** assessing Sybil-resistance, privacy guarantees, and economic soundness  
+* **Community architects** (DAOs, voting platforms, social networks) building trust-scoring or governance models atop the identity graph
 
-By adhering to this spec, all participants—regardless of implementation language or platform—will interoperate seamlessly, maintain strong Sybil defenses, and preserve user privacy, while leaving high‑level trust decisions flexible for downstream applications.
+By adhering to this spec, all participants—regardless of implementation language or platform—will interoperate seamlessly, maintain strong Sybil defenses, and preserve user privacy, while leaving high-level trust decisions flexible for downstream applications.
 
 ## **1.2 Scope**
 
-This specification defines the **protocol‑level** rules, message flows, data formats, and economic mechanisms required to create, validate, and manage Soul Bound identities on a distributed ledger. It covers:
+This specification defines the **protocol-level** rules, message flows, data formats, and economic mechanisms required to create, validate, and manage Soul Bound identities on a distributed ledger. It covers:
 
 * Core **message types** and their semantics (ChallengeRequest, SensorPackage, SponsorAttestation, MintRequest, ValidationResponse, RevocationRequest)  
 * **Actor state machines** for Candidate, Sponsor, Validator, and Ledger roles  
-* **Wire and on‑ledger schemas** (e.g. JSON‑Schema) for all protocol messages and records  
-* **Timing & anti‑replay controls**, including signed timestamps, nonces, and optional verifiable‑delay functions  
-* **Economic mechanisms**: identity‑mint stakes, sponsor stakes, validator bonds, slashing, fees, and reward distribution  
-* **Privacy guarantees** via zero‑knowledge proofs and hashed sensor data  
-* **Decoupled trust semantics** – how external applications or DAOs may interpret the public identity graph
+* **Wire and on-ledger schemas** (e.g. JSON-Schema) for all protocol messages and records  
+* **Timing & anti-replay controls**, including signed timestamps, nonces, and optional verifiable-delay functions  
+* **Economic mechanisms**: identity-mint stakes, sponsor stakes, validator bonds, slashing, fees, and reward distribution  
+* **Privacy guarantees** via zero-knowledge proofs and hashed sensor data  
+* **Decoupled trust semantics**—how external applications or DAOs may interpret the public identity graph
 
 Out of scope for this document:
 
 * **User interface** or UX design for client applications  
-* **Hardware security module** (HSM) or secure‑element implementation details  
-* **Off‑chain trust & reputation algorithms** beyond the public graph interface  
-* **Formal machine‑checked models** (e.g. TLA⁺, Alloy) – see Section 12 for reference, if desired  
-* **Specific blockchain deployment** details (network parameters, gas costs, layer‑2 integrations)
+* **Hardware security module** (HSM) or secure-element implementation details  
+* **Off-chain trust & reputation algorithms** beyond the public graph interface  
+* **Formal machine-checked models** (e.g. TLA⁺, Alloy) – see Section 12 for reference, if desired  
+* **Specific blockchain deployment** details (network parameters, gas costs, layer-2 integrations)
 
 ## **1.3 Design Goals**
 
 The Soul Bound Protocol is architected to achieve the following core objectives:
 
 * **Sybil resistance**  
-  Ensure each identity corresponds to a unique, real-world individual by requiring in‑person, multi‑sensor verification and economically-backed sponsorships.  
-* **Privacy (zero‑knowledge)**  
-  Protect sensitive biometric and sensor data using hashed inputs and zero‑knowledge proofs so that verifiers can confirm authenticity without learning raw personal data.  
+  Ensure each identity corresponds to a unique, real-world individual by requiring in-person, multi-sensor verification and economically-backed sponsorships.  
+* **Privacy (zero-knowledge)**  
+  Protect sensitive biometric and sensor data using hashed inputs and zero-knowledge proofs so that verifiers can confirm authenticity without learning raw personal data.  
 * **Interoperability (protocol ≠ software)**  
   Define a clear, implementation-agnostic protocol specification that allows diverse client, validator, and ledger software to interoperate seamlessly.  
 * **Extensibility (decoupled trust semantics)**  
@@ -63,7 +62,7 @@ The Soul Bound Protocol is architected to achieve the following core objectives:
 * **Secure Key Storage**  
   Each participant's device securely holds its private keys and protects them from extraction or tampering (e.g., via Secure Enclave or equivalent).  
 * **Reliable Sensor Hardware**  
-  Mobile devices provide accurate, tamper‑resistant sensor readings (NFC, accelerometer, microphone, GPS, light) and cryptographically sign hashed outputs.  
+  Mobile devices provide accurate, tamper-resistant sensor readings (NFC, accelerometer, microphone, GPS, light) and cryptographically sign hashed outputs.  
 * **Synchronized Time Base**  
   All parties reference a shared notion of time—either via blockchain block heights or loosely synchronized clocks—within an acceptable skew (ΔT).  
 * **Permissionless Ledger**  
@@ -78,7 +77,7 @@ The Soul Bound Protocol is architected to achieve the following core objectives:
 #### **Adversary Goals**
 
 * **Sybil Creation**: Generate a large number of fake or duplicate identities to subvert decentralized governance or reputation systems.  
-* **Data Forgery**: Spoof or replay sensor data to simulate a legitimate in‑person verification.  
+* **Data Forgery**: Spoof or replay sensor data to simulate a legitimate in-person verification.  
 * **Stake Grinding**: Abuse staking mechanics (e.g., repeatedly minting and slashing to extract fees).  
 * **Privacy Violation**: Attempt to learn raw biometric or sensor data from attestations.  
 * **Consensus Attack**: Collude validators to approve fraudulent MintRequests or block honest ones.
@@ -93,7 +92,7 @@ The Soul Bound Protocol is architected to achieve the following core objectives:
 
 #### **Attack Vectors**
 
-* **Sensor Spoofing & Replay**: Injecting recorded sensor hashes or simulated multi‑sensor traces.  
+* **Sensor Spoofing & Replay**: Injecting recorded sensor hashes or simulated multi-sensor traces.  
 * **Message Replay**: Reusing old ChallengeRequest, SensorPackage, or SponsorAttestation messages.  
 * **Staking Abuse**: Minting identities en masse, awaiting slashing window to lapse, then releasing stakes.  
 * **Collusion & Bribery**: Coordinated behavior among sponsors and validators to approve sybil identities.  
@@ -101,24 +100,24 @@ The Soul Bound Protocol is architected to achieve the following core objectives:
 
 #### **Mitigations (Refer to Later Sections)**
 
-* **Multi‑Sensor Fusion & Anomaly Detection** (Section 4\)  
+* **Multi-Sensor Fusion & Anomaly Detection** (Section 4\)  
 * **Signed Timestamps & Nonces** (Section 7\)  
-* **m‑of‑n Validator Quorum** (Section 5\)  
+* **m-of-n Validator Quorum** (Section 5\)  
 * **Slashing Conditions & Economic Disincentives** (Section 8\)  
-* **Zero‑Knowledge Proofs & Hashed Data** (Section 4.2)
+* **Zero-Knowledge Proofs & Hashed Data** (Section 4.2)
 
 # **2\. Actors, Terminology & Notation**
 
 ## **2.1 Roles**
 
 * **Candidate**  
-  A person (or device) requesting a new Soul Bound identity. The Candidate generates a key pair and participates in an in‑person verification with a Sponsor.  
+  A person (or device) requesting a new Soul Bound identity. The Candidate generates a key pair and participates in an in-person verification with a Sponsor.  
 * **Sponsor**  
-  An existing identity vouching for the Candidate. The Sponsor meets the Candidate face‑to‑face, co‑collects sensor data, and signs an attestation that the Candidate is a unique, real person.  
+  An existing identity vouching for the Candidate. The Sponsor meets the Candidate face-to-face, co-collects sensor data, and signs an attestation that the Candidate is a unique, real person.  
 * **Validator**  
-  A network node (or set of nodes) that checks submitted attestations, cryptographic proofs, and stake requirements. Validators run the consensus logic (e.g. m‑of‑n threshold) to approve or reject new identities.  
+  A network node (or set of nodes) that checks submitted attestations, cryptographic proofs, and stake requirements. Validators run the consensus logic (e.g. m-of-n threshold) to approve or reject new identities.  
 * **Ledger**  
-  A decentralized, append‑only storage (e.g. blockchain) that records identity‑minting transactions, sponsorship relationships, slashing events, and reward distributions. The Ledger provides a shared time‑anchor (block height or timestamp) and enforces on‑chain economic rules.
+  A decentralized, append-only storage (e.g. blockchain) that records identity-minting transactions, sponsorship relationships, slashing events, and reward distributions. The Ledger provides a shared time-anchor (block height or timestamp) and enforces on-chain economic rules.
 
 ## **2.2 Data Types & Identifiers**
 
@@ -130,39 +129,39 @@ The Soul Bound Protocol is architected to achieve the following core objectives:
   * `sessionId` (UUID): Uniquely identifies one verification session between a Candidate and Sponsor.  
 * **Timestamps & Block Heights**  
   * `timestamp` (Unix epoch): Signed by actors to prove message freshness.  
-  * `blockHeight`: The height of the blockchain at the time of on‑chain events; used for protocol time bounds.  
+  * `blockHeight`: The height of the blockchain at the time of on-chain events; used for protocol time bounds.  
 * **Stake Amounts**  
   * `S_mint`, `S_endorse`: Token quantities locked by Candidate or Sponsor when minting or endorsing an identity.  
 * **Hashes & Proofs**  
-  * `H(data)`: Cryptographic hash (e.g., SHA‑256) of `data`.  
-  * `zkProof`: Zero‑knowledge proof object, attesting that a verification step occurred without revealing raw data.
+  * `H(data)`: Cryptographic hash (e.g., SHA-256) of `data`.  
+  * `zkProof`: Zero-knowledge proof object, attesting that a verification step occurred without revealing raw data.
 
 ## **2.3 Cryptographic Primitives & Notational Conventions**
 
 * **Hash Function**  
-  * `H(m)`: Collision‑resistant hash of message `m`.  
+  * `H(m)`: Collision-resistant hash of message `m`.  
 * **Digital Signatures**  
   * `Sig_X(m)`: Signature by actor X over message `m` using `SK_X`.  
   * Verification: `Verify(PK_X, m, Sig_X(m)) → true|false`.  
-* **Multi‑Signature / Threshold**  
-  * `m‑of‑n`: At least `m` signatures required out of `n` validators.  
+* **Multi-Signature / Threshold**  
+  * `m-of-n`: At least `m` signatures required out of `n` validators.  
   * Represented as an array of validator signatures on the same payload.  
-* **Zero‑Knowledge Proofs**  
+* **Zero-Knowledge Proofs**  
   * `ZKProof{stmts, witness}`: A proof that the prover knows a `witness` satisfying statements `stmts` without revealing `witness`.  
 * **Notation**  
   * `∥`: Concatenation operator.  
-  * JSON‑Schema snippets use `"type": "string"`, `"format": "uuid"`, etc.  
+  * JSON-Schema snippets use `"type": "string"`, `"format": "uuid"`, etc.  
   * All protocol messages include a `"type"` field and the actor's signature over the entire JSON payload.
 
-**Note:** All cryptographic operations must follow industry‑standard algorithms (e.g., ECDSA/secp256k1 or Ed25519 for signatures; SHA‑256 for hashing; Bulletproofs or zk‑SNARKs for zero‑knowledge).
+**Note:** All cryptographic operations must follow industry-standard algorithms (e.g., ECDSA/secp256k1 or Ed25519 for signatures; SHA-256 for hashing; Bulletproofs or zk-SNARKs for zero-knowledge).
 
 # **3\. Protocol Overview**
 
-## **3.1 High‑Level Sequence Diagram**
+## **3.1 High-Level Sequence Diagram**
 
 [sequence diagram to be added later]
 
-## **3.2 End‑to‑End Flow Summary**
+## **3.2 End-to-End Flow Summary**
 
 Below is a concise summary of the full identity issuance workflow:
 
@@ -171,7 +170,7 @@ Below is a concise summary of the full identity issuance workflow:
    * Sponsor issues a signed challenge (sessionId, timestamp, nonce).  
 2. **SensorPackage**  
    * Candidate ↔ Sponsor  
-   * Both devices gather multi‑sensor hashes (NFC, accelerometer, audio, etc.) and exchange signed packages.  
+   * Both devices gather multi-sensor hashes (NFC, accelerometer, audio, etc.) and exchange signed packages.  
 3. **SponsorAttestation**  
    * Sponsor → Candidate  
    * Sponsor verifies sensor hashes and biometric checks, then signs an attestation.  
@@ -180,27 +179,28 @@ Below is a concise summary of the full identity issuance workflow:
    * Candidate assembles the signed attestations, ZK proof, and stake into a MintRequest.  
 5. **ValidationResponse**  
    * Validators → Candidate & Sponsor  
-   * A decentralized quorum (m‑of‑n) independently verifies proofs, stakes, and timestamps, then returns "approved" or "rejected."  
-6. **On‑Chain Minting**  
+   * A decentralized quorum (m-of-n) independently verifies proofs, stakes, and timestamps, then returns "approved" or "rejected."  
+6. **On-Chain Minting**  
    * Ledger commits the new Soul Bound identity token when the required approvals are reached.
 
-## **3.3 Timing & Freshness Controls (timestamps, block‑heights)**
+## **3.3 Timing & Freshness Controls (timestamps, block-heights)**
 
 To prevent replay attacks and ensure data freshness, the protocol mandates:
 
 * **Signed Timestamps**  
   * Every message carries a `timestamp` (Unix epoch) signed by the sender.  
   * Validators reject messages where `|now – timestamp| > ΔT` (configurable clock skew).  
-* **Block‑Height Anchoring**  
-  * On‑chain actions (MintRequest submission, slashing window expiry) reference `blockHeight`.  
-  * Validators and smart contracts enforce windows like "must submit within N blocks of challenge."  
+* **Block-Height Anchoring**  
+  * On-chain actions (MintRequest submission, slashing window expiry) reference `blockHeight`.  
+  * Validators and smart contracts enforce windows like "submit within N blocks of challenge"  
+    or "unlock stake after M blocks of no revocation."  
 * **Session Nonces & IDs**  
   * Each verification session uses a unique `sessionId` (UUID) and challenge `nonce` to bind messages together.  
-  * Replayed or out‑of‑order messages are detected and dropped.  
-* **Optional Verifiable‑Delay Functions**  
+  * Replayed or out-of-order messages are detected and dropped.  
+* **Optional Verifiable-Delay Functions**  
   * Where strict minimum wait times are required, participants may supply a VDF output to prove elapsed time without trusting local clocks.
 
-These controls ensure that every step of the protocol is both timely and tamper‑evident, making spoofing or replay economically and technically infeasible.
+These controls ensure that every step of the protocol is both timely and tamper-evident, making spoofing or replay economically and technically infeasible.
 
 # **4\. Message Types & Semantics**
 
@@ -209,7 +209,7 @@ This section defines the core protocol messages, their senders, purposes, requir
 ## **4.1 ChallengeRequest**
 
 * **Sender:** Sponsor → Candidate  
-* **Purpose:** Kick off a fresh in‑person verification session and bind the exchange to a unique session.  
+* **Purpose:** Kick off a fresh in-person verification session and bind the exchange to a unique session.  
 * **Fields:**  
   * `type`: `"ChallengeRequest"`  
   * `sponsorPubKey`: Public key of the Sponsor  
@@ -223,7 +223,7 @@ This section defines the core protocol messages, their senders, purposes, requir
 ## **4.2 SensorPackage**
 
 * **Sender:** Candidate → Sponsor  
-* **Purpose:** Exchange multi‑sensor hashes to prove co‑location and motion.  
+* **Purpose:** Exchange multi-sensor hashes to prove co-location and motion.  
 * **Fields:**  
   * `type`: `"SensorPackage"`  
   * `sessionId`: UUID (from ChallengeRequest)  
@@ -239,7 +239,7 @@ This section defines the core protocol messages, their senders, purposes, requir
 ## **4.3 SponsorAttestation**
 
 * **Sender:** Sponsor → Candidate (and later to Validators)  
-* **Purpose:** Formally vouch that the in‑person sensor checks and biometrics passed.  
+* **Purpose:** Formally vouch that the in-person sensor checks and biometrics passed.  
 * **Fields:**  
   * `type`: `"SponsorAttestation"`  
   * `sessionId`: UUID  
@@ -253,7 +253,7 @@ This section defines the core protocol messages, their senders, purposes, requir
 ## **4.4 MintRequest**
 
 * **Sender:** Candidate → Validator(s) → Ledger  
-* **Purpose:** Propose creation of a new Soul Bound identity on‑chain.  
+* **Purpose:** Propose creation of a new Soul Bound identity on-chain.  
 * **Fields:**  
   * `type`: `"MintRequest"`  
   * `identityPubKey`: Candidate's newly generated public key  
@@ -261,11 +261,11 @@ This section defines the core protocol messages, their senders, purposes, requir
   * `candidateSig`: Signature over attestation bundle using Candidate's private key  
   * `sponsorSig`: Sponsor's attestation signature  
   * `stake`: Amount of tokens staked for minting (≥ S_mint)  
-  * `zkProof`: Zero‑knowledge proof of correct sensor checks without revealing raw data  
+  * `zkProof`: Zero-knowledge proof of correct sensor checks without revealing raw data  
   * `timestamp` or `blockHeight`: For freshness check  
 * **Semantics:**  
   * Validators reject if `stake` is insufficient or proofs/timestamps invalid.  
-  * On m‑of‑n approvals, the Ledger commits the new identity token.
+  * On m-of-n approvals, the Ledger commits the new identity token.
 
 ## **4.5 ValidationResponse**
 
@@ -276,11 +276,11 @@ This section defines the core protocol messages, their senders, purposes, requir
   * `sessionId`: UUID  
   * `validatorPubKey`: Validator's public key  
   * `status`: `"approved"` or `"rejected"`  
-  * `reason` (optional): Human‑readable code or message on rejection  
+  * `reason` (optional): Human-readable code or message on rejection  
   * `validatorSig`: Signature over `sessionId∥status∥reason∥timestamp`  
   * `timestamp`: Unix epoch or block height  
 * **Semantics:**  
-  * Candidate/Sponsor track responses until quorum (m‑of‑n) is reached.  
+  * Candidate/Sponsor track responses until quorum (m-of-n) is reached.  
   * If majority "approved," minting proceeds; else session fails.
 
 ## **4.6 RevocationRequest**
@@ -296,7 +296,7 @@ This section defines the core protocol messages, their senders, purposes, requir
   * `timestamp`: Unix epoch or blockHeight  
   * `revokerSig`: Signature over all fields  
 * **Semantics:**  
-  * Validators evaluate evidence; approved revocation triggers slashing and mark identity as revoked on‑chain.
+  * Validators evaluate evidence; approved revocation triggers slashing and mark identity as revoked on-chain.
 
 ## **4.7 RewardDistribution / SlashNotification**
 
@@ -307,11 +307,11 @@ This section defines the core protocol messages, their senders, purposes, requir
   * `recipientPubKey`: Public key of beneficiary or slashed party  
   * `amount`: Token quantity rewarded or slashed  
   * `source`: Origin of funds (e.g., slashed pool, mint fees)  
-  * `reason`: Context (e.g., "mint‑reward", "revocation‑slash")  
+  * `reason`: Context (e.g., "mint-reward", "revocation-slash")  
   * `timestamp`/`blockHeight`  
-  * `contractSig`: Smart‑contract attestation of the event  
+  * `contractSig`: Smart-contract attestation of the event  
 * **Semantics:**  
-  * Automatic, on‑chain execution of reward/slash logic based on configured parameters.  
+  * Automatic, on-chain execution of reward/slash logic based on configured parameters.  
   * Events are recorded in the Ledger for auditing and downstream trust scoring.
 
 # **5\. Actor State Machines**
@@ -350,7 +350,7 @@ This section describes each participant's internal state machine, listing states
 
 **Notes**
 
-* On **DONE**, the Candidate's identity is live on‑chain.  
+* On **DONE**, the Candidate's identity is live on-chain.  
 * On **FAILED**, any staked tokens may be forfeited per slashing rules.
 
 ## **5.2 Sponsor State Machine (IDLE → COMPLETED/ABORTED)**
@@ -408,7 +408,7 @@ This section describes each participant's internal state machine, listing states
 3. **VOTE → COMMIT**  
    * Trigger: Validator signs and broadcasts `ValidationResponse(status="approved")`.  
 4. **COMMIT → IDLE**  
-   * Trigger: After observing a quorum of m "approved" responses, optionally submit the on‑chain transaction to the Ledger, then return to **IDLE**.
+   * Trigger: After observing a quorum of m "approved" responses, optionally submit the on-chain transaction to the Ledger, then return to **IDLE**.
 
 **Notes**
 
@@ -427,9 +427,9 @@ This section describes each participant's internal state machine, listing states
 **Transitions**
 
 1. **WAIT_TX → ACCEPT**  
-   * Trigger: Receipt of a valid on‑chain Mint transaction with ≥ m approvals and sufficient stake.  
+   * Trigger: Receipt of a valid on-chain Mint transaction with ≥ m approvals and sufficient stake.  
 2. **WAIT_TX → REJECT**  
-   * Trigger: Receipt of a transaction explicitly marked invalid by smart‑contract logic (e.g., insufficient stake).  
+   * Trigger: Receipt of a transaction explicitly marked invalid by smart-contract logic (e.g., insufficient stake).  
 3. **ACCEPT → UPDATE_GRAPH**  
    * Trigger: Block confirmation. Action:  
      * Add new identity node (`identityPubKey`)  
@@ -447,11 +447,11 @@ This section describes each participant's internal state machine, listing states
 
 # **6\. Data Formats & Schemas**
 
-This section specifies the machine‑readable schemas for all protocol messages and ledger records, plus some full‑payload examples.
+This section specifies the machine-readable schemas for all protocol messages and ledger records, plus some full-payload examples.
 
-## **6.1 Wire Formats (JSON‑Schema)**
+## **6.1 Wire Formats (JSON-Schema)**
 
-All off‑chain protocol messages exchanged peer‑to‑peer or via RPC MUST conform to the JSON‑Schema definitions in:
+All off-chain protocol messages exchanged peer-to-peer or via RPC MUST conform to the JSON-Schema definitions in:
 
 {  
   "$schema": "http://json-schema.org/draft-07/schema#",  
@@ -561,13 +561,13 @@ All off‑chain protocol messages exchanged peer‑to‑peer or via RPC MUST con
   }  
 }
 
-## **6.2 On‑Ledger Record Structures**
+## **6.2 On-Ledger Record Structures**
 
-All on‑chain transactions and stored records (identity nodes, edges, slashes, rewards) MUST follow the JSON‑Schema in:
+All on-chain transactions and stored records (identity nodes, edges, slashes, rewards) MUST follow the JSON-Schema in:
 
 {  
   "$schema": "http://json-schema.org/draft-07/schema#",  
-  "title": "SoulBound On‑Ledger Record Structures",  
+  "title": "SoulBound On-Ledger Record Structures",  
   "definitions": {  
     "IdentityRecord": {  
       "type": "object",  
@@ -695,34 +695,34 @@ To see concrete payloads for each message type, consult:
   }  
 }
 
-# **7\. Timing & Anti‑Replay Mechanisms**
+# **7\. Timing & Anti-Replay Mechanisms**
 
-To guarantee message freshness and prevent replay attacks, the protocol mandates unforgeable, verifiable time‑ and order‑proofs on every step—both off‑chain and on‑chain.
+To guarantee message freshness and prevent replay attacks, the protocol mandates unforgeable, verifiable time- and order-proofs on every step—both off-chain and on-chain.
 
 ## **7.1 Signed Timestamps & Block Heights**
 
-* **Off‑chain messages**  
+* **Off-chain messages**  
   * Every protocol message (ChallengeRequest, SensorPackage, etc.) carries a  
     `timestamp` (Unix epoch) signed by the sender.  
   * Validators reject messages when  
     `|localTime – timestamp| > ΔT` (configurable skew, e.g. ±2 minutes).  
-* **On‑chain transactions**  
+* **On-chain transactions**  
   * MintRequests, RevocationRequests and staking operations reference  
     `blockHeight` as the time anchor.  
   * Smart contracts enforce windows like "submit within N blocks of challenge"  
     or "unlock stake after M blocks of no revocation."  
 * **Freshness guarantees**  
   * Signatures bind the timestamp or blockHeight into the signed payload.  
-  * Any outdated or future‑dated message is automatically invalid.
+  * Any outdated or future-dated message is automatically invalid.
 
 ## **7.2 Nonces & Sequence Numbers**
 
 * **Session nonces**  
-  * Each ChallengeRequest includes a cryptographic `nonce` (random bit‑string)  
+  * Each ChallengeRequest includes a cryptographic `nonce` (random bit-string)  
     that ties all subsequent messages in that session together.  
   * Validators track used nonces to reject duplicates or replays.  
 * **Sequence numbers**  
-  * For multi‑step exchanges, messages may carry a small integer `sequence`  
+  * For multi-step exchanges, messages may carry a small integer `sequence`  
     (1, 2, 3…) to enforce correct ordering.  
   * Replay or reordering (e.g. sending "SponsorAttestation" before "SensorPackage")  
     is detected and dropped.  
@@ -733,7 +733,7 @@ To guarantee message freshness and prevent replay attacks, the protocol mandates
 ## **7.3 Verifiable Delay Functions (optional)**
 
 * **Purpose**  
-  * Enforce a minimum elapsed time without trusting local clocks (e.g., a "cool‑off"  
+  * Enforce a minimum elapsed time without trusting local clocks (e.g., a "cool-off"  
     between mint and transfer of stake).  
 * **How it works**  
   * Prover computes a VDF output `vdfOut` over a public input and difficulty parameter.  
@@ -744,19 +744,19 @@ To guarantee message freshness and prevent replay attacks, the protocol mandates
     mandatory delay is required.  
   * Validators reject submissions lacking a valid, timely VDF proof.
 
-These combined mechanisms ensure every action in the protocol is fresh, ordered, and tamper‑evident—making replay or preplay attacks economically and technically infeasible.
+These combined mechanisms ensure every action in the protocol is fresh, ordered, and tamper-evident—making replay or preplay attacks economically and technically infeasible.
 
 # **8\. Economic Mechanisms**
 
-To align participant incentives and deter abuse, Soul Bound embeds token‑based economic security at every stage of identity issuance and maintenance. This section describes configurable staking, fee, slashing, and reward schemes.
+To align participant incentives and deter abuse, Soul Bound embeds token-based economic security at every stage of identity issuance and maintenance. This section describes configurable staking, fee, slashing, and reward schemes.
 
-## **8.1 Identity‑Minting Stakes & Fees**
+## **8.1 Identity-Minting Stakes & Fees**
 
 * **Stake Requirement (`S_mint`)**  
   * Before submitting a `MintRequest`, the Candidate or their Sponsor must lock up at least `S_mint` tokens.  
   * Ensures real economic cost to create a new identity.  
 * **Minting Fee**  
-  * A small, non‑refundable portion of `S_mint` is immediately deducted and sent to a fee pool for validators.  
+  * A small, non-refundable portion of `S_mint` is immediately deducted and sent to a fee pool for validators.  
   * Discourages frivolous or automated mint attempts.  
 * **Partial Refund / Reward**  
   * If the new identity survives a probation period (e.g. 90 days without revocation), the remaining stake is returned to the staker.  
@@ -764,7 +764,7 @@ To align participant incentives and deter abuse, Soul Bound embeds token‑based
 * **Slashing Condition**  
   * If the identity is later revoked for fraud, up to 100% of `S_mint` is forfeited (burned or redistributed per policy).
 
-## **8.2 Sponsor‑Endorsement Stakes & Slashing**
+## **8.2 Sponsor-Endorsement Stakes & Slashing**
 
 * **Endorsement Stake (`S_endorse`)**  
   * Each time a Sponsor vouches for a Candidate, they must lock `S_endorse` tokens.  
@@ -788,15 +788,15 @@ To align participant incentives and deter abuse, Soul Bound embeds token‑based
   * Validators that equivocate or fail to participate can be slashed on part of their bond.  
   * Encourages reliable, honest operation.
 
-## **8.4 Performance‑Based & Spend‑and‑Earn Models**
+## **8.4 Performance-Based & Spend-and-Earn Models**
 
-* **Performance‑Based Rewards**  
-  * Encourage high‑quality behavior by rewarding participants for verifiable contributions (e.g., sponsoring identities that survive probation, validating attestations reliably).  
+* **Performance-Based Rewards**  
+  * Encourage high-quality behavior by rewarding participants for verifiable contributions (e.g., sponsoring identities that survive probation, validating attestations reliably).  
   * Rewards scale with performance metrics, not volume of referrals.  
-* **Spend‑and‑Earn**  
+* **Spend-and-Earn**  
   * Key actions (minting, endorsing, validating) require an upfront cost or bond.  
   * Only if the action yields a positive network outcome does the actor recoup more tokens than they spent.  
-  * Prevents free‑riding and aligns token outflows with genuine work.
+  * Prevents free-riding and aligns token outflows with genuine work.
 
 ## **8.5 Tiered Staking & Reputation Discounts**
 
@@ -806,14 +806,14 @@ To align participant incentives and deter abuse, Soul Bound embeds token‑based
   * Define discrete tiers (e.g., Bronze, Silver, Gold) with progressively lower stake requirements.  
   * Actors automatically unlock higher tiers as their reputation crosses thresholds.  
 * **Dynamic Stake Adjustments**  
-  * High‑reputation Sponsors may pay a discounted `S_endorse`.  
+  * High-reputation Sponsors may pay a discounted `S_endorse`.  
   * Trusted Validators can reduce their `V_bond` requirements.  
-  * New or low‑reputation actors face higher stakes to deter risk.
+  * New or low-reputation actors face higher stakes to deter risk.
 
 ---
 
 **Parameterization & Governance:**  
-All economic parameters (`S_mint`, `S_endorse`, `V_bond`, fee fractions, reward rates, probation periods) should be configurable via on‑chain governance or decentralized parameter proposals, allowing the community to adjust incentives as the network evolves.
+All economic parameters (`S_mint`, `S_endorse`, `V_bond`, fee fractions, reward rates, probation periods) should be configurable via on-chain governance or decentralized parameter proposals, allowing the community to adjust incentives as the network evolves.
 
 # **9\. Security Properties & Invariants**
 
@@ -821,30 +821,30 @@ This section states the core security guarantees and invariants that any Soul Bo
 
 ## **9.1 Unforgeability of Attestations**
 
-* **Invariant:** No party (malicious client, network adversary) can produce a valid `SponsorAttestation` or `SensorPackage` without physically co‑locating two devices and holding the correct private keys.  
+* **Invariant:** No party (malicious client, network adversary) can produce a valid `SponsorAttestation` or `SensorPackage` without physically co-locating two devices and holding the correct private keys.  
 * **Mechanisms:**  
   * All sensor hashes and session nonces are included in signatures by Candidate and Sponsor.  
   * Validators reject any attestation whose signature fails verification or whose hashes do not match recorded sensor proofs.
 
 ## **9.2 Freshness & Liveness Guarantees**
 
-* **Invariant:** Every protocol step must occur within its configured time window; no stale or future‑dated messages are accepted.  
+* **Invariant:** Every protocol step must occur within its configured time window; no stale or future-dated messages are accepted.  
 * **Mechanisms:**  
-  * Off‑chain messages include signed timestamps; on‑chain actions reference block heights.  
+  * Off-chain messages include signed timestamps; on-chain actions reference block heights.  
   * Validators enforce `|localTime − timestamp| ≤ ΔT` and "submit within N blocks" constraints.  
   * Nonces and sequence numbers prohibit replay or reordering of messages.
 
-## **9.3 Sybil‑Resistance Bounds**
+## **9.3 Sybil-Resistance Bounds**
 
 * **Invariant:** The cost (physical effort + economic stake) to create N identities grows at least linearly in N, making large-scale Sybil attacks economically irrational.  
 * **Mechanisms:**  
-  * Real‑world in‑person verification cannot be parallelized at zero marginal cost.  
+  * Real-world in-person verification cannot be parallelized at zero marginal cost.  
   * Token stakes (`S_mint`, `S_endorse`) and slashing penalties ensure each new identity carries a significant financial risk.  
-  * Graph‑analysis tools and anomaly detection flag unusual sponsorship patterns.
+  * Graph-analysis tools and anomaly detection flag unusual sponsorship patterns.
 
-## **9.4 Privacy: ZK‑Proof Guarantees**
+## **9.4 Privacy: ZK-Proof Guarantees**
 
-* **Invariant:** No raw biometric or environmental sensor data is revealed on‑chain or to validators; only zero‑knowledge proofs and hashes are published.  
+* **Invariant:** No raw biometric or environmental sensor data is revealed on-chain or to validators; only zero-knowledge proofs and hashes are published.  
 * **Mechanisms:**  
   * ZK proofs attest that the protocol steps (e.g. matching hashes) were executed correctly, without leaking underlying data.  
   * Sensor packages carry only hashes of data; all proofs bind these hashes cryptographically.
@@ -861,9 +861,9 @@ This section states the core security guarantees and invariants that any Soul Bo
 
 **Global Invariants:**
 
-* No two active identities share the same human anchor (enforced by on‑chain uniqueness checks).  
-* Total supply of Soul Bound stakes/tokens evolves only via protocol‑approved mint, burn, and reward events.  
-* Every on‑chain record (mint, revocation, reward, slash) is cryptographically linked to its originating messages and signatures.
+* No two active identities share the same human anchor (enforced by on-chain uniqueness checks).  
+* Total supply of Soul Bound stakes/tokens evolves only via protocol-approved mint, burn, and reward events.  
+* Every on-chain record (mint, revocation, reward, slash) is cryptographically linked to its originating messages and signatures.
 
 # **10\. Failure Modes & Error Handling**
 
@@ -881,7 +881,7 @@ This section enumerates expected error conditions, how each actor should detect 
   * Sponsor may incur a small reputational penalty but no stake is at risk.  
 * **SponsorAttestation → MintRequest**  
   * If the Candidate does not submit `MintRequest` within Δ₃ (blocks or time), the session is abandoned.  
-  * Any reserved UI/session resources are released; no on‑chain stake has been locked yet.  
+  * Any reserved UI/session resources are released; no on-chain stake has been locked yet.  
 * **Awaiting ValidationResponse**  
   * If quorum is not reached before a cutoff (e.g. N blocks), Candidate/Sponsor treat the session as **FAILED**.  
   * If stake was locked, Candidate may reclaim or forfeit it based on policy (see economic rules).
@@ -911,31 +911,31 @@ This section enumerates expected error conditions, how each actor should detect 
 
 * **Nonce/Subsession Reuse**  
   * Each `sessionId` + `nonce` pair may be used only once.  
-  * Actors maintain a short‑term cache of seen nonces.  
+  * Actors maintain a short-term cache of seen nonces.  
   * Any message with a previously seen combination is dropped and logged as a replay attempt.  
-* **Out‑of‑Order Messages**  
+* **Out-of-Order Messages**  
   * Sequence numbers enforce ordering.  
   * Receiving a message with `sequence` lower than expected triggers a reject.  
-* **Duplicate On‑Chain Requests**  
+* **Duplicate On-Chain Requests**  
   * LEDsger ensures idempotency: duplicate `MintRequest` or `RevocationRequest` with the same sessionId or txHash is ignored or returns the original result.
 
 ## **10.5 Misbehaving Validators / Sponsors**
 
 * **Equivocation by Validators**  
-  * If a Validator signs conflicting `ValidationResponse` for the same `sessionId`, that Validator's bond (`V_bond`) is slashed for double‑voting.  
-* **Censorship or Non‑Participation**  
+  * If a Validator signs conflicting `ValidationResponse` for the same `sessionId`, that Validator's bond (`V_bond`) is slashed for double-voting.  
+* **Censorship or Non-Participation**  
   * Validators that repeatedly fail to vote or respond within time windows can lose reputation and be slashed per governance policy.  
 * **Malicious Sponsorship**  
   * If a Sponsor is found to have endorsed multiple revoked identities, their cumulative stake may be slashed and reputation score reduced or banned.  
 * **Appeals & Dispute Resolution**  
-  * Implementations MAY provide an on‑chain or off‑chain appeal mechanism within a time window before slashing is executed.  
+  * Implementations MAY provide an on-chain or off-chain appeal mechanism within a time window before slashing is executed.  
   * Successful appeals restore slashed funds and reputation.
 
 ## **10.6 Error Reporting Conventions:**
 
 * Each rejection or abort SHOULD include:  
   * `errorCode` (e.g., `TIMEOUT`, `INVALID_SIG`, `INSUFFICIENT_STAKE`, `REPLAY_DETECTED`)  
-  * `description`: human‑readable explanation  
+  * `description`: human-readable explanation  
   * Optional `remediation`: guidance on how to correct and retry
 
 Handling these failure modes consistently ensures clear diagnostics, correct state cleanup, and proper economic enforcement across all implementations.
@@ -950,45 +950,45 @@ This section describes optional interfaces and hook points where applications, D
   * Read-only endpoints to fetch the public identity graph: nodes (identities), edges (sponsorships), stake and reputation metadata.  
   * Support filters (e.g. by depth, by timestamp range) and aggregate queries (e.g. degree centrality).  
 * **Policy SDK**  
-  * A language‑agnostic interface (e.g. JavaScript/TypeScript, Rust, Python) for writing "trust evaluators" that consume graph data and output a trust decision (boolean or score).  
+  * A language-agnostic interface (e.g. JavaScript/TypeScript, Rust, Python) for writing "trust evaluators" that consume graph data and output a trust decision (boolean or score).  
 * **Event Hooks**  
-  * Subscribe to on‑chain or off‑chain events (Mint, Revocation, Slash, Reward) and trigger custom workflows (e.g. notify a DAO, update an off‑chain reputation database).  
+  * Subscribe to on-chain or off-chain events (Mint, Revocation, Slash, Reward) and trigger custom workflows (e.g. notify a DAO, update an off-chain reputation database).  
 * **Decision Registry**  
   * A registry contract or distributed registry mapping policy identifiers to evaluator code hashes or endpoints, enabling applications to reference named policies.
 
-## **11.2 Reputation‑Scoring Plug‑ins**
+## **11.2 Reputation-Scoring Plug-ins**
 
 * **Metric Definitions**  
   * Standard metrics (e.g. number of successful endorsements, average endorsement depth, validator accuracy) exposed in the graph metadata.  
 * **Pluggable Scoring Algorithms**  
-  * Modules that consume raw metrics, apply weightings, thresholds, or machine‑learning models, and produce per‑identity reputation scores.  
-* **On‑Chain Reputation Anchors**  
+  * Modules that consume raw metrics, apply weightings, thresholds, or machine-learning models, and produce per-identity reputation scores.  
+* **On-Chain Reputation Anchors**  
   * Optional contracts to record a snapshot of computed reputation scores, so smart contracts or UIs can enforce minimum reputation requirements.  
 * **Reputation Refresh Policies**  
-  * Configurable refresh intervals or event‑driven updates (e.g. recalc scores after every 100 new blocks or after slashing events).
+  * Configurable refresh intervals or event-driven updates (e.g. recalc scores after every 100 new blocks or after slashing events).
 
-## **11.3 Optional KYC‑Bonded Pathways**
+## **11.3 Optional KYC-Bonded Pathways**
 
 * **KYC Bond Contract**  
-  * An opt‑in smart contract where users deposit a higher-value bond in exchange for "KYC‑verified" status.  
+  * An opt-in smart contract where users deposit a higher-value bond in exchange for "KYC-verified" status.  
   * Bonds are slashed on fraud or revoked identities under stricter governance rules.  
 * **Tiered Identity Flags**  
   * Extend the identity record with a flag (e.g. `kycStatus = "none"|"basic"|"enhanced").  
-  * Applications may require higher KYC tiers for sensitive functions (voting, high‑value transfers).  
+  * Applications may require higher KYC tiers for sensitive functions (voting, high-value transfers).  
 * **Privacy-Preserving KYC**  
-  * Use zero‑knowledge proofs to confirm KYC attestation without exposing raw personal data.  
-  * Store only proof commitments on‑chain; retain identity documents off‑chain under GDPR‑style controls.  
+  * Use zero-knowledge proofs to confirm KYC attestation without exposing raw personal data.  
+  * Store only proof commitments on-chain; retain identity documents off-chain under GDPR-style controls.  
 * **Bond Redemption & Appeals**  
-  * Define multi‑stage dispute resolution: appeals window before final slash, partial bond refund on successful appeal.
+  * Define multi-stage dispute resolution: appeals window before final slash, partial bond refund on successful appeal.
 
 ## **11.4 Custom Reward/Slashing Policies**
 
 * **Parameterized Slashing Rules**  
-  * Expose protocol parameters (slash fraction, probation window) to on‑chain governance so communities can adjust penalty severity.  
+  * Expose protocol parameters (slash fraction, probation window) to on-chain governance so communities can adjust penalty severity.  
 * **Reward Curves**  
   * Define custom payout curves (linear, tiered, logarithmic) based on performance metrics (e.g. number of valid validations, identity survival time).  
 * **Treasury & Fee Allocation**  
-  * Hook points for routing portions of mint‑fees or slashed funds to community treasuries, development grants, or public goods.  
+  * Hook points for routing portions of mint-fees or slashed funds to community treasuries, development grants, or public goods.  
 * **Governance-Controlled Modules**  
   * Deploy policy contracts that implement `RewardDistributor` and `SlashController` interfaces; allow DAOs to vote on upgrades or parameter changes.
 
@@ -996,7 +996,7 @@ These extension points ensure that Soul Bound remains a lean, secure protocol co
 
 # **12\. Formal Model (Optional)**
 
-This section sketches a machine‑checked model of the Soul Bound Protocol, useful for rigorous verification of security and liveness properties. We describe a TLA⁺ or Alloy rendition at a high level. Implementers may use these patterns or adapt them to other tools (Tamarin, ProVerif, etc.).
+This section sketches a machine-checked model of the Soul Bound Protocol, useful for rigorous verification of security and liveness properties. We describe a TLA⁺ or Alloy rendition at a high level. Implementers may use these patterns or adapt them to other tools (Tamarin, ProVerif, etc.).
 
 ## **12.1 TLA⁺ or Alloy Model Overview**
 
@@ -1016,7 +1016,7 @@ This section sketches a machine‑checked model of the Soul Bound Protocol, usef
   1. `Candidates`: set of pending sessions, each with `(sessionId, nonce, state)`  
   2. `Identities`: set of issued identities with `(pubKey, sponsor, stake, status)`  
   3. `Validators`: map of validator nodes and their votes  
-  4. `Ledger`: sequence of committed on‑chain events  
+  4. `Ledger`: sequence of committed on-chain events  
   5. `Time`: abstract clock or block counter  
 * **Actions**  
   1. `BeginSession(c, s)`: Sponsor `s` issues `ChallengeRequest` to candidate `c`.  
@@ -1040,7 +1040,7 @@ This section sketches a machine‑checked model of the Soul Bound Protocol, usef
   * **EventualSlash:** If a valid revocation is submitted, the corresponding identity eventually transitions to `Revoked` and its stake is slashed.  
   * **QuorumTermination:** Given live validators, any `MintRequest` will gather m votes within bounded time.
 
-## **12.4 Model‑Checking Results**
+## **12.4 Model-Checking Results**
 
 * **Model Configuration:**  
   * Small-scale instance with 3 validators, m = 2, 2 candidate sessions.  
@@ -1048,13 +1048,13 @@ This section sketches a machine‑checked model of the Soul Bound Protocol, usef
 * **Findings:**  
   * **No Invariant Violations:** All safety invariants held across 10,000 TLC (or Alloy Analyzer) steps.  
   * **No Deadlocks:** Every session reached a terminal state.  
-  * **Counterexamples:** Model correctly flags attempts to reuse a nonce or submit under‑staked `MintRequest`.  
+  * **Counterexamples:** Model correctly flags attempts to reuse a nonce or submit under-staked `MintRequest`.  
 * **Next Steps:**  
   * Scale validator count and stake parameters to test more complex topologies.  
   * Extend the model to cover extensions (Reputation, KYC, custom slashing policies).  
   * Integrate adversarial behaviors (delayed messages, equivocation) for stress testing.
 
-**Note:** The full TLA⁺ and Alloy source files are maintained in the protocol's formal‑model repository for community review and continuous integration.
+**Note:** The full TLA⁺ and Alloy source files are maintained in the protocol's formal-model repository for community review and continuous integration.
 
 # **13\. Appendices**
 
@@ -1143,11 +1143,11 @@ This section sketches a machine‑checked model of the Soul Bound Protocol, usef
 * **Validator**  
   A network node that verifies attestations and stakes to approve or reject identity mints.  
 * **Ledger**  
-  The decentralized, append‑only storage (e.g., blockchain) recording identities, stakes, and slashes.  
+  The decentralized, append-only storage (e.g., blockchain) recording identities, stakes, and slashes.  
 * **Nonce**  
   A cryptographic number used once to prevent replay attacks within a session.  
 * **ZK Proof**  
-  A zero‑knowledge proof that attests correctness of a computation without revealing underlying data.  
+  A zero-knowledge proof that attests correctness of a computation without revealing underlying data.  
 * **Slashing**  
   The confiscation or burning of staked tokens when an identity or participant misbehaves.  
 * **Burn**  
@@ -1165,5 +1165,5 @@ This section sketches a machine‑checked model of the Soul Bound Protocol, usef
   Leslie Lamport et al. (2021)  
 * [A Survey on Sybil Attacks in Social Networks](https://doi.org/10.1007/s10207-009-0087-6)  
   George Danezis & Prateek Mittal (2009)  
-* [Zero‑Knowledge Proofs: From Theory to Practice](https://eprint.iacr.org/2018/046.pdf)  
-  Eli Ben‑Sasson & Alessandro Chiesa (2018)
+* [Zero-Knowledge Proofs: From Theory to Practice](https://eprint.iacr.org/2018/046.pdf)  
+  Eli Ben-Sasson & Alessandro Chiesa (2018)
