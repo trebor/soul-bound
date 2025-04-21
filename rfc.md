@@ -222,7 +222,7 @@ This section defines the core protocol messages, their senders, purposes, requir
 
 ## **4.2 SensorPackage**
 
-* **Sender:** Candidate → Sponsor  
+* **Sender:** Candidate ↔ Sponsor (bidirectional exchange)  
 * **Purpose:** Exchange multi-sensor hashes to prove co-location and motion.  
 * **Fields:**  
   * `type`: `"SensorPackage"`  
@@ -231,10 +231,12 @@ This section defines the core protocol messages, their senders, purposes, requir
   * `accelHash`: Hash of synchronized accelerometer data  
   * `nfcHash`: Hash of NFC proximity handshake  
   * `ambientHash`: Hash of ambient audio/light samples  
-  * `candidateSig`: Signature over concatenation of `sessionId∥accelHash∥nfcHash∥ambientHash∥nonce` using Candidate's private key  
+  * `senderSig`: Signature over concatenation of `sessionId∥accelHash∥nfcHash∥ambientHash∥nonce` using sender's private key  
 * **Semantics:**  
-  * Sponsor verifies sensor hashes match its own device readings.  
-  * Any discrepancy → Sponsor aborts session.
+  * Both parties exchange signed sensor packages containing hashes of their local sensor readings.  
+  * Each party verifies that the received hashes match their own device readings.  
+  * Any discrepancy → Session is aborted.  
+  * The exchange must complete within Δ₁ of the ChallengeRequest.
 
 ## **4.3 SponsorAttestation**
 
@@ -480,14 +482,14 @@ All off-chain protocol messages exchanged peer-to-peer or via RPC MUST conform t
     },
     "SensorPackage": {
       "type": "object",
-      "required": ["type","sessionId","accelHash","nfcHash","ambientHash","candidateSig"],
+      "required": ["type","sessionId","accelHash","nfcHash","ambientHash","senderSig"],
       "properties": {
         "type":         { "const": "SensorPackage" },
         "sessionId":    { "type": "string", "format": "uuid" },
         "accelHash":    { "type": "string" },
         "nfcHash":      { "type": "string" },
         "ambientHash":  { "type": "string" },
-        "candidateSig": { "type": "string" }
+        "senderSig":    { "type": "string" }
       }
     },
     "SponsorAttestation": {
@@ -637,7 +639,7 @@ To see concrete payloads for each message type, consult:
     "accelHash": "3f5d8e2a...",
     "nfcHash": "a1b2c3d4...",
     "ambientHash": "9f8e7d6c...",
-    "candidateSig": "3045022100..."
+    "senderSig": "3045022100..."
   },
   "SponsorAttestation": {
     "type": "SponsorAttestation",
