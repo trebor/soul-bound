@@ -759,11 +759,18 @@ To align participant incentives and deter abuse, Soul Bound embeds token-based e
 * **Minting Fee**  
   * A small, non-refundable portion of `S_mint` is immediately deducted and sent to a fee pool for validators.  
   * Discourages frivolous or automated mint attempts.  
-* **Partial Refund / Reward**  
-  * If the new identity survives a probation period (e.g. 90 days without revocation), the remaining stake is returned to the staker.  
-  * Optionally, a bonus reward is paid from the fee pool for "good" identities.  
-* **Slashing Condition**  
-  * If the identity is later revoked for fraud, up to 100% of `S_mint` is forfeited (burned or redistributed per policy).
+* **Refund & Reward Conditions**  
+  * If the new identity survives the probation period (defined in Section 13.1), the staker receives:  
+    * Full refund of remaining stake if no suspicious activity detected  
+    * Partial refund (50-75%) if minor anomalies detected but below revocation threshold  
+    * No refund if identity is revoked during probation  
+  * Additionally, a bonus reward (5-10% of original stake) is paid from the fee pool for identities that:  
+    * Complete probation without any anomalies  
+    * Maintain active participation in the network  
+    * Successfully sponsor other identities  
+* **Slashing Conditions**  
+  * If the identity is later revoked for fraud, up to 100% of `S_mint` is forfeited (burned or redistributed per policy).  
+  * The exact slash percentage depends on the severity of the fraud and the identity's history.
 
 ## **8.2 Sponsor-Endorsement Stakes & Slashing**
 
