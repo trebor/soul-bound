@@ -2,12 +2,24 @@
 
 ## **1.1 Purpose & Audience**
 
-This document defines the **Soul Bound Protocol**, a decentralized, privacy-preserving framework for creating Sybil-resistant digital identities anchored in real-world, in-person verification events. By treating Soul Bound as a *protocol* rather than a single software product, we enable multiple interoperable implementations to:
+This document defines the **Soul Bound Protocol**, a decentralized, privacy-preserving framework for creating digital identities that are strongly anchored to real-world, in-person verification events. By treating Soul Bound as a *protocol* rather than a single software product, we enable multiple interoperable implementations to:
 
 * Generate and manage non-transferable identity tokens on a distributed ledger  
 * Record sponsorship and reputation stakes in a standardized, auditable format  
 * Decouple "trust semantics" (how applications interpret the identity graph) from the core verification mechanics  
 * Embed economic incentives (staking, slashing, performance rewards) to align honest behavior and deter fraud
+
+The protocol is designed to make it economically and practically infeasible to create fraudulent identities at scale, while still allowing for legitimate identity creation. This is achieved through a combination of:
+* In-person verification requirements that cannot be easily automated
+* Economic stakes that make fraud costly
+* Decentralized validation that prevents single points of failure
+* Privacy-preserving mechanisms that protect user data
+
+While no system can guarantee absolute prevention of fraud, the protocol's design ensures that:
+* Creating a single fraudulent identity requires significant effort and cost
+* Creating multiple fraudulent identities becomes exponentially more difficult
+* The economic cost of fraud exceeds any potential benefit
+* Legitimate users can still create and manage their identities efficiently
 
 **Intended audience:**
 
@@ -15,10 +27,10 @@ This document defines the **Soul Bound Protocol**, a decentralized, privacy-pres
 * **Client developers** building mobile, desktop, or embedded apps that perform verifications or consume identity data  
 * **Validator implementers** running nodes that verify attestations, enforce time-bounds, and manage stakes  
 * **Smart-contract engineers** integrating on-chain logic for minting, slashing, and reward distribution  
-* **Security auditors & researchers** assessing Sybil-resistance, privacy guarantees, and economic soundness  
+* **Security auditors & researchers** assessing identity fraud resistance, privacy guarantees, and economic soundness  
 * **Community architects** (DAOs, voting platforms, social networks) building trust-scoring or governance models atop the identity graph
 
-By adhering to this spec, all participants—regardless of implementation language or platform—will interoperate seamlessly, maintain strong Sybil defenses, and preserve user privacy, while leaving high-level trust decisions flexible for downstream applications.
+By adhering to this spec, all participants—regardless of implementation language or platform—will interoperate seamlessly, maintain strong defenses against identity fraud, and preserve user privacy, while leaving high-level trust decisions flexible for downstream applications.
 
 ## **1.2 Scope**
 
