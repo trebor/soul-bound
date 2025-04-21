@@ -264,10 +264,26 @@ This section defines the core protocol messages, their senders, purposes, requir
   * `sponsorSig`: Sponsor's attestation signature  
   * `stake`: Amount of tokens staked for minting (≥ S_mint)  
   * `zkProof`: Zero-knowledge proof of correct sensor checks without revealing raw data  
-  * `timestamp` or `blockHeight`: For freshness check  
+  * `timeAnchor`: Either `timestamp` (Unix epoch) or `blockHeight` (ledger height)  
+* **Time Anchor Selection Rules:**  
+  * Use `timestamp` when:  
+    * Submitting off-chain to validators before on-chain commitment  
+    * Validating against the challenge window (Δ₁)  
+    * Checking sensor data freshness  
+  * Use `blockHeight` when:  
+    * Submitting the final on-chain transaction  
+    * Enforcing stake lock periods  
+    * Calculating probation windows  
+    * Processing slashing conditions  
+  * The same MintRequest may use both anchors at different stages:  
+    1. Initial submission to validators uses `timestamp`  
+    2. Final on-chain transaction uses `blockHeight`  
 * **Semantics:**  
   * Validators reject if `stake` is insufficient or proofs/timestamps invalid.  
-  * On m-of-n approvals, the Ledger commits the new identity token.
+  * On m-of-n approvals, the Ledger commits the new identity token.  
+  * Time validation rules:  
+    * Off-chain: `|localTime – timestamp| ≤ ΔT`  
+    * On-chain: `currentHeight – blockHeight ≤ N` (where N is the maximum submission window)
 
 ## **4.5 ValidationResponse**
 
