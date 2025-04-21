@@ -45,6 +45,7 @@ This document clearly separates requirements into two distinct domains:
 * Privacy guarantees and zero-knowledge proof requirements
 * State machine definitions and transitions
 * On-chain record structures and schemas
+* Observable behavior requirements (what validators must check)
 
 **Implementation Domain**
 * User interface design and experience
@@ -63,6 +64,7 @@ This separation ensures that:
 * Implementations have freedom to innovate and optimize
 * Different communities can build diverse solutions while maintaining compatibility
 * Core security properties are preserved across all implementations
+* Malicious implementations cannot break the system unless they can break the cryptographic primitives
 
 ## **1.3 Scope**
 
@@ -957,6 +959,8 @@ This section states the core security guarantees and invariants that any Soul Bo
 * **Mechanisms:**  
   * All sensor hashes and session nonces are included in signatures by Candidate and Sponsor.  
   * Validators reject any attestation whose signature fails verification or whose hashes do not match recorded sensor proofs.
+  * Validators only check observable properties (signatures, hashes, timestamps) and do not rely on implementation details
+  * Economic incentives ensure validators have strong motivation to check these properties correctly
 
 ## **9.2 Freshness & Liveness Guarantees**
 
@@ -977,6 +981,11 @@ This section states the core security guarantees and invariants that any Soul Bo
     * Minimum time between sponsorships from the same identity  
     * Required physical co-location for verification  
   * Violations of these limits result in automatic rejection of requests
+  * Economic incentives are structured so that:
+    * Honest validation is more profitable than dishonest validation
+    * The cost of breaking the rules exceeds any potential benefit
+    * Validators have strong motivation to detect and reject fraudulent identities
+    * Sponsors have strong motivation to verify identities carefully
 
 ## **9.4 Privacy: ZK-Proof Guarantees**
 
@@ -1264,7 +1273,9 @@ The following parameters are part of the protocol domain and MUST be supported b
     "S_mint": 100,
     "S_endorse": 10,
     "validatorBond": 50,
-    "minimumStakeIncrement": 1
+    "minimumStakeIncrement": 1,
+    "slashFraction": 0.5,
+    "validatorRewardFraction": 0.1
   },
   "quorum": {
     "n": 5,
@@ -1275,6 +1286,13 @@ The following parameters are part of the protocol domain and MUST be supported b
       "faultTolerance": 0.33,
       "validatorRotationPeriod": 86400
     }
+  },
+  "economicParameters": {
+    "honestValidatorReward": 1.0,
+    "dishonestValidatorPenalty": 2.0,
+    "honestSponsorReward": 0.5,
+    "dishonestSponsorPenalty": 1.5,
+    "minimumStakeToRewardRatio": 10
   }
 }
 ```
