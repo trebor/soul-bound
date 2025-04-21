@@ -992,33 +992,6 @@ The following are the strict requirements for maintaining a valid Soul Bound ide
   * Maintain sufficient stake for any active sponsorships
   * Do not share private keys or verification devices
 
-* **Optional Features & Incentives**
-  The protocol provides the following optional features and incentives to encourage participation, but these are not requirements:
-
-  * **Active Participation Benefits**
-    * Earn rewards for successful sponsorships
-    * Build reputation for future sponsorships
-    * Access to additional protocol features
-    * Reduced stake requirements over time
-
-  * **Security Best Practices**
-    * Use hardware security modules (HSM)
-    * Implement key backup procedures
-    * Report lost or stolen devices
-    * Use biometric authentication
-
-  * **Economic Incentives**
-    * Higher rewards for consistent participation
-    * Lower stake requirements for proven identities
-    * Bonus rewards for successful sponsorship chains
-    * Fee discounts for active participants
-
-* **Inactive Status**
-  * No requirements for maintaining active status
-  * Existing sponsorships remain valid indefinitely
-  * Can return to active participation at any time
-  * May need to meet current stake requirements upon return
-
 * **Consequences**
   The following consequences only apply to violations of core requirements:
   * Slashing of escrowed stake for:
