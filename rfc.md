@@ -34,9 +34,9 @@ By adhering to this spec, all participants—regardless of implementation langua
 
 ## **1.2 Protocol vs. Implementation Domains**
 
-This document clearly separates requirements into two distinct domains:
+This document strictly separates requirements into two distinct domains:
 
-**Protocol Domain**
+**Protocol Domain (MUST support)**
 * Core message types and their semantics
 * Cryptographic primitives and security properties
 * Economic mechanisms and stake requirements
@@ -47,7 +47,7 @@ This document clearly separates requirements into two distinct domains:
 * On-chain record structures and schemas
 * Observable behavior requirements (what validators must check)
 
-**Implementation Domain**
+**Implementation Domain (MAY customize)**
 * User interface design and experience
 * Client application architecture
 * Local storage and caching strategies
@@ -154,33 +154,74 @@ The Soul Bound Protocol is architected to achieve the following core objectives:
 
 # **2\. Actors, Terminology & Notation**
 
-## **2.1 Roles**
+## **2.1 Core Protocol Requirements**
 
-* **Candidate**  
-  A person (or device) requesting a new Soul Bound identity. The Candidate generates a key pair and participates in an in-person verification with a Sponsor.  
-* **Sponsor**  
-  An existing identity vouching for the Candidate. The Sponsor meets the Candidate face-to-face, co-collects sensor data, and signs an attestation that the Candidate is a unique, real person.  
-* **Validator**  
-  A network node (or set of nodes) that checks submitted attestations, cryptographic proofs, and stake requirements. Validators run the consensus logic (e.g. m-of-n threshold) to approve or reject new identities.  
-* **Ledger**  
-  A decentralized, append-only storage (e.g. blockchain) that records identity-minting transactions, sponsorship relationships, slashing events, and reward distributions. The Ledger provides a shared time-anchor (block height or timestamp) and enforces on-chain economic rules.
+The protocol MUST provide:
 
-## **2.2 Data Types & Identifiers**
+1. **Identity Creation & Management**
+   * Unique, unforgeable identity creation
+   * Secure private key management
+   * Identity revocation mechanisms
+   * Stake requirements and slashing conditions
 
-* **Public/Private Keys**  
-  * `PK_X` / `SK_X`: Public and private key pair for actor X (Candidate, Sponsor, Validator).  
-  * Keys are used for signing messages and verifying identity.  
-* **Nonces & Session IDs**  
-  * `nonce`: A cryptographically random number to prevent replay.  
-  * `sessionId` (UUID): Uniquely identifies one verification session between a Candidate and Sponsor.  
-* **Timestamps & Block Heights**  
-  * `timestamp` (Unix epoch): Signed by actors to prove message freshness.  
-  * `blockHeight`: The height of the blockchain at the time of on-chain events; used for protocol time bounds.  
-* **Stake Amounts**  
-  * `S_mint`, `S_endorse`: Token quantities locked by Candidate or Sponsor when minting or endorsing an identity.  
-* **Hashes & Proofs**  
-  * `H(data)`: Cryptographic hash (e.g., SHA-256) of `data`.  
-  * `zkProof`: Zero-knowledge proof object, attesting that a verification step occurred without revealing raw data.
+2. **Attestation System**
+   * Cryptographic proof of identity ownership
+   * Freshness guarantees through nonces and timestamps
+   * Anti-replay protection
+   * Privacy-preserving verification
+
+3. **Validator System**
+   * Quorum-based validation
+   * Stake-weighted voting
+   * Slashing conditions for misbehavior
+   * Validator set management
+
+4. **Economic Mechanisms**
+   * Stake requirements for identity creation
+   * Slashing conditions for protocol violations
+   * Economic incentives for honest behavior
+   * Cost-based identity fraud resistance
+
+5. **Security Properties**
+   * Unforgeability of attestations
+   * Freshness and liveness guarantees
+   * Identity fraud resistance bounds
+   * Privacy through zero-knowledge proofs
+   * Revocation and slashing soundness
+
+All other aspects are implementation-specific and MAY be customized by different communities.
+
+## **2.2 Core Data Types**
+
+The protocol defines the following core data types:
+
+1. **Identity**
+   * Public key
+   * Stake amount
+   * Status (active/revoked)
+   * Creation timestamp
+
+2. **Attestation**
+   * Identity public key
+   * Sponsor signature
+   * Nonce
+   * Timestamp
+   * Zero-knowledge proof
+
+3. **Transaction**
+   * Type (create/revoke/slash)
+   * Identity reference
+   * Stake amount
+   * Signatures
+   * Timestamp
+
+4. **Validator Set**
+   * List of validator public keys
+   * Stake weights
+   * Quorum threshold
+   * Status (active/removed)
+
+All other data structures and formats are implementation-specific and MAY be customized.
 
 ## **2.3 Cryptographic Primitives & Notational Conventions**
 
@@ -456,7 +497,7 @@ This section describes each participant's internal state machine, listing states
 * **IDLE**  
 * **VERIFY_MINT**  
 * **VOTE**  
-* **COMMIT**  
+* **COMMIT**
 
 **Transitions**
 
@@ -522,7 +563,7 @@ This section describes each participant's internal state machine, listing states
 **Notes**
 
 * Validators must guard against equivocation (voting both approve and reject on the same session).  
-* In COMMIT, the validator may include finalization metadata (e.g., block hash).  
+* In COMMIT, the validator may include finalization metadata (e.g., block hash).
 * During partitions or reconfigurations, validators should:  
   * Maintain logs of missed transactions  
   * Track state divergence  
@@ -571,9 +612,9 @@ This section specifies the machine-readable schemas for all protocol messages an
 All off-chain protocol messages exchanged peer-to-peer or via RPC MUST conform to the JSON-Schema definitions in:
 
 ```json
-{
+{  
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "SoulBound Wire Message Schemas",
+  "title": "SoulBound Wire Message Schemas",  
   "oneOf": [
     { "$ref": "#/definitions/ChallengeRequest" },
     { "$ref": "#/definitions/SensorPackage" },
@@ -583,100 +624,100 @@ All off-chain protocol messages exchanged peer-to-peer or via RPC MUST conform t
     { "$ref": "#/definitions/RevocationRequest" },
     { "$ref": "#/definitions/RewardEvent" }
   ],
-  "definitions": {
-    "ChallengeRequest": {
-      "type": "object",
+  "definitions": {  
+    "ChallengeRequest": {  
+      "type": "object",  
       "required": ["type","sponsorPubKey","sessionId","timestamp","nonce"],
-      "properties": {
-        "type":       { "const": "ChallengeRequest" },
-        "sponsorPubKey": { "type": "string" },
-        "sessionId":  { "type": "string", "format": "uuid" },
-        "timestamp":  { "type": "integer", "minimum": 0 },
-        "nonce":      { "type": "string" }
-      }
-    },
-    "SensorPackage": {
-      "type": "object",
+      "properties": {  
+        "type":       { "const": "ChallengeRequest" },  
+        "sponsorPubKey": { "type": "string" },  
+        "sessionId":  { "type": "string", "format": "uuid" },  
+        "timestamp":  { "type": "integer", "minimum": 0 },  
+        "nonce":      { "type": "string" }  
+      }  
+    },  
+    "SensorPackage": {  
+      "type": "object",  
       "required": ["type","sessionId","accelHash","nfcHash","ambientHash","senderSig"],
-      "properties": {
-        "type":         { "const": "SensorPackage" },
-        "sessionId":    { "type": "string", "format": "uuid" },
-        "accelHash":    { "type": "string" },
-        "nfcHash":      { "type": "string" },
-        "ambientHash":  { "type": "string" },
+      "properties": {  
+        "type":         { "const": "SensorPackage" },  
+        "sessionId":    { "type": "string", "format": "uuid" },  
+        "accelHash":    { "type": "string" },  
+        "nfcHash":      { "type": "string" },  
+        "ambientHash":  { "type": "string" },  
         "senderSig":    { "type": "string" }
-      }
-    },
-    "SponsorAttestation": {
-      "type": "object",
+      }  
+    },  
+    "SponsorAttestation": {  
+      "type": "object",  
       "required": ["type","sessionId","sensorHashes","timestamp","sponsorSig"],
-      "properties": {
-        "type":         { "const": "SponsorAttestation" },
-        "sessionId":    { "type": "string", "format": "uuid" },
-        "sensorHashes": {
-          "type": "array",
-          "items": { "type": "string" },
-          "minItems": 3,
-          "maxItems": 3
-        },
-        "timestamp":    { "type": "integer", "minimum": 0 },
-        "sponsorSig":   { "type": "string" }
-      }
-    },
-    "MintRequest": {
-      "type": "object",
+      "properties": {  
+        "type":         { "const": "SponsorAttestation" },  
+        "sessionId":    { "type": "string", "format": "uuid" },  
+        "sensorHashes": {  
+          "type": "array",  
+          "items": { "type": "string" },  
+          "minItems": 3,  
+          "maxItems": 3  
+        },  
+        "timestamp":    { "type": "integer", "minimum": 0 },  
+        "sponsorSig":   { "type": "string" }  
+      }  
+    },  
+    "MintRequest": {  
+      "type": "object",  
       "required": ["type","identityPubKey","sessionId","candidateSig","sponsorSig","stake","zkProof","timestamp"],
-      "properties": {
-        "type":           { "const": "MintRequest" },
-        "identityPubKey": { "type": "string" },
-        "sessionId":      { "type": "string", "format": "uuid" },
-        "candidateSig":   { "type": "string" },
-        "sponsorSig":     { "type": "string" },
-        "stake":          { "type": "number", "minimum": 0 },
-        "zkProof":        { "type": "string" },
-        "timestamp":      { "type": "integer", "minimum": 0 }
-      }
-    },
-    "ValidationResponse": {
-      "type": "object",
+      "properties": {  
+        "type":           { "const": "MintRequest" },  
+        "identityPubKey": { "type": "string" },  
+        "sessionId":      { "type": "string", "format": "uuid" },  
+        "candidateSig":   { "type": "string" },  
+        "sponsorSig":     { "type": "string" },  
+        "stake":          { "type": "number", "minimum": 0 },  
+        "zkProof":        { "type": "string" },  
+        "timestamp":      { "type": "integer", "minimum": 0 }  
+      }  
+    },  
+    "ValidationResponse": {  
+      "type": "object",  
       "required": ["type","sessionId","validatorPubKey","status","validatorSig","timestamp"],
-      "properties": {
-        "type":            { "const": "ValidationResponse" },
-        "sessionId":       { "type": "string", "format": "uuid" },
-        "validatorPubKey": { "type": "string" },
+      "properties": {  
+        "type":            { "const": "ValidationResponse" },  
+        "sessionId":       { "type": "string", "format": "uuid" },  
+        "validatorPubKey": { "type": "string" },  
         "status":          { "type": "string", "enum": ["approved","rejected"] },
-        "reason":          { "type": "string" },
-        "validatorSig":    { "type": "string" },
-        "timestamp":       { "type": "integer", "minimum": 0 }
-      }
-    },
-    "RevocationRequest": {
-      "type": "object",
+        "reason":          { "type": "string" },  
+        "validatorSig":    { "type": "string" },  
+        "timestamp":       { "type": "integer", "minimum": 0 }  
+      }  
+    },  
+    "RevocationRequest": {  
+      "type": "object",  
       "required": ["type","identityPubKey","revokerPubKey","reason","evidence","timestamp","revokerSig"],
-      "properties": {
-        "type":          { "const": "RevocationRequest" },
-        "identityPubKey":{ "type": "string" },
-        "revokerPubKey": { "type": "string" },
-        "reason":        { "type": "string" },
-        "evidence":      { "type": "string" },
-        "timestamp":     { "type": "integer", "minimum": 0 },
-        "revokerSig":    { "type": "string" }
-      }
-    },
-    "RewardEvent": {
-      "type": "object",
+      "properties": {  
+        "type":          { "const": "RevocationRequest" },  
+        "identityPubKey":{ "type": "string" },  
+        "revokerPubKey": { "type": "string" },  
+        "reason":        { "type": "string" },  
+        "evidence":      { "type": "string" },  
+        "timestamp":     { "type": "integer", "minimum": 0 },  
+        "revokerSig":    { "type": "string" }  
+      }  
+    },  
+    "RewardEvent": {  
+      "type": "object",  
       "required": ["type","recipientPubKey","amount","source","reason","timestamp","contractSig"],
-      "properties": {
+      "properties": {  
         "type":          { "enum": ["RewardDistribution","SlashNotification"] },
-        "recipientPubKey":{ "type": "string" },
-        "amount":        { "type": "number", "minimum": 0 },
-        "source":        { "type": "string" },
-        "reason":        { "type": "string" },
-        "timestamp":     { "type": "integer", "minimum": 0 },
-        "contractSig":   { "type": "string" }
-      }
-    }
-  }
+        "recipientPubKey":{ "type": "string" },  
+        "amount":        { "type": "number", "minimum": 0 },  
+        "source":        { "type": "string" },  
+        "reason":        { "type": "string" },  
+        "timestamp":     { "type": "integer", "minimum": 0 },  
+        "contractSig":   { "type": "string" }  
+      }  
+    }  
+  }  
 }
 ```
 
@@ -685,53 +726,53 @@ All off-chain protocol messages exchanged peer-to-peer or via RPC MUST conform t
 All on-chain transactions and stored records (identity nodes, edges, slashes, rewards) MUST follow the JSON-Schema in:
 
 ```json
-{
+{  
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "SoulBound On-Ledger Record Structures",
-  "definitions": {
-    "IdentityRecord": {
-      "type": "object",
+  "definitions": {  
+    "IdentityRecord": {  
+      "type": "object",  
       "required": ["identityPubKey","sponsorPubKey","mintTxHash","timestamp","stake"],
-      "properties": {
-        "identityPubKey": { "type": "string" },
-        "sponsorPubKey":  { "type": "string" },
-        "mintTxHash":     { "type": "string" },
-        "timestamp":      { "type": "integer" },
-        "stake":          { "type": "number" }
-      }
-    },
-    "SponsorshipEdge": {
-      "type": "object",
+      "properties": {  
+        "identityPubKey": { "type": "string" },  
+        "sponsorPubKey":  { "type": "string" },  
+        "mintTxHash":     { "type": "string" },  
+        "timestamp":      { "type": "integer" },  
+        "stake":          { "type": "number" }  
+      }  
+    },  
+    "SponsorshipEdge": {  
+      "type": "object",  
       "required": ["fromPubKey","toPubKey","timestamp"],
-      "properties": {
-        "fromPubKey": { "type": "string" },
-        "toPubKey":   { "type": "string" },
-        "timestamp":  { "type": "integer" }
-      }
-    },
-    "RevocationRecord": {
-      "type": "object",
+      "properties": {  
+        "fromPubKey": { "type": "string" },  
+        "toPubKey":   { "type": "string" },  
+        "timestamp":  { "type": "integer" }  
+      }  
+    },  
+    "RevocationRecord": {  
+      "type": "object",  
       "required": ["identityPubKey","revokerPubKey","revocationTxHash","timestamp","evidenceHash"],
-      "properties": {
-        "identityPubKey":  { "type": "string" },
-        "revokerPubKey":   { "type": "string" },
-        "revocationTxHash":{ "type": "string" },
-        "timestamp":       { "type": "integer" },
-        "evidenceHash":    { "type": "string" }
-      }
-    },
-    "RewardSlashRecord": {
-      "type": "object",
+      "properties": {  
+        "identityPubKey":  { "type": "string" },  
+        "revokerPubKey":   { "type": "string" },  
+        "revocationTxHash":{ "type": "string" },  
+        "timestamp":       { "type": "integer" },  
+        "evidenceHash":    { "type": "string" }  
+      }  
+    },  
+    "RewardSlashRecord": {  
+      "type": "object",  
       "required": ["recipientPubKey","amount","reason","txHash","timestamp"],
-      "properties": {
-        "recipientPubKey": { "type": "string" },
-        "amount":          { "type": "number" },
-        "reason":          { "type": "string" },
-        "txHash":          { "type": "string" },
-        "timestamp":       { "type": "integer" }
-      }
-    }
-  }
+      "properties": {  
+        "recipientPubKey": { "type": "string" },  
+        "amount":          { "type": "number" },  
+        "reason":          { "type": "string" },  
+        "txHash":          { "type": "string" },  
+        "timestamp":       { "type": "integer" }  
+      }  
+    }  
+  }  
 }
 ```
 
@@ -740,74 +781,74 @@ All on-chain transactions and stored records (identity nodes, edges, slashes, re
 To see concrete payloads for each message type, consult:
 
 ```json
-{
-  "ChallengeRequest": {
-    "type": "ChallengeRequest",
-    "sponsorPubKey": "0xA1B2C3D4...",
-    "sessionId": "550e8400-e29b-41d4-a716-446655440000",
-    "timestamp": 1633046400,
-    "nonce": "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+{  
+  "ChallengeRequest": {  
+    "type": "ChallengeRequest",  
+    "sponsorPubKey": "0xA1B2C3D4...",  
+    "sessionId": "550e8400-e29b-41d4-a716-446655440000",  
+    "timestamp": 1633046400,  
+    "nonce": "f47ac10b-58cc-4372-a567-0e02b2c3d479"  
   },
-  "SensorPackage": {
-    "type": "SensorPackage",
-    "sessionId": "550e8400-e29b-41d4-a716-446655440000",
-    "accelHash": "3f5d8e2a...",
-    "nfcHash": "a1b2c3d4...",
-    "ambientHash": "9f8e7d6c...",
+  "SensorPackage": {  
+    "type": "SensorPackage",  
+    "sessionId": "550e8400-e29b-41d4-a716-446655440000",  
+    "accelHash": "3f5d8e2a...",  
+    "nfcHash": "a1b2c3d4...",  
+    "ambientHash": "9f8e7d6c...",  
     "senderSig": "3045022100..."
   },
-  "SponsorAttestation": {
-    "type": "SponsorAttestation",
-    "sessionId": "550e8400-e29b-41d4-a716-446655440000",
+  "SponsorAttestation": {  
+    "type": "SponsorAttestation",  
+    "sessionId": "550e8400-e29b-41d4-a716-446655440000",  
     "sensorHashes": ["3f5d8e2a...","a1b2c3d4...","9f8e7d6c..."],
-    "timestamp": 1633046410,
-    "sponsorSig": "3046022100..."
+    "timestamp": 1633046410,  
+    "sponsorSig": "3046022100..."  
   },
-  "MintRequest": {
-    "type": "MintRequest",
-    "identityPubKey": "0xDEADBEEF...",
-    "sessionId": "550e8400-e29b-41d4-a716-446655440000",
-    "candidateSig": "3045022100...",
-    "sponsorSig": "3046022100...",
-    "stake": 100,
+  "MintRequest": {  
+    "type": "MintRequest",  
+    "identityPubKey": "0xDEADBEEF...",  
+    "sessionId": "550e8400-e29b-41d4-a716-446655440000",  
+    "candidateSig": "3045022100...",  
+    "sponsorSig": "3046022100...",  
+    "stake": 100,  
     "zkProof": "zkSNARK_proof_blob...",
-    "timestamp": 1633046420
+    "timestamp": 1633046420  
   },
-  "ValidationResponse": {
-    "type": "ValidationResponse",
-    "sessionId": "550e8400-e29b-41d4-a716-446655440000",
-    "validatorPubKey": "0xFEEDFACE...",
-    "status": "approved",
-    "validatorSig": "3044022079...",
-    "timestamp": 1633046430
+  "ValidationResponse": {  
+    "type": "ValidationResponse",  
+    "sessionId": "550e8400-e29b-41d4-a716-446655440000",  
+    "validatorPubKey": "0xFEEDFACE...",  
+    "status": "approved",  
+    "validatorSig": "3044022079...",  
+    "timestamp": 1633046430  
   },
-  "RevocationRequest": {
-    "type": "RevocationRequest",
-    "identityPubKey": "0xDEADBEEF...",
-    "revokerPubKey": "0xBADF00D...",
-    "reason": "fraud-detected",
+  "RevocationRequest": {  
+    "type": "RevocationRequest",  
+    "identityPubKey": "0xDEADBEEF...",  
+    "revokerPubKey": "0xBADF00D...",  
+    "reason": "fraud-detected",  
     "evidence": "evidence_hash_or_ZK_proof",
-    "timestamp": 1633046500,
-    "revokerSig": "3045022100..."
+    "timestamp": 1633046500,  
+    "revokerSig": "3045022100..."  
   },
-  "RewardDistribution": {
-    "type": "RewardDistribution",
-    "recipientPubKey": "0xFEEDFACE...",
-    "amount": 5,
-    "source": "mint-fee-pool",
-    "reason": "mint-reward",
-    "timestamp": 1633046600,
-    "contractSig": "0xCAFEBABE..."
+  "RewardDistribution": {  
+    "type": "RewardDistribution",  
+    "recipientPubKey": "0xFEEDFACE...",  
+    "amount": 5,  
+    "source": "mint-fee-pool",  
+    "reason": "mint-reward",  
+    "timestamp": 1633046600,  
+    "contractSig": "0xCAFEBABE..."  
   },
-  "SlashNotification": {
-    "type": "SlashNotification",
-    "recipientPubKey": "0xBADF00D...",
-    "amount": 50,
-    "source": "slashed-stake",
-    "reason": "sponsor-slash",
-    "timestamp": 1633046700,
-    "contractSig": "0xDEADCAFE..."
-  }
+  "SlashNotification": {  
+    "type": "SlashNotification",  
+    "recipientPubKey": "0xBADF00D...",  
+    "amount": 50,  
+    "source": "slashed-stake",  
+    "reason": "sponsor-slash",  
+    "timestamp": 1633046700,  
+    "contractSig": "0xDEADCAFE..."  
+  }  
 }
 ```
 
@@ -1273,26 +1314,26 @@ Note: This model serves as a reference implementation and basic verification of 
 The following parameters are part of the protocol domain and MUST be supported by all implementations. Implementations may add additional parameters as described in Section 1.2, but MUST NOT modify these core parameters.
 
 ```json
-{
-  "deltaTimes": {
-    "challengeResponseWindow": 120,
-    "sensorToAttestationWindow": 60,
-    "attestationToMintWindow": 300,
-    "validationResponseWindow": 600,
+{  
+  "deltaTimes": {  
+    "challengeResponseWindow": 120,  
+    "sensorToAttestationWindow": 60,  
+    "attestationToMintWindow": 300,  
+    "validationResponseWindow": 600,  
     "clockSkew": 120,
     "partitionDetectionWindow": 300,
     "validatorReconfigurationWindow": 3600
-  },
-  "stakeSizes": {
+  },  
+  "stakeSizes": {  
     "S_mint": 100,
     "S_endorse": 10,
     "validatorBond": 50,
     "minimumStakeIncrement": 1,
     "slashFraction": 0.5,
     "validatorRewardFraction": 0.1
-  },
-  "quorum": {
-    "n": 5,
+  },  
+  "quorum": {  
+    "n": 5,  
     "m": 3,
     "scaling": {
       "minValidators": 3,
@@ -1363,56 +1404,56 @@ Note: These parameters are example values for a small-scale deployment. Real-wor
 ## **13.2 Example API Endpoints & RPC Definitions**
 
 ```json
-{
+{  
   "endpoints": [
-    {
-      "path": "/api/v1/challenge",
-      "method": "POST",
-      "description": "Sponsor issues a new ChallengeRequest",
-      "requestSchema": "ChallengeRequest",
-      "responseSchema": "ChallengeAck"
-    },
-    {
-      "path": "/api/v1/sensor",
-      "method": "POST",
-      "description": "Candidate submits SensorPackage",
-      "requestSchema": "SensorPackage",
-      "responseSchema": "SensorAck"
-    },
-    {
-      "path": "/api/v1/attestation",
-      "method": "POST",
-      "description": "Sponsor submits SponsorAttestation",
-      "requestSchema": "SponsorAttestation",
-      "responseSchema": "AttestationAck"
-    },
-    {
-      "path": "/api/v1/mint",
-      "method": "POST",
-      "description": "Candidate submits MintRequest",
-      "requestSchema": "MintRequest",
-      "responseSchema": "MintResponse"
-    },
-    {
-      "path": "/api/v1/validate",
-      "method": "POST",
-      "description": "Validator submits ValidationResponse",
-      "requestSchema": "ValidationResponse",
-      "responseSchema": "ValidateAck"
-    },
-    {
-      "path": "/api/v1/revoke",
-      "method": "POST",
-      "description": "Submit a RevocationRequest",
-      "requestSchema": "RevocationRequest",
-      "responseSchema": "RevokeAck"
-    },
-    {
-      "path": "/api/v1/events",
-      "method": "GET",
-      "description": "Subscribe to RewardDistribution and SlashNotification events",
-      "responseSchema": "RewardEvent"
-    }
+    {  
+      "path": "/api/v1/challenge",  
+      "method": "POST",  
+      "description": "Sponsor issues a new ChallengeRequest",  
+      "requestSchema": "ChallengeRequest",  
+      "responseSchema": "ChallengeAck"  
+    },  
+    {  
+      "path": "/api/v1/sensor",  
+      "method": "POST",  
+      "description": "Candidate submits SensorPackage",  
+      "requestSchema": "SensorPackage",  
+      "responseSchema": "SensorAck"  
+    },  
+    {  
+      "path": "/api/v1/attestation",  
+      "method": "POST",  
+      "description": "Sponsor submits SponsorAttestation",  
+      "requestSchema": "SponsorAttestation",  
+      "responseSchema": "AttestationAck"  
+    },  
+    {  
+      "path": "/api/v1/mint",  
+      "method": "POST",  
+      "description": "Candidate submits MintRequest",  
+      "requestSchema": "MintRequest",  
+      "responseSchema": "MintResponse"  
+    },  
+    {  
+      "path": "/api/v1/validate",  
+      "method": "POST",  
+      "description": "Validator submits ValidationResponse",  
+      "requestSchema": "ValidationResponse",  
+      "responseSchema": "ValidateAck"  
+    },  
+    {  
+      "path": "/api/v1/revoke",  
+      "method": "POST",  
+      "description": "Submit a RevocationRequest",  
+      "requestSchema": "RevocationRequest",  
+      "responseSchema": "RevokeAck"  
+    },  
+    {  
+      "path": "/api/v1/events",  
+      "method": "GET",  
+      "description": "Subscribe to RewardDistribution and SlashNotification events",  
+      "responseSchema": "RewardEvent"  
+    }  
   ]
 }
 ```
