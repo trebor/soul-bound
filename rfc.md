@@ -675,7 +675,8 @@ All off-chain protocol messages exchanged peer-to-peer or via RPC MUST conform t
         "sponsorSig":     { "type": "string" },  
         "stake":          { "type": "number", "minimum": 0 },  
         "zkProof":        { "type": "string" },  
-        "timestamp":      { "type": "integer", "minimum": 0 }  
+        "timestamp":      { "type": "integer", "minimum": 0 },
+        "blockHeight":    { "type": "integer", "minimum": 0 }
       }  
     },  
     "ValidationResponse": {  
@@ -700,7 +701,8 @@ All off-chain protocol messages exchanged peer-to-peer or via RPC MUST conform t
         "revokerPubKey": { "type": "string" },  
         "reason":        { "type": "string" },  
         "evidence":      { "type": "string" },  
-        "timestamp":     { "type": "integer", "minimum": 0 },  
+        "timestamp":     { "type": "integer", "minimum": 0 },
+        "blockHeight":   { "type": "integer", "minimum": 0 },
         "revokerSig":    { "type": "string" }  
       }  
     },  
