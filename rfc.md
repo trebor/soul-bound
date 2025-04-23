@@ -708,7 +708,7 @@ All off-chain protocol messages exchanged peer-to-peer or via RPC MUST conform t
     },  
     "RewardEvent": {  
       "type": "object",  
-      "required": ["type","recipientPubKey","amount","source","reason","timestamp","contractSig"],
+      "required": ["type","recipientPubKey","amount","source","reason","timestamp","txHash"],
       "properties": {  
         "type":          { "enum": ["RewardDistribution","SlashNotification"] },
         "recipientPubKey":{ "type": "string" },  
@@ -716,7 +716,7 @@ All off-chain protocol messages exchanged peer-to-peer or via RPC MUST conform t
         "source":        { "type": "string" },  
         "reason":        { "type": "string" },  
         "timestamp":     { "type": "integer", "minimum": 0 },  
-        "contractSig":   { "type": "string" }  
+        "txHash":        { "type": "string" }  
       }  
     },
     "ChallengeAck": {
