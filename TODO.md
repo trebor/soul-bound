@@ -7,4 +7,4 @@
 - [x] Define or remove the `*Ack` response schemas (`ChallengeAck`, `SensorAck`, `AttestationAck`, `MintResponse`, `ValidateAck`, `RevokeAck`) referenced in § 13.2
 - [x] Standardize `evidence` vs `evidenceHash` field names between `RevocationRequest` (§ 4.6) and `RevocationRecord` (§ 6.2)
 - [x] Align fields in off-chain `RewardDistribution` message and on-chain `RewardSlashRecord` (e.g., `contractSig` vs `txHash`)
-* [ ] Re-add or remove Section 9.7 Implementation Enforcement Mechanisms as needed 
+- [x] Re-add or remove Section 9.7 Implementation Enforcement Mechanisms as needed 
