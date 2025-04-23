@@ -718,7 +718,67 @@ All off-chain protocol messages exchanged peer-to-peer or via RPC MUST conform t
         "timestamp":     { "type": "integer", "minimum": 0 },  
         "contractSig":   { "type": "string" }  
       }  
-    }  
+    },
+    "ChallengeAck": {
+      "type": "object",
+      "required": ["type", "status", "timestamp"],
+      "properties": {
+        "type": { "const": "ChallengeAck" },
+        "status": { "type": "string", "enum": ["accepted", "rejected"] },
+        "reason": { "type": "string" },
+        "timestamp": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "SensorAck": {
+      "type": "object",
+      "required": ["type", "status", "timestamp"],
+      "properties": {
+        "type": { "const": "SensorAck" },
+        "status": { "type": "string", "enum": ["accepted", "rejected"] },
+        "reason": { "type": "string" },
+        "timestamp": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "SponsorshipAck": {
+      "type": "object",
+      "required": ["type", "status", "timestamp"],
+      "properties": {
+        "type": { "const": "SponsorshipAck" },
+        "status": { "type": "string", "enum": ["accepted", "rejected"] },
+        "reason": { "type": "string" },
+        "timestamp": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "MintResponse": {
+      "type": "object",
+      "required": ["type", "status", "timestamp"],
+      "properties": {
+        "type": { "const": "MintResponse" },
+        "status": { "type": "string", "enum": ["accepted", "rejected"] },
+        "reason": { "type": "string" },
+        "timestamp": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "ValidateAck": {
+      "type": "object",
+      "required": ["type", "status", "timestamp"],
+      "properties": {
+        "type": { "const": "ValidateAck" },
+        "status": { "type": "string", "enum": ["accepted", "rejected"] },
+        "reason": { "type": "string" },
+        "timestamp": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "RevokeAck": {
+      "type": "object",
+      "required": ["type", "status", "timestamp"],
+      "properties": {
+        "type": { "const": "RevokeAck" },
+        "status": { "type": "string", "enum": ["accepted", "rejected"] },
+        "reason": { "type": "string" },
+        "timestamp": { "type": "integer", "minimum": 0 }
+      }
+    }
   }  
 }
 ```
