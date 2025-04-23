@@ -397,7 +397,7 @@ This section defines the core protocol messages, their senders, purposes, requir
   * `identityPubKey`: Public key of identity to revoke  
   * `revokerPubKey`: Who is requesting revocation  
   * `reason`: Code or description of cause  
-  * `evidence`: Reference or ZK proof of misbehavior  
+  * `evidenceHash`: Reference or ZK proof of misbehavior  
   * `timestamp`: Unix epoch or blockHeight  
   * `revokerSig`: Signature over all fields  
 * **Semantics:**  
@@ -694,13 +694,13 @@ All off-chain protocol messages exchanged peer-to-peer or via RPC MUST conform t
     },  
     "RevocationRequest": {  
       "type": "object",  
-      "required": ["type","identityPubKey","revokerPubKey","reason","evidence","timestamp","revokerSig"],
+      "required": ["type","identityPubKey","revokerPubKey","reason","evidenceHash","timestamp","revokerSig"],
       "properties": {  
         "type":          { "const": "RevocationRequest" },  
         "identityPubKey":{ "type": "string" },  
         "revokerPubKey": { "type": "string" },  
         "reason":        { "type": "string" },  
-        "evidence":      { "type": "string" },  
+        "evidenceHash":  { "type": "string" },  
         "timestamp":     { "type": "integer", "minimum": 0 },
         "blockHeight":   { "type": "integer", "minimum": 0 },
         "revokerSig":    { "type": "string" }  
@@ -889,7 +889,7 @@ To see concrete payloads for each message type, consult:
     "identityPubKey": "0xDEADBEEF...",  
     "revokerPubKey": "0xBADF00D...",  
     "reason": "fraud-detected",  
-    "evidence": "evidence_hash_or_ZK_proof",
+    "evidenceHash": "evidence_hash_or_ZK_proof",
     "timestamp": 1633046500,  
     "revokerSig": "3045022100..."  
   },
