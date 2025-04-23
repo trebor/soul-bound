@@ -276,11 +276,11 @@ To prevent replay attacks and ensure data freshness, the protocol mandates:
 
 * **Signed Timestamps**  
   * Every message carries a `timestamp` (Unix epoch) signed by the sender.  
-  * Validators reject messages where `|now – timestamp| > ΔT` (configurable clock skew).  
+  * Validators reject messages where `|now – timestamp| > ΔT` (see Section 13.1 for configured value).  
 * **Block-Height Anchoring**  
   * On-chain actions (MintRequest submission, slashing window expiry) reference `blockHeight`.  
   * Validators and smart contracts enforce windows like "submit within N blocks of challenge"  
-    or "unlock stake after M blocks of no revocation."  
+    (see Section 13.1 for configured values).  
 * **Session Nonces & IDs**  
   * Each verification session uses a unique `sessionId` (UUID) and challenge `nonce` to bind messages together.  
   * Replayed or out-of-order messages are detected and dropped.  
@@ -304,7 +304,7 @@ This section defines the core protocol messages, their senders, purposes, requir
   * `timestamp`: Unix epoch time of issuance  
   * `nonce`: Cryptographically random value  
 * **Semantics:**  
-  * Candidate must initiate sensor capture within a configured time window Δ₁.  
+  * Candidate must initiate sensor capture within the configured time window Δ₁ (see Section 13.1 for configured value).  
   * Future messages in this session must include the same `sessionId` and `nonce`.
 
 ## **4.2 SensorPackage**
@@ -926,26 +926,33 @@ The protocol defines several timing parameters that all implementations MUST sup
   * Δ₁ (Challenge Response Window)
     * Time allowed for Candidate to respond to ChallengeRequest  
     * Used in: ChallengeRequest → SensorPackage transition  
+    * See Section 13.1 for configured value
   * Δ₂ (Sensor to Attestation Window)
     * Time allowed for Sponsor to verify and attest sensor data  
     * Used in: SensorPackage → SponsorAttestation transition  
+    * See Section 13.1 for configured value
   * Δ₃ (Attestation to Mint Window)
     * Time allowed for Candidate to submit MintRequest  
     * Used in: SponsorAttestation → MintRequest transition  
+    * See Section 13.1 for configured value
   * ΔT (Clock Skew)
     * Maximum allowed difference between local and message timestamps  
     * Used in: All message validation  
+    * See Section 13.1 for configured value
   * ΔV (Validation Response Window)
     * Time allowed for validators to respond to MintRequest  
     * Used in: MintRequest → ValidationResponse transition  
+    * See Section 13.1 for configured value
 
 * **Network-Level Timing Parameters**  
   * Δₚ (Partition Detection Window)
     * Time to detect network partitions  
     * Used in: Validator state machine  
+    * See Section 13.1 for configured value
   * Δᵣ (Validator Reconfiguration Window)
     * Time allowed for validator set changes  
     * Used in: Validator rotation and reconfiguration  
+    * See Section 13.1 for configured value
 
 * **Implementation-Specific Windows**  
   The following windows are left to implementations to define based on their specific requirements:  
