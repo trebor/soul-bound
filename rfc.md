@@ -861,27 +861,27 @@ To guarantee message freshness and prevent replay attacks, the protocol mandates
 The protocol defines several timing parameters that all implementations MUST support. These parameters are critical for ensuring message freshness and preventing replay attacks.
 
 * **Protocol-Level Timing Parameters**  
-  * Δ₁ (Challenge Response Window): 120 seconds  
+  * Δ₁ (Challenge Response Window)
     * Time allowed for Candidate to respond to ChallengeRequest  
     * Used in: ChallengeRequest → SensorPackage transition  
-  * Δ₂ (Sensor to Attestation Window): 60 seconds  
+  * Δ₂ (Sensor to Attestation Window)
     * Time allowed for Sponsor to verify and attest sensor data  
     * Used in: SensorPackage → SponsorAttestation transition  
-  * Δ₃ (Attestation to Mint Window): 300 seconds  
+  * Δ₃ (Attestation to Mint Window)
     * Time allowed for Candidate to submit MintRequest  
     * Used in: SponsorAttestation → MintRequest transition  
-  * ΔT (Clock Skew): 120 seconds  
+  * ΔT (Clock Skew)
     * Maximum allowed difference between local and message timestamps  
     * Used in: All message validation  
-  * ΔV (Validation Response Window): 600 seconds  
+  * ΔV (Validation Response Window)
     * Time allowed for validators to respond to MintRequest  
     * Used in: MintRequest → ValidationResponse transition  
 
 * **Network-Level Timing Parameters**  
-  * Δₚ (Partition Detection Window): 300 seconds  
+  * Δₚ (Partition Detection Window)
     * Time to detect network partitions  
     * Used in: Validator state machine  
-  * Δᵣ (Validator Reconfiguration Window): 3600 seconds  
+  * Δᵣ (Validator Reconfiguration Window)
     * Time allowed for validator set changes  
     * Used in: Validator rotation and reconfiguration  
 
@@ -941,14 +941,14 @@ This section describes the protocol-level economic mechanisms that all implement
   * Covers verification costs
   * Distributed based on validation accuracy
 
-## **8.2 Sponsor-Endorsement Stakes & Slashing**
+## **8.2 Sponsor Stakes & Slashing**
 
 * **Sponsor Stake (S_sponsor)**
-  * Must exceed S_mint
-  * Locked for endorsement duration
-  * Slashed for invalid endorsements
+  * Must be at least the configured sponsor stake
+  * Locked for sponsor duration
+  * Slashed for invalid sponsorships
 
-* **Endorsement Fee (F_endorse)**
+* **Sponsor Fee (F_sponsor)**
   * Paid to validators
   * Covers verification costs
   * Distributed based on validation accuracy
@@ -1056,14 +1056,14 @@ This section states the core security guarantees and invariants that any Soul Bo
     * Follow protocol rules (slashing for violations)
   * Sponsors are incentivized to:
     * Verify identities carefully (rewards for honest sponsorship)
-    * Reject fraudulent identities (penalties for invalid endorsements)
-    * Maintain sufficient stake (S_sponsor)
+    * Reject fraudulent identities (penalties for invalid sponsorships)
+    * Ensure sponsor stake (S_sponsor) is locked in escrow for the duration of active sponsorships
     * Follow protocol rules (slashing for violations)
 
 * **Protocol Rules**
   * Messages that violate protocol rules are rejected
   * Validators that accept invalid messages are slashed
-  * Sponsors that endorse invalid identities are slashed
+  * Sponsors that sponsor invalid identities are slashed
   * Stake requirements ensure honest behavior is more profitable
 
 * **Monitoring & Response**
@@ -1087,18 +1087,18 @@ This section enumerates expected error conditions, how each actor should detect 
 ## **10.1 Timeouts & Session Aborts**
 
 * **ChallengeRequest → SensorPackage**  
-  * If the Candidate does not send `SensorPackage` within Δ₁ (e.g. 2 minutes), the Sponsor aborts the session.  
+  * If the Candidate does not send `SensorPackage` within Δ₁, the Sponsor aborts the session.  
   * Candidate state → **FAILED**; Sponsor state → **ABORTED**.  
   * No tokens are staked yet, so no slashing occurs.  
 * **SensorPackage → SponsorAttestation**  
-  * If the Sponsor doesn't respond with `SponsorAttestation` within Δ₂ (e.g. 1 minute), Candidate aborts.  
+  * If the Sponsor doesn't respond with `SponsorAttestation` within Δ₂, Candidate aborts.  
   * Candidate state → **FAILED**; Sponsor state → **ABORTED**.  
   * Sponsor may incur a small reputational penalty but no stake is at risk.  
 * **SponsorAttestation → MintRequest**  
-  * If the Candidate does not submit `MintRequest` within Δ₃ (blocks or time), the session is abandoned.  
+  * If the Candidate does not submit `MintRequest` within Δ₃, the session is abandoned.  
   * Any reserved UI/session resources are released; no on-chain stake has been locked yet.  
 * **Awaiting ValidationResponse**  
-  * If quorum is not reached before a cutoff (e.g. N blocks), Candidate/Sponsor treat the session as **FAILED**.  
+  * If quorum is not reached before ΔV, Candidate/Sponsor treat the session as **FAILED**.  
   * If stake was locked, Candidate may reclaim or forfeit it based on policy (see economic rules).
 
 ## **10.2 Signature or Proof Verification Failures**
@@ -1117,7 +1117,7 @@ This section enumerates expected error conditions, how each actor should detect 
 * **MintRequest Stake < S_mint**  
   * Validators and Ledger smart contracts check `stake ≥ S_mint`.  
   * If the stake is insufficient, the transaction is reverted or the request is rejected with error code `INSUFFICIENT_STAKE`.  
-* **Endorsement Stake < S_endorse**  
+* **Sponsor Stake < S_sponsor**  
   * Sponsor attempts to vouch without locking the required tokens.  
   * Session is aborted and Sponsor receives a "stake too low" error.  
   * No attestation is recorded.
@@ -1176,13 +1176,13 @@ This section describes optional interfaces and hook points where applications, D
 ## **11.2 Reputation-Scoring Plug-ins**
 
 * **Metric Definitions**  
-  * Standard metrics (e.g. number of successful endorsements, average endorsement depth, validator accuracy) exposed in the graph metadata.  
+  * Standard metrics (e.g. number of successful sponsorships, average sponsorship depth, validator accuracy) exposed in the graph metadata.  
 * **Pluggable Scoring Algorithms**  
   * Modules that consume raw metrics, apply weightings, thresholds, or machine-learning models, and produce per-identity reputation scores.  
 * **On-Chain Reputation Anchors**  
   * Optional contracts to record a snapshot of computed reputation scores, so smart contracts or UIs can enforce minimum reputation requirements.  
 * **Reputation Refresh Policies**  
-  * Configurable refresh intervals or event-driven updates (e.g. recalc scores after every 100 new blocks or after slashing events).
+  * Configurable refresh intervals or event-driven updates (e.g. recalc scores after a configurable number of new blocks or after slashing events).
 
 ## **11.3 Optional KYC-Bonded Pathways**
 
@@ -1203,7 +1203,7 @@ This section describes optional interfaces and hook points where applications, D
 * **Parameterized Slashing Rules**  
   * Expose protocol parameters (slash fraction, probation window) to on-chain governance so communities can adjust penalty severity.  
 * **Reward Curves**  
-  * Define custom payout curves (linear, tiered, logarithmic) based on performance metrics (e.g. number of valid validations, identity survival time).  
+  * Define custom payout curves (linear, tiered, logarithmic) based on performance metrics (e.g. number of valid sponsorships, identity survival time).  
 * **Treasury & Fee Allocation**  
   * Hook points for routing portions of mint-fees or slashed funds to community treasuries, development grants, or public goods.  
 * **Governance-Controlled Modules**  
@@ -1249,7 +1249,7 @@ This section sketches a machine-checked model of the Soul Bound Protocol, useful
 * **Safety Invariants**  
   * **UniqueHumanAnchor:** No two `Identities` share the same human anchor identifier.  
   * **StakeConsistency:** For every `Minted` identity, `stake ≥ S_mint`; for every `Revoked` identity, stake has been slashed or burned.  
-  * **SignatureValidity:** All recorded attestations carry valid signatures from the claimed actors.  
+  * **SignatureValidity:** All recorded sponsorships carry valid signatures from the claimed actors.  
 * **Liveness / Temporal Properties**  
   * **SessionProgress:** ∀ session ∈ `Candidates`, eventually `state` ∈ {`Minted`, `Rejected`} (no infinite pending sessions).  
   * **EventualSlash:** If a valid revocation is submitted, the corresponding identity eventually transitions to `Revoked` and its stake is slashed.  
@@ -1326,7 +1326,7 @@ The following parameters are part of the protocol domain and MUST be supported b
   },  
   "stakeSizes": {  
     "S_mint": 100,
-    "S_endorse": 10,
+    "S_sponsor": 10,
     "validatorBond": 50,
     "minimumStakeIncrement": 1,
     "slashFraction": 0.5,
@@ -1360,8 +1360,8 @@ The following parameters are part of the protocol domain and MUST be supported b
     * Security requirements for specific use cases  
   * All timing parameters referenced in the document should use these values:
     * Δ₁ (challenge response): 120 seconds
-    * Δ₂ (sensor to attestation): 60 seconds
-    * Δ₃ (attestation to mint): 300 seconds
+    * Δ₂ (sensor to sponsorship): 60 seconds
+    * Δ₃ (sponsorship to mint): 300 seconds
     * ΔT (clock skew): 120 seconds
     * Δₚ (partition detection): 300 seconds
     * Δᵣ (validator reconfiguration): 3600 seconds
@@ -1421,11 +1421,11 @@ Note: These parameters are example values for a small-scale deployment. Real-wor
       "responseSchema": "SensorAck"  
     },  
     {  
-      "path": "/api/v1/attestation",  
+      "path": "/api/v1/sponsorship",  
       "method": "POST",  
       "description": "Sponsor submits SponsorAttestation",  
       "requestSchema": "SponsorAttestation",  
-      "responseSchema": "AttestationAck"  
+      "responseSchema": "SponsorshipAck"  
     },  
     {  
       "path": "/api/v1/mint",  
@@ -1465,7 +1465,7 @@ Note: These parameters are example values for a small-scale deployment. Real-wor
 * **Sponsor**  
   An existing Soul Bound identity vouching for a Candidate.  
 * **Validator**  
-  A network node that verifies attestations and stakes to approve or reject identity mints.  
+  A network node that verifies sponsorships and stakes to approve or reject identity mints.  
 * **Ledger**  
   The decentralized, append-only storage (e.g., blockchain) recording identities, stakes, and slashes.  
 * **Nonce**  
