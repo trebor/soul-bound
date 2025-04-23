@@ -202,11 +202,11 @@ The protocol defines the following core data types:
    * Creation timestamp
 
 2. **Attestation**
-   * Identity public key
-   * Sponsor signature
-   * Nonce
+   * Type identifier
+   * Session ID
+   * Sensor hashes
    * Timestamp
-   * Zero-knowledge proof
+   * Sponsor signature
 
 3. **Transaction**
    * Type (create/revoke/slash)
