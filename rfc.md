@@ -1012,7 +1012,7 @@ This section describes the protocol-level economic mechanisms that all implement
 
 ## **8.2 Sponsor Stakes & Slashing**
 
-* **Sponsor Stake**
+* **Sponsor Stake (S_sponsor)**
   * Must be at least the configured sponsor stake
   * Locked for sponsor duration
   * Slashed for invalid sponsorships
@@ -1395,12 +1395,16 @@ The following parameters are part of the protocol domain and MUST be supported b
   },  
   "stakeSizes": {  
     "S_mint": 100,
-    "sponsorStake": 10,
-    "validatorBond": 1000,
+    "S_sponsor": 10,
+    "V_bond": 1000,
     "minimumStakeIncrement": 1,
     "slashFraction": 0.5,
     "validatorRewardFraction": 0.1
-  },  
+  },
+  "fees": {
+    "F_mint": 1,
+    "F_sponsor": 0.5
+  },
   "quorum": {  
     "n": 5,  
     "m": 3,
