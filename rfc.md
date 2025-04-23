@@ -1005,7 +1005,7 @@ This section describes the protocol-level economic mechanisms that all implement
 
 ## **8.2 Sponsor Stakes & Slashing**
 
-* **Sponsor Stake (S_sponsor)**
+* **Sponsor Stake**
   * Must be at least the configured sponsor stake
   * Locked for sponsor duration
   * Slashed for invalid sponsorships
@@ -1119,7 +1119,7 @@ This section states the core security guarantees and invariants that any Soul Bo
   * Sponsors are incentivized to:
     * Verify identities carefully (rewards for honest sponsorship)
     * Reject fraudulent identities (penalties for invalid sponsorships)
-    * Ensure sponsor stake (S_sponsor) is locked in escrow for the duration of active sponsorships
+    * Ensure sponsor stake is locked in escrow for the duration of active sponsorships
     * Follow protocol rules (slashing for violations)
 
 * **Protocol Rules**
@@ -1179,9 +1179,9 @@ This section enumerates expected error conditions, how each actor should detect 
 * **MintRequest Stake < S_mint**  
   * Validators and Ledger smart contracts check `stake ≥ S_mint`.  
   * If the stake is insufficient, the transaction is reverted or the request is rejected with error code `INSUFFICIENT_STAKE`.  
-* **Sponsor Stake < S_sponsor**  
-  * Sponsor attempts to vouch without locking the required tokens.  
-  * Session is aborted and Sponsor receives a "stake too low" error.  
+* **Sponsor Stake Insufficient**
+  * Sponsor attempts to vouch without locking the required tokens.
+  * Session is aborted and Sponsor receives a "stake too low" error.
   * No attestation is recorded.
 
 ## **10.4 Replay or Duplicate Sessions**
@@ -1388,7 +1388,7 @@ The following parameters are part of the protocol domain and MUST be supported b
   },  
   "stakeSizes": {  
     "S_mint": 100,
-    "S_sponsor": 10,
+    "sponsorStake": 10,
     "validatorBond": 1000,
     "minimumStakeIncrement": 1,
     "slashFraction": 0.5,
