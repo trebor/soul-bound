@@ -1421,12 +1421,12 @@ The following parameters are part of the protocol domain and MUST be supported b
     * Expected device performance  
     * Security requirements for specific use cases  
   * All timing parameters referenced in the document should use these values:
-    * Δ₁ (challenge response): 120 seconds
-    * Δ₂ (sensor to sponsorship): 60 seconds
-    * Δ₃ (sponsorship to mint): 300 seconds
-    * ΔT (clock skew): 120 seconds
-    * Δₚ (partition detection): 300 seconds
-    * Δᵣ (validator reconfiguration): 3600 seconds
+    * Δ₁ (challenge response): See Section 13.1 for configured value
+    * Δ₂ (sensor to sponsorship): See Section 13.1 for configured value
+    * Δ₃ (sponsorship to mint): See Section 13.1 for configured value
+    * ΔT (clock skew): See Section 13.1 for configured value
+    * Δₚ (partition detection): See Section 13.1 for configured value
+    * Δᵣ (validator reconfiguration): See Section 13.1 for configured value
 
 * **Stake Sizes**  
   * Example values shown are relative units  
