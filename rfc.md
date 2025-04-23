@@ -1327,7 +1327,7 @@ The following parameters are part of the protocol domain and MUST be supported b
   "stakeSizes": {  
     "S_mint": 100,
     "S_sponsor": 10,
-    "validatorBond": 50,
+    "validatorBond": 1000,
     "minimumStakeIncrement": 1,
     "slashFraction": 0.5,
     "validatorRewardFraction": 0.1

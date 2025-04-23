@@ -1,7 +1,7 @@
 ## TODO: Document Consistency Tasks
 
 - [x] Rename `S_sponsor` to `S_endorse` and align the stake threshold rule in § 8.2
-* [ ] Harmonize `V_bond` requirement (must exceed S_mint×10) with default `validatorBond` in Appendix 13.1
+- [x] Harmonize `V_bond` requirement (must exceed S_mint×10) with default `validatorBond` in Appendix 13.1
 * [ ] Reconcile **Attestation** data type in § 2.2 with actual `SponsorAttestation` fields in § 4.3
 * [ ] Update JSON-Schemas for `MintRequest` and `RevocationRequest` to include optional `blockHeight` alongside `timestamp`
 * [ ] Define or remove the `*Ack` response schemas (`ChallengeAck`, `SensorAck`, `AttestationAck`, `MintResponse`, `ValidateAck`, `RevokeAck`) referenced in § 13.2
