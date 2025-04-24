@@ -372,11 +372,13 @@ This section defines the core protocol messages, their senders, purposes, requir
   * Use `timestamp` when:  
     * Submitting off-chain to validators before on-chain commitment  
     * Validating against the challenge window (Δ₁)  
+    * Checking message freshness and ordering
   * Use `blockHeight` when:  
     * Submitting the final on-chain transaction  
     * Enforcing stake lock periods  
     * Calculating probation windows  
     * Processing slashing conditions  
+    * Determining validator rotation periods
   * The same MintRequest may use both anchors at different stages:  
     1. Initial submission to validators uses `timestamp`  
     2. Final on-chain transaction uses `blockHeight`  
@@ -393,18 +395,6 @@ This section defines the core protocol messages, their senders, purposes, requir
     * Generated using cryptographically secure randomness
     * Verifiable against public parameters
     * Succinct and non-interactive
-* **Time Anchor Selection Rules:**  
-  * Use `timestamp` when:  
-    * Submitting off-chain to validators before on-chain commitment  
-    * Validating against the challenge window (Δ₁)  
-  * Use `blockHeight` when:  
-    * Submitting the final on-chain transaction  
-    * Enforcing stake lock periods  
-    * Calculating probation windows  
-    * Processing slashing conditions  
-  * The same MintRequest may use both anchors at different stages:  
-    1. Initial submission to validators uses `timestamp`  
-    2. Final on-chain transaction uses `blockHeight`  
 * **Semantics:**  
   * Validators reject if `stake` is insufficient or proofs/timestamps invalid.  
   * On m-of-n approvals, the Ledger commits the new identity token.  
