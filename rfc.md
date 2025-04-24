@@ -1265,20 +1265,6 @@ This section describes optional interfaces and hook points where applications, D
 * **Reputation Refresh Policies**  
   * Configurable refresh intervals or event-driven updates (e.g. recalc scores after a configurable number of new blocks or after slashing events).
 
-## **12.3 Optional KYC-Bonded Pathways**
-
-* **KYC Bond Contract**  
-  * An opt-in smart contract where users deposit a higher-value bond in exchange for "KYC-verified" status.  
-  * Bonds are slashed on fraud or revoked identities under stricter governance rules.  
-* **Tiered Identity Flags**  
-  * Extend the identity record with a flag (e.g. `kycStatus = "none"|"basic"|"enhanced").  
-  * Applications may require higher KYC tiers for sensitive functions (voting, high-value transfers).  
-* **Privacy-Preserving KYC**  
-  * Use zero-knowledge proofs to confirm KYC attestation without exposing raw personal data.  
-  * Store only proof commitments on-chain; retain identity documents off-chain under GDPR-style controls.  
-* **Bond Redemption & Appeals**  
-  * Define multi-stage dispute resolution: appeals window before final slash, partial bond refund on successful appeal.
-
 ## **12.4 Custom Reward/Slashing Policies**
 
 * **Parameterized Slashing Rules**  
