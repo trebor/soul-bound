@@ -488,16 +488,23 @@ This section defines the state machines that govern the behavior of each partici
 * **Initial State:** `IDLE`  
 * **States:**  
   * `IDLE`: Awaiting MintRequest  
-  * `VERIFYING`: Received MintRequest, awaiting ValidationResponse  
-  * `VOTING`: Received valid ValidationResponse, awaiting Commit  
+  * `VERIFYING`: Received MintRequest, performing validation checks
+  * `VOTING`: Completed validation, awaiting quorum
   * `COMMITING`: Validator signs and broadcasts ValidationResponse  
   * `ACTIVE`: Valid identity  
   * `REVOKED`: Validator revoked  
 * **Transitions:**  
   * `IDLE → VERIFYING`: On receiving valid MintRequest  
-  * `VERIFYING → VOTING`: On receiving valid ValidationResponse  
+  * `VERIFYING → VOTING`: After completing all required checks
   * `VOTING → COMMITING`: On receiving majority-approved ValidationResponse  
   * `* → REVOKED`: On receiving valid RevocationRequest
+* **Validation Requirements:**
+  * MUST verify all cryptographic proofs and signatures
+  * MUST check stake amounts meet minimum requirements
+  * MUST validate timestamps and anti-replay protections
+  * MAY check Sponsor's validation history and past behavior
+  * MUST maintain consistent validation criteria across all requests
+  * MUST document any additional checks performed
 
 ## **5.4 Ledger State Machine**
 
@@ -537,7 +544,8 @@ This section walks through the complete lifecycle of identity creation, from ini
 
 4. **Validation & Minting**  
    * Validators verify MintRequest signatures and attestations  
-   * Validators check Sponsor's stake and reputation  
+   * Validators check Sponsor's stake and validation history
+   * Validators MAY perform additional checks on Sponsor's past behavior
    * On majority approval, identity is minted on-chain
 
 ## **6.2 Identity Verification Process**
