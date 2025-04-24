@@ -371,7 +371,7 @@ This section defines the core protocol messages, their senders, purposes, requir
 
 ## **4.5 RevocationRequest**
 
-* **Sender:** Sponsor, Validator, or Governance Module → Validator(s) → Ledger  
+* **Sender:** Sponsor or Validator → Validator(s) → Ledger  
 * **Purpose:** Revoke an existing identity due to fraud, compromise, or policy breach.  
 * **Fields:**  
   * `type`: `"RevocationRequest"`  
@@ -508,8 +508,8 @@ This section walks through the complete lifecycle of identity creation, from ini
 ## **6.3 Revocation Process**
 
 1. **Revocation Request**  
-   * Sponsor, Validator, or Governance Module submits RevocationRequest  
-   * Validators process request and decide on revocation
+   * Sponsor or Validator submits RevocationRequest  
+   * Validators process request and decide on revocation through quorum vote
 
 2. **Slash Notification**  
    * Ledger sends SlashNotification to affected parties  
@@ -1141,7 +1141,7 @@ This section describes optional interfaces and hook points where applications, D
 * **Reputation Refresh Policies**  
   * Configurable refresh intervals or event-driven updates (e.g. recalc scores after a configurable number of new blocks or after slashing events).
 
-## **11.3 Optional KYC-Bonded Pathways**
+## **12.3 Optional KYC-Bonded Pathways**
 
 * **KYC Bond Contract**  
   * An opt-in smart contract where users deposit a higher-value bond in exchange for "KYC-verified" status.  
@@ -1155,7 +1155,7 @@ This section describes optional interfaces and hook points where applications, D
 * **Bond Redemption & Appeals**  
   * Define multi-stage dispute resolution: appeals window before final slash, partial bond refund on successful appeal.
 
-## **11.4 Custom Reward/Slashing Policies**
+## **12.4 Custom Reward/Slashing Policies**
 
 * **Parameterized Slashing Rules**  
   * Expose protocol parameters (slash fraction, probation window) to on-chain governance so communities can adjust penalty severity.  
@@ -1166,11 +1166,42 @@ This section describes optional interfaces and hook points where applications, D
 * **Governance-Controlled Modules**  
   * Deploy policy contracts that implement `RewardDistributor` and `SlashController` interfaces; allow DAOs to vote on upgrades or parameter changes.
 
-# **12\. Formal Model (Optional)**
+## **12.1 Protocol Governance**
+
+All protocol changes and parameter updates MUST be approved through the validator quorum system:
+
+* **Parameter Updates**
+  * Changes to timing windows, stake requirements, or quorum rules
+  * Requires m-of-n validator approval
+  * Validators must stake additional tokens for parameter changes
+  * Changes take effect after a configurable delay period
+
+* **Protocol Upgrades**
+  * New message types or schema changes
+  * Requires m-of-n validator approval
+  * Validators must demonstrate compatibility
+  * Upgrade takes effect at specified block height
+
+* **Emergency Actions**
+  * Critical security fixes or incident response
+  * Requires higher quorum threshold (e.g., m+1-of-n)
+  * Validators must provide evidence of emergency
+  * Actions are time-limited and subject to review
+
+* **Governance Process**
+  1. Proposal submitted with evidence and rationale
+  2. Validators review and vote within time window
+  3. If quorum reached, change is scheduled
+  4. Change takes effect after delay period
+  5. Validators can be slashed for incorrect votes
+
+This ensures that all protocol changes maintain the same security properties as the core protocol, with no privileged actors or centralized control.
+
+# **13\. Formal Model (Optional)**
 
 This section sketches a machine-checked model of the Soul Bound Protocol, useful for rigorous verification of security and liveness properties. We describe a TLA⁺ or Alloy rendition at a high level. Implementers may use these patterns or adapt them to other tools (Tamarin, ProVerif, etc.).
 
-## **12.1 TLA⁺ or Alloy Model Overview**
+## **13.1 TLA⁺ or Alloy Model Overview**
 
 * **Scope:**  
   Model the core identity issuance flow (Challenge → SensorPackage → Attestation → Mint → Validation → Commit) plus slashing and revocation.  
@@ -1182,7 +1213,7 @@ This section sketches a machine-checked model of the Soul Bound Protocol, useful
   * Ensure that every valid session either reaches `Minted` or `Rejected` (no deadlock).  
   * Validate that slashing only occurs after a valid `RevocationRequest`.
 
-## **12.2 State Variables & Actions**
+## **13.2 State Variables & Actions**
 
 * **State Variables**  
   1. `Candidates`: set of pending sessions, each with `(sessionId, nonce, state)`  
@@ -1201,7 +1232,7 @@ This section sketches a machine-checked model of the Soul Bound Protocol, useful
   8. `ValidateRevoke(v, r)`: Validators process revocation, then `CommitRevoke` if quorum.  
   9. `Slash(id)`: Protocol slashes stake for a revoked identity `id`.
 
-## **12.3 Invariants & Temporal Properties**
+## **13.3 Invariants & Temporal Properties**
 
 * **Safety Invariants**  
   * **UniqueHumanAnchor:** No two `Identities` share the same human anchor identifier.  
@@ -1212,7 +1243,7 @@ This section sketches a machine-checked model of the Soul Bound Protocol, useful
   * **EventualSlash:** If a valid revocation is submitted, the corresponding identity eventually transitions to `Revoked` and its stake is slashed.  
   * **QuorumTermination:** Given live validators, any `MintRequest` will gather m votes within bounded time.
 
-## **12.4 Model-Checking Results**
+## **13.4 Model-Checking Results**
 
 * **Model Scope & Limitations**  
   * This is a reference implementation demonstrating the core protocol mechanics  
@@ -1264,9 +1295,9 @@ This section sketches a machine-checked model of the Soul Bound Protocol, useful
 
 Note: This model serves as a reference implementation and basic verification of the protocol's core mechanics. Real-world deployments should conduct additional security analysis, including implementation-specific considerations, network adversarial models, and economic game theory analysis.
 
-# **13\. Appendices**
+# **14\. Appendices**
 
-## **13.1 Parameter Recommendations (Δs, stake sizes, quorum)**
+## **14.1 Parameter Recommendations (Δs, stake sizes, quorum)**
 
 The following parameters are part of the protocol domain and MUST be supported by all implementations. Implementations may add additional parameters as described in Section 1.2, but MUST NOT modify these core parameters.
 
@@ -1362,7 +1393,7 @@ The following parameters are part of the protocol domain and MUST be supported b
 
 Note: These parameters are example values for a small-scale deployment. Real-world implementations should conduct thorough analysis of their specific requirements and adjust parameters accordingly. The scaling formulas provided are starting points that should be validated through simulation and real-world testing.
 
-## **13.2 Example API Endpoints & RPC Definitions**
+## **14.2 Example API Endpoints & RPC Definitions**
 
 ```json
 {  
@@ -1419,7 +1450,7 @@ Note: These parameters are example values for a small-scale deployment. Real-wor
 }
 ```
 
-## **13.3 Glossary of Terms**
+## **14.3 Glossary of Terms**
 
 * **Candidate**  
   A person or device requesting a new Soul Bound identity.  
@@ -1440,7 +1471,7 @@ Note: These parameters are example values for a small-scale deployment. Real-wor
 * **Quorum (m-of-n)**  
   The requirement that at least *m* out of *n* validators must approve an action for it to succeed.
 
-## **13.4 References & Further Reading**
+## **14.4 References & Further Reading**
 
 * [Bitcoin: A Peer-to-Peer Electronic Cash System](https://bitcoin.org/bitcoin.pdf)  
   Satoshi Nakamoto (2008)  
