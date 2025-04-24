@@ -304,42 +304,23 @@ This section defines the core protocol messages, their senders, purposes, requir
   * `timestamp`: Unix epoch time of issuance  
   * `nonce`: Cryptographically random value  
 * **Semantics:**  
-  * Candidate must initiate sensor capture within the configured time window Δ₁ (see Section 13.1 for configured value).  
+  * Candidate must respond within the configured time window Δ₁ (see Section 13.1 for configured value).  
   * Future messages in this session must include the same `sessionId` and `nonce`.
 
-## **4.2 SensorPackage**
-
-* **Sender:** Candidate ↔ Sponsor (bidirectional exchange)  
-* **Purpose:** Exchange multi-sensor hashes to prove co-location and motion.  
-* **Fields:**  
-  * `type`: `"SensorPackage"`  
-  * `sessionId`: UUID (from ChallengeRequest)  
-  * `nonce`: Cryptographically random value  
-  * `accelHash`: Hash of synchronized accelerometer data  
-  * `nfcHash`: Hash of NFC proximity handshake  
-  * `ambientHash`: Hash of ambient audio/light samples  
-  * `senderSig`: Signature over concatenation of `sessionId∥accelHash∥nfcHash∥ambientHash∥nonce` using sender's private key  
-* **Semantics:**  
-  * Both parties exchange signed sensor packages containing hashes of their local sensor readings.  
-  * Each party verifies that the received hashes match their own device readings.  
-  * Any discrepancy → Session is aborted.  
-  * The exchange must complete within Δ₁ of the ChallengeRequest.
-
-## **4.3 SponsorAttestation**
+## **4.2 SponsorAttestation**
 
 * **Sender:** Sponsor → Candidate (and later to Validators)  
-* **Purpose:** Formally vouch that the in-person sensor checks and biometrics passed.  
+* **Purpose:** Formally vouch that the in-person verification was completed.  
 * **Fields:**  
   * `type`: `"SponsorAttestation"`  
   * `sessionId`: UUID  
-  * `sensorHashes`: Array of hashes `[accelHash, nfcHash, ambientHash]`  
   * `timestamp`: Unix epoch time of attestation  
-  * `sponsorSig`: Signature over `sessionId∥sensorHashes∥timestamp` using Sponsor's private key  
+  * `sponsorSig`: Signature over `sessionId∥timestamp` using Sponsor's private key  
 * **Semantics:**  
   * Candidate collects this signed attestation to build the MintRequest.  
-  * Valid only if all sensor hashes match and attestation is within Δ₂ of ChallengeRequest.
+  * Valid only if attestation is within Δ₂ of ChallengeRequest.
 
-## **4.4 MintRequest**
+## **4.3 MintRequest**
 
 * **Sender:** Candidate → Validator(s) → Ledger  
 * **Purpose:** Propose creation of a new Soul Bound identity on-chain.  
@@ -372,7 +353,7 @@ This section defines the core protocol messages, their senders, purposes, requir
     * Off-chain: `|localTime – timestamp| ≤ ΔT`  
     * On-chain: `currentHeight – blockHeight ≤ N` (where N is the maximum submission window)
 
-## **4.5 ValidationResponse**
+## **4.4 ValidationResponse**
 
 * **Sender:** Validator → Candidate & Sponsor  
 * **Purpose:** Communicate approval or rejection of a MintRequest.  
@@ -388,7 +369,7 @@ This section defines the core protocol messages, their senders, purposes, requir
   * Candidate/Sponsor track responses until quorum (m-of-n) is reached.  
   * If majority "approved," minting proceeds; else session fails.
 
-## **4.6 RevocationRequest**
+## **4.5 RevocationRequest**
 
 * **Sender:** Sponsor, Validator, or Governance Module → Validator(s) → Ledger  
 * **Purpose:** Revoke an existing identity due to fraud, compromise, or policy breach.  
@@ -403,7 +384,7 @@ This section defines the core protocol messages, their senders, purposes, requir
 * **Semantics:**  
   * Validators evaluate evidence; approved revocation triggers slashing and mark identity as revoked on-chain.
 
-## **4.7 RewardDistribution / SlashNotification**
+## **4.6 RewardDistribution / SlashNotification**
 
 * **Sender:** Ledger (Smart Contract) → Participant(s)  
 * **Purpose:** Distribute rewards or notify of slashed stakes after minting or revocation events.  
@@ -419,195 +400,130 @@ This section defines the core protocol messages, their senders, purposes, requir
   * Automatic, on-chain execution of reward/slash logic based on configured parameters.  
   * Events are recorded in the Ledger for auditing and downstream trust scoring.
 
-# **5\. Actor State Machines**
+# **5\. State Machines**
 
-This section describes each participant's internal state machine, listing states, transitions, triggers, and failure conditions.
+This section defines the state machines that govern the behavior of each participant type. Implementations MUST maintain these states and transitions exactly as specified.
 
-## **5.1 Candidate State Machine (INIT → DONE/FAILED)**
+## **5.1 Candidate State Machine**
 
-**States**
+* **Initial State:** `IDLE`  
+* **States:**  
+  * `IDLE`: Awaiting ChallengeRequest  
+  * `VERIFYING`: Received ChallengeRequest, awaiting SponsorAttestation  
+  * `MINTING`: Received valid SponsorAttestation, awaiting ValidationResponse  
+  * `ACTIVE`: Successfully minted identity  
+  * `REVOKED`: Identity revoked  
+* **Transitions:**  
+  * `IDLE → VERIFYING`: On receiving valid ChallengeRequest  
+  * `VERIFYING → MINTING`: On receiving valid SponsorAttestation  
+  * `MINTING → ACTIVE`: On receiving majority-approved ValidationResponse  
+  * `* → REVOKED`: On receiving valid RevocationRequest
 
-* **INIT**  
-* **WAIT_CHALLENGE**  
-* **COLLECT_SENSORS**  
-* **WAIT_ATTESTATION**  
-* **SUBMIT_MINT**  
-* **DONE**  
-* **FAILED**
+## **5.2 Sponsor State Machine**
 
-**Transitions**
+* **Initial State:** `IDLE`  
+* **States:**  
+  * `IDLE`: Available for new sessions  
+  * `VERIFYING`: Sent ChallengeRequest, awaiting in-person verification  
+  * `ATTESTING`: Completed verification, preparing SponsorAttestation  
+  * `ACTIVE`: Successfully attested identity  
+  * `SLASHED`: Lost stake due to fraud  
+* **Transitions:**  
+  * `IDLE → VERIFYING`: On sending ChallengeRequest  
+  * `VERIFYING → ATTESTING`: On completing in-person verification  
+  * `ATTESTING → ACTIVE`: On sending valid SponsorAttestation  
+  * `* → SLASHED`: On receiving valid RevocationRequest with fraud evidence
 
-1. **INIT → WAIT_CHALLENGE**  
-   * Trigger: Candidate "start" action (e.g., user taps "Verify Identity").  
-2. **WAIT_CHALLENGE → COLLECT_SENSORS**  
-   * Trigger: Receipt of valid `ChallengeRequest` (checks `sessionId`, `timestamp`, `nonce`).  
-   * Failure: Timeout Δ₁ ⇒ go to **FAILED**.  
-3. **COLLECT_SENSORS → WAIT_ATTESTATION**  
-   * Trigger: Candidate gathers sensor data, sends `SensorPackage`.  
-   * Failure: Sensor capture error or user abort ⇒ **FAILED**.  
-4. **WAIT_ATTESTATION → SUBMIT_MINT**  
-   * Trigger: Receipt of valid `SponsorAttestation` (matching hashes, valid signature, within Δ₂).  
-   * Failure: Attestation mismatch or timeout ⇒ **FAILED**.  
-5. **SUBMIT_MINT → DONE**  
-   * Trigger: Receipt of ≥ m "approved" `ValidationResponse` from validators.  
-6. **SUBMIT_MINT → FAILED**  
-   * Trigger: Receipt of ≥ ( n–m+1 ) "rejected" responses, or timed out before quorum.
+## **5.3 Validator State Machine**
 
-**Notes**
+* **Initial State:** `IDLE`  
+* **States:**  
+  * `IDLE`: Awaiting MintRequest  
+  * `VERIFYING`: Received MintRequest, awaiting ValidationResponse  
+  * `VOTING`: Received valid ValidationResponse, awaiting Commit  
+  * `COMMITING`: Validator signs and broadcasts ValidationResponse  
+  * `ACTIVE`: Valid identity  
+  * `REVOKED`: Validator revoked  
+* **Transitions:**  
+  * `IDLE → VERIFYING`: On receiving valid MintRequest  
+  * `VERIFYING → VOTING`: On receiving valid ValidationResponse  
+  * `VOTING → COMMITING`: On receiving majority-approved ValidationResponse  
+  * `* → REVOKED`: On receiving valid RevocationRequest
 
-* On **DONE**, the Candidate's identity is live on-chain.  
-* On **FAILED**, any staked tokens may be forfeited per slashing rules.
+## **5.4 Ledger State Machine**
 
-## **5.2 Sponsor State Machine (IDLE → COMPLETED/ABORTED)**
+* **Initial State:** `WAIT_TX`  
+* **States:**  
+  * `WAIT_TX`: Waiting for new MintRequest  
+  * `ACCEPT`: MintRequest accepted  
+  * `REJECT`: MintRequest rejected  
+  * `UPDATE_GRAPH`: MintRequest processed, updating graph  
+* **Transitions:**  
+  * `WAIT_TX → ACCEPT`: On receiving valid MintRequest  
+  * `WAIT_TX → REJECT`: On receiving invalid MintRequest  
+  * `ACCEPT → UPDATE_GRAPH`: On confirming block  
+  * `REJECT → WAIT_TX`: On transaction failure or timeout  
+  * `UPDATE_GRAPH → WAIT_TX`: On returning to waiting state
 
-**States**
+# **6\. Protocol Flow**
 
-* **IDLE**  
-* **WAIT_SENSOR**  
-* **VERIFY_SENSORS**  
-* **SEND_ATTESTATION**  
-* **COMPLETED**  
-* **ABORTED**
+This section walks through the complete lifecycle of identity creation, from initial contact through minting and potential revocation.
 
-**Transitions**
+## **6.1 Identity Creation Flow**
 
-1. **IDLE → WAIT_SENSOR**  
-   * Trigger: Sponsor initiates or accepts a new session (emits `ChallengeRequest`).  
-2. **WAIT_SENSOR → VERIFY_SENSORS**  
-   * Trigger: Receipt of `SensorPackage` from Candidate.  
-   * Failure: Timeout Δ₁ or malformed package ⇒ **ABORTED**.  
-3. **VERIFY_SENSORS → SEND_ATTESTATION**  
-   * Trigger: Local sensor data matches hashes, biometric checks pass.  
-   * Failure: Hash mismatch or biometric failure ⇒ **ABORTED**.  
-4. **SEND_ATTESTATION → COMPLETED**  
-   * Trigger: Sponsor sends `SponsorAttestation` successfully.  
-5. **COMPLETED → IDLE**  
-   * Final: Sponsor returns to IDLE awaiting next session.  
-6. **Any → ABORTED**  
-   * Trigger: User cancellation, errors, or policy violation.
+1. **Initial Contact**  
+   * Candidate and Sponsor establish communication channel  
+   * Sponsor sends ChallengeRequest with fresh sessionId and nonce
 
-**Notes**
+2. **In-Person Verification**  
+   * Candidate and Sponsor meet in person  
+   * Sponsor verifies Candidate's identity documents  
+   * Sponsor completes verification and prepares SponsorAttestation
 
-* If the Candidate's future identity is revoked, Sponsor's stake may be slashed.
+3. **Attestation & Minting**  
+   * Sponsor sends signed SponsorAttestation to Candidate  
+   * Candidate builds MintRequest with attestation  
+   * Candidate submits MintRequest to Validators
 
-## **5.3 Validator State Machine (IDLE → VOTE → COMMIT)**
+4. **Validation & Minting**  
+   * Validators verify MintRequest signatures and attestations  
+   * Validators check Sponsor's stake and reputation  
+   * On majority approval, identity is minted on-chain
 
-**States**
+## **6.2 Minting Process**
 
-* **IDLE**  
-* **VERIFY_MINT**  
-* **VOTE**  
-* **COMMIT**
+1. **Mint Request**  
+   * Candidate submits MintRequest to Validators  
+   * Validators verify signatures and attestations  
+   * Validators check sponsor's stake and reputation  
+   * On majority approval, MintRequest is processed
 
-**Transitions**
+2. **Validation Response**  
+   * Validators return ValidationResponse to Candidate  
+   * Candidate tracks responses until quorum is reached
 
-1. **IDLE → VERIFY_MINT**  
-   * Trigger: Receipt of `MintRequest`.  
-2. **VERIFY_MINT → VOTE**  
-   * Trigger: All checks pass:  
-     * Signatures valid  
-     * Stake ≥ S_mint  
-     * `zkProof` verifies  
-     * `timeAnchor` within window  
-   * Failure: Any check fails ⇒ emit `ValidationResponse(status="rejected")` and return to **IDLE**.  
-3. **VOTE → COMMIT**  
-   * Trigger: Validator signs and broadcasts `ValidationResponse(status="approved")`.  
-4. **COMMIT → IDLE**  
-   * Trigger: After observing a quorum of m "approved" responses, optionally submit the on-chain transaction to the Ledger, then return to **IDLE**.
+3. **On-Chain Minting**  
+   * Ledger commits new identity token on majority approval
 
-**Validator Set Management**
+## **6.3 Revocation Process**
 
-* **Entry Requirements**
-  * Must lock sufficient stake (V_bond)
-  * Must verify messages correctly
-  * Must maintain correct stake requirements
-  * Must enforce quorum rules (m-of-n)
-  * Must protect private keys and sensor data
+1. **Revocation Request**  
+   * Sponsor, Validator, or Governance Module submits RevocationRequest  
+   * Validators process request and decide on revocation
 
-* **Set Changes**
-  * Changes require:
-    * Governance proposal and vote
-    * Stake lock period
-    * Gradual rotation schedule
-    * Protocol-enforced limits:
-      * Maximum rotation rate per epoch
-      * Minimum stake lock period
-      * Required quorum for all changes
-    * No exceptions or emergency powers
-    * All changes must follow standard governance process
+2. **Slash Notification**  
+   * Ledger sends SlashNotification to affected parties  
+   * SlashNotification includes evidence and decision
 
-* **Monitoring & Enforcement**
-  * Protocol-enforced monitoring:
-    * On-chain tracking of validator votes and responses
-    * Automatic detection of equivocation (conflicting votes)
-    * Timestamp validation for all messages
-    * Stake requirement verification
-    * Quorum rule enforcement
-  * Protocol automatically slashes stake for:
-    * Invalid message acceptance
-    * Protocol violations
-    * Security incidents
-  * Protocol-level metrics:
-    * Response time compliance
-    * Vote consistency
-    * Stake maintenance
-    * Quorum participation
+3. **Identity Revocation**  
+   * Ledger marks identity as revoked on-chain  
+   * Revoked identity's stake is slashed
 
-* **Recovery Protocol**
-  * Graceful degradation during incidents
-  * Automatic stake slashing for violations
-  * Standard governance process for validator rotation
-  * Incident response coordination
-  * Post-incident analysis and parameter adjustment
-
-**Notes**
-
-* Validators must guard against equivocation (voting both approve and reject on the same session).  
-* In COMMIT, the validator may include finalization metadata (e.g., block hash).
-* During partitions or reconfigurations, validators should:  
-  * Maintain logs of missed transactions  
-  * Track state divergence  
-  * Report anomalies to governance  
-* Validator set changes require:  
-  * Sufficient notice period  
-  * Graceful transition  
-  * Fallback mechanisms if change fails
-
-## **5.4 Ledger State Machine (ACCEPT | REJECT → UPDATE GRAPH)**
-
-**States**
-
-* **WAIT_TX**  
-* **ACCEPT**  
-* **REJECT**  
-* **UPDATE_GRAPH**
-
-**Transitions**
-
-1. **WAIT_TX → ACCEPT**  
-   * Trigger: Receipt of a valid on-chain Mint transaction with ≥ m approvals and sufficient stake.  
-2. **WAIT_TX → REJECT**  
-   * Trigger: Receipt of a transaction explicitly marked invalid by smart-contract logic (e.g., insufficient stake).  
-3. **ACCEPT → UPDATE_GRAPH**  
-   * Trigger: Block confirmation. Action:  
-     * Add new identity node (`identityPubKey`)  
-     * Add sponsorship edge (`sponsorPubKey → identityPubKey`)  
-     * Record stake and proof metadata  
-4. **REJECT → WAIT_TX**  
-   * Trigger: Transaction failure or timeout. Ledger ignores the request; Candidate/Sponsor must retry or abort.  
-5. **UPDATE_GRAPH → WAIT_TX**  
-   * Final: Ledger returns to waiting for new transactions.
-
-**Notes**
-
-* The Ledger enforces economic rules (burning/slashing, reward distribution) as part of transaction processing.  
-* Revocation and SlashNotification events follow a similar ACCEPT → UPDATE_GRAPH flow to remove or flag nodes/edges.
-
-# **6\. Data Formats & Schemas**
+# **7\. Data Formats & Schemas**
 
 This section specifies the machine-readable schemas for all protocol messages and ledger records, plus some full-payload examples. Implementations MUST support these schemas exactly as specified, while being free to add implementation-specific fields or optimizations as described in Section 1.2.
 
-## **6.1 Wire Formats (JSON-Schema)**
+## **7.1 Wire Formats (JSON-Schema)**
 
 All off-chain protocol messages exchanged peer-to-peer or via RPC MUST conform to the JSON-Schema definitions in:
 
@@ -617,7 +533,6 @@ All off-chain protocol messages exchanged peer-to-peer or via RPC MUST conform t
   "title": "SoulBound Wire Message Schemas",  
   "oneOf": [
     { "$ref": "#/definitions/ChallengeRequest" },
-    { "$ref": "#/definitions/SensorPackage" },
     { "$ref": "#/definitions/SponsorAttestation" },
     { "$ref": "#/definitions/MintRequest" },
     { "$ref": "#/definitions/ValidationResponse" },
@@ -636,30 +551,12 @@ All off-chain protocol messages exchanged peer-to-peer or via RPC MUST conform t
         "nonce":      { "type": "string" }  
       }  
     },  
-    "SensorPackage": {  
-      "type": "object",  
-      "required": ["type","sessionId","accelHash","nfcHash","ambientHash","senderSig"],
-      "properties": {  
-        "type":         { "const": "SensorPackage" },  
-        "sessionId":    { "type": "string", "format": "uuid" },  
-        "accelHash":    { "type": "string" },  
-        "nfcHash":      { "type": "string" },  
-        "ambientHash":  { "type": "string" },  
-        "senderSig":    { "type": "string" }
-      }  
-    },  
     "SponsorAttestation": {  
       "type": "object",  
-      "required": ["type","sessionId","sensorHashes","timestamp","sponsorSig"],
+      "required": ["type","sessionId","timestamp","sponsorSig"],
       "properties": {  
         "type":         { "const": "SponsorAttestation" },  
         "sessionId":    { "type": "string", "format": "uuid" },  
-        "sensorHashes": {  
-          "type": "array",  
-          "items": { "type": "string" },  
-          "minItems": 3,  
-          "maxItems": 3  
-        },  
         "timestamp":    { "type": "integer", "minimum": 0 },  
         "sponsorSig":   { "type": "string" }  
       }  
@@ -783,7 +680,7 @@ All off-chain protocol messages exchanged peer-to-peer or via RPC MUST conform t
 }
 ```
 
-## **6.2 On-Ledger Record Structures**
+## **7.2 On-Ledger Record Structures**
 
 All on-chain transactions and stored records (identity nodes, edges, slashes, rewards) MUST follow the JSON-Schema in:
 
@@ -838,7 +735,7 @@ All on-chain transactions and stored records (identity nodes, edges, slashes, re
 }
 ```
 
-## **6.3 Example Messages**
+## **7.3 Example Messages**
 
 To see concrete payloads for each message type, consult:
 
@@ -851,18 +748,9 @@ To see concrete payloads for each message type, consult:
     "timestamp": 1633046400,  
     "nonce": "f47ac10b-58cc-4372-a567-0e02b2c3d479"  
   },
-  "SensorPackage": {  
-    "type": "SensorPackage",  
-    "sessionId": "550e8400-e29b-41d4-a716-446655440000",  
-    "accelHash": "3f5d8e2a...",  
-    "nfcHash": "a1b2c3d4...",  
-    "ambientHash": "9f8e7d6c...",  
-    "senderSig": "3045022100..."
-  },
   "SponsorAttestation": {  
     "type": "SponsorAttestation",  
     "sessionId": "550e8400-e29b-41d4-a716-446655440000",  
-    "sensorHashes": ["3f5d8e2a...","a1b2c3d4...","9f8e7d6c..."],
     "timestamp": 1633046410,  
     "sponsorSig": "3046022100..."  
   },
@@ -914,11 +802,11 @@ To see concrete payloads for each message type, consult:
 }
 ```
 
-# **7\. Timing & Anti-Replay Mechanisms**
+# **8\. Timing & Anti-Replay Mechanisms**
 
 To guarantee message freshness and prevent replay attacks, the protocol mandates unforgeable, verifiable time- and order-proofs on every step—both off-chain and on-chain.
 
-## **7.1 Timing Parameters & Windows**
+## **8.1 Timing Parameters & Windows**
 
 The protocol defines several timing parameters that all implementations MUST support. These parameters are critical for ensuring message freshness and preventing replay attacks.
 
@@ -963,7 +851,7 @@ The protocol defines several timing parameters that all implementations MUST sup
 
 Note: All protocol-level timing parameters are defined in Section 13.1 and MUST be supported by all implementations. Implementation-specific windows may vary between deployments but should be clearly documented.
 
-## **7.2 Nonces & Sequence Numbers**
+## **8.2 Nonces & Sequence Numbers**
 
 * **Session nonces**  
   * Each ChallengeRequest includes a cryptographic `nonce` (random bit-string)  
@@ -978,7 +866,7 @@ Note: All protocol-level timing parameters are defined in Section 13.1 and MUST 
   * Nonce and sequence number are always included in the data that's hashed  
     and signed by each actor, preventing mutation or reuse.
 
-## **7.3 Verifiable Delay Functions (optional)**
+## **8.3 Verifiable Delay Functions (optional)**
 
 * **Purpose**  
   * Enforce a minimum elapsed time without trusting local clocks (e.g., a "cool-off"  
@@ -994,11 +882,11 @@ Note: All protocol-level timing parameters are defined in Section 13.1 and MUST 
 
 These combined mechanisms ensure every action in the protocol is fresh, ordered, and tamper-evident—making replay or preplay attacks economically and technically infeasible.
 
-# **8\. Economic Mechanisms**
+# **9\. Economic Mechanisms**
 
 This section describes the protocol-level economic mechanisms that all implementations MUST support. While the core mechanisms are fixed by the protocol, implementations may add additional economic features as described in Section 1.2.
 
-## **8.1 Identity-Minting Stakes & Fees**
+## **9.1 Identity-Minting Stakes & Fees**
 
 * **Minting Stake (S_mint)**
   * Must be locked for identity lifetime
@@ -1010,7 +898,7 @@ This section describes the protocol-level economic mechanisms that all implement
   * Covers verification costs
   * Distributed based on validation accuracy
 
-## **8.2 Sponsor Stakes & Slashing**
+## **9.2 Sponsor Stakes & Slashing**
 
 * **Sponsor Stake (S_sponsor)**
   * Must be at least the configured sponsor stake
@@ -1022,7 +910,7 @@ This section describes the protocol-level economic mechanisms that all implement
   * Covers verification costs
   * Distributed based on validation accuracy
 
-## **8.3 Validator Bonds & Rewards**
+## **9.3 Validator Bonds & Rewards**
 
 * **Validator Bond (V_bond)**
   * Must exceed S_mint × 10
@@ -1040,7 +928,7 @@ This section describes the protocol-level economic mechanisms that all implement
     * Malicious behavior unprofitable
     * Cost of attack exceeds benefits
 
-## **8.4 Identity Maintenance Requirements**
+## **9.4 Identity Maintenance Requirements**
 
 The following are the strict requirements for maintaining a valid Soul Bound identity. Violation of these requirements may result in slashing of escrowed stake or revocation of identity.
 
@@ -1062,11 +950,11 @@ The following are the strict requirements for maintaining a valid Soul Bound ide
 
 Note: These are the minimum protocol-level requirements. Implementations may add additional requirements or maintenance tasks as described in Section 1.2.
 
-# **9\. Security Properties & Invariants**
+# **10\. Security Properties & Invariants**
 
 This section states the core security guarantees and invariants that any Soul Bound implementation must uphold. These properties ensure that identities are real, unique, fresh, private, and that economic penalties enforce honest behavior.
 
-## **9.1 Unforgeability of Attestations**
+## **10.1 Unforgeability of Attestations**
 
 * **Invariant:** No party can produce a valid `SponsorAttestation` or `SensorPackage` without physically co-locating two devices and holding the correct private keys.  
 * **Mechanisms:**  
@@ -1074,7 +962,7 @@ This section states the core security guarantees and invariants that any Soul Bo
   * Validators reject any attestation whose signature fails verification
   * Economic incentives ensure validators check signatures correctly
 
-## **9.2 Freshness & Liveness Guarantees**
+## **10.2 Freshness & Liveness Guarantees**
 
 * **Invariant:** Every protocol step must occur within its configured time window.  
 * **Mechanisms:**  
@@ -1082,7 +970,7 @@ This section states the core security guarantees and invariants that any Soul Bo
   * Validators enforce time windows
   * Nonces prevent replay attacks
 
-## **9.3 Identity Fraud Resistance**
+## **10.3 Identity Fraud Resistance**
 
 * **Invariant:** The cost to create N identities grows linearly in N.  
 * **Mechanisms:**  
@@ -1090,7 +978,7 @@ This section states the core security guarantees and invariants that any Soul Bo
   * Token stakes and slashing
   * Protocol-enforced limits on sponsorships
 
-## **9.4 Privacy Guarantees**
+## **10.4 Privacy Guarantees**
 
 * **Invariant:** No raw biometric or sensor data is revealed on-chain.  
 * **Mechanisms:**  
@@ -1098,7 +986,7 @@ This section states the core security guarantees and invariants that any Soul Bo
   * Only hashes of sensor data are exchanged
   * ZK proofs attest to correct hash computation
 
-## **9.5 Revocation & Slashing**
+## **10.5 Revocation & Slashing**
 
 * **Invariant:** When an identity is revoked, its stake is slashed.  
 * **Mechanisms:**  
@@ -1106,7 +994,7 @@ This section states the core security guarantees and invariants that any Soul Bo
   * Validators follow quorum rule
   * Smart contracts enforce slashing
 
-## **9.6 Protocol-Level Enforcement**
+## **10.6 Protocol-Level Enforcement**
 
 * **Core Security Properties**
   * All implementations MUST:
@@ -1149,11 +1037,11 @@ This section states the core security guarantees and invariants that any Soul Bo
 * Total supply of Soul Bound stakes/tokens evolves only via protocol-approved mint, burn, and reward events.  
 * Every on-chain record (mint, revocation, reward, slash) is cryptographically linked to its originating messages and signatures.
 
-# **10\. Failure Modes & Error Handling**
+# **11\. Failure Modes & Error Handling**
 
 This section enumerates expected error conditions, how each actor should detect and respond, and what state transitions or economic consequences apply.
 
-## **10.1 Timeouts & Session Aborts**
+## **11.1 Timeouts & Session Aborts**
 
 * **ChallengeRequest → SensorPackage**  
   * If the Candidate does not send `SensorPackage` within Δ₁, the Sponsor aborts the session.  
@@ -1170,7 +1058,7 @@ This section enumerates expected error conditions, how each actor should detect 
   * If quorum is not reached before ΔV, Candidate/Sponsor treat the session as **FAILED**.  
   * If stake was locked, Candidate may reclaim or forfeit it based on policy (see economic rules).
 
-## **10.2 Signature or Proof Verification Failures**
+## **11.2 Signature or Proof Verification Failures**
 
 * **Invalid Signature**  
   * Any message whose signature fails to verify against the claimed public key is immediately rejected.  
@@ -1181,7 +1069,7 @@ This section enumerates expected error conditions, how each actor should detect 
   * If the `zkProof` in a `MintRequest` or `RevocationRequest` fails to verify, Validators reject the request.  
   * Candidate/Sponsor receive a "rejected: invalid proof" response and may correct or abandon.
 
-## **10.3 Stake Insufficiency Rejections**
+## **11.3 Stake Insufficiency Rejections**
 
 * **MintRequest Stake < S_mint**  
   * Validators and Ledger smart contracts check `stake ≥ S_mint`.  
@@ -1191,7 +1079,7 @@ This section enumerates expected error conditions, how each actor should detect 
   * Session is aborted and Sponsor receives a "stake too low" error.
   * No attestation is recorded.
 
-## **10.4 Replay or Duplicate Sessions**
+## **11.4 Replay or Duplicate Sessions**
 
 * **Nonce/Subsession Reuse**  
   * Each `sessionId` + `nonce` pair may be used only once.  
@@ -1203,7 +1091,7 @@ This section enumerates expected error conditions, how each actor should detect 
 * **Duplicate On-Chain Requests**  
   * LEDsger ensures idempotency: duplicate `MintRequest` or `RevocationRequest` with the same sessionId or txHash is ignored or returns the original result.
 
-## **10.5 Misbehaving Validators / Sponsors**
+## **11.5 Misbehaving Validators / Sponsors**
 
 * **Equivocation by Validators**  
   * If a Validator signs conflicting `ValidationResponse` for the same `sessionId`, that Validator's bond (`V_bond`) is slashed for double-voting.  
@@ -1217,7 +1105,7 @@ This section enumerates expected error conditions, how each actor should detect 
     * Removal from active validator set after severe offenses  
   * Detection occurs within the partition detection window (Δₚ)
 
-## **10.6 Error Reporting Conventions:**
+## **11.6 Error Reporting Conventions:**
 
 * Each rejection or abort SHOULD include:  
   * `errorCode` (e.g., `TIMEOUT`, `INVALID_SIG`, `INSUFFICIENT_STAKE`, `REPLAY_DETECTED`)  
@@ -1226,11 +1114,11 @@ This section enumerates expected error conditions, how each actor should detect 
 
 Handling these failure modes consistently ensures clear diagnostics, correct state cleanup, and proper economic enforcement across all implementations.
 
-# **11\. Extensions & Policy Hooks**
+# **12\. Extensions & Policy Hooks**
 
 This section describes optional interfaces and hook points where applications, DAOs, or governance modules can plug in custom logic—without changing the core Soul Bound protocol. These extensions are part of the implementation domain as described in Section 1.2.
 
-## **11.1 Decoupled Trust Semantics Interface**
+## **12.1 Decoupled Trust Semantics Interface**
 
 * **Graph Query API**  
   * Read-only endpoints to fetch the public identity graph: nodes (identities), edges (sponsorships), stake and reputation metadata.  
@@ -1242,7 +1130,7 @@ This section describes optional interfaces and hook points where applications, D
 * **Decision Registry**  
   * A registry contract or distributed registry mapping policy identifiers to evaluator code hashes or endpoints, enabling applications to reference named policies.
 
-## **11.2 Reputation-Scoring Plug-ins**
+## **12.2 Reputation-Scoring Plug-ins**
 
 * **Metric Definitions**  
   * Standard metrics (e.g. number of successful sponsorships, average sponsorship depth, validator accuracy) exposed in the graph metadata.  
