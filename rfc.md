@@ -5,9 +5,9 @@
 This document defines the **Soul Bound Protocol**, a decentralized, privacy-preserving framework for creating digital identities that are strongly anchored to real-world, in-person verification events. By treating Soul Bound as a *protocol* rather than a single software product, we enable multiple interoperable implementations to:
 
 * Generate and manage non-transferable identity tokens on a distributed ledger  
-* Record sponsorship and reputation stakes in a standardized, auditable format  
-* Decouple "trust semantics" (how applications interpret the identity graph) from the core verification mechanics  
-* Embed economic incentives (staking, slashing, performance rewards) to align honest behavior and deter fraud
+* Record sponsorship stakes in a standardized, auditable format  
+* Decouple application-specific identity interpretation from the core verification mechanics  
+* Embed economic incentives (staking, slashing) to align honest behavior and deter fraud
 
 The protocol is designed to make it economically and practically infeasible to create fraudulent identities at scale, while still allowing for legitimate identity creation. This is achieved through a combination of:
 * In-person verification requirements that cannot be easily automated
@@ -96,10 +96,10 @@ The Soul Bound Protocol is architected to achieve the following core objectives:
   Protect sensitive verification data using zero-knowledge proofs so that verifiers can confirm authenticity without learning raw personal data.  
 * **Interoperability (protocol ≠ software)**  
   Define a clear, implementation-agnostic protocol specification that allows diverse client, validator, and ledger software to interoperate seamlessly.  
-* **Extensibility (decoupled trust semantics)**  
-  Separate the core verification mechanics and graph construction from application-layer trust policies, enabling DAOs, apps, and users to apply custom reputation or governance logic over the public identity graph.  
+* **Extensibility (decoupled application logic)**  
+  Separate the core verification mechanics and graph construction from application-specific identity interpretation, enabling DAOs, apps, and users to apply custom logic over the public identity graph.  
 * **Economic alignment (staking & rewards)**  
-  Introduce token-based stakes, slashing conditions, and performance-based rewards so participants incur real economic risk when vouching for or validating identities, aligning incentives toward honest behavior.
+  Introduce token-based stakes and slashing conditions so participants incur real economic risk when vouching for or validating identities, aligning incentives toward honest behavior.
 
 ## **1.5 Assumptions & Threat Model**
 
@@ -540,19 +540,19 @@ This section walks through the complete lifecycle of identity creation, from ini
    * Validators check Sponsor's stake and reputation  
    * On majority approval, identity is minted on-chain
 
-## **6.2 Trust Building Process**
+## **6.2 Identity Verification Process**
 
 1. **Initial Verification**
    * Sponsor and Candidate meet in person
    * Multiple interactions over time
-   * Assessment of protocol understanding
    * Verification of uniqueness
+   * Confirmation of protocol understanding
 
-2. **Reputation Building**
-   * Trust builds through successful interactions
-   * Multiple sponsors can vouch over time
-   * Economic stakes increase with trust
-   * Long-term relationships valued
+2. **Stake Requirements**
+   * Understanding of stake requirements
+   * Knowledge of slashing conditions
+   * Commitment to honest behavior
+   * Willingness to maintain protocol security
 
 3. **Protocol Responsibilities**
    * Understanding of stake requirements
@@ -560,7 +560,7 @@ This section walks through the complete lifecycle of identity creation, from ini
    * Commitment to honest behavior
    * Willingness to maintain protocol security
 
-This approach focuses on building trust through direct interaction and economic alignment, creating a robust and decentralized identity system.
+This approach focuses on direct verification and economic alignment, creating a robust and decentralized identity system.
 
 ## **6.3 Revocation Process**
 
@@ -1242,28 +1242,28 @@ Handling these failure modes consistently ensures clear diagnostics, correct sta
 
 This section describes optional interfaces and hook points where applications, DAOs, or governance modules can plug in custom logic—without changing the core Soul Bound protocol. These extensions are part of the implementation domain as described in Section 1.2.
 
-## **12.1 Decoupled Trust Semantics Interface**
+## **12.1 Decoupled Application Interface**
 
 * **Graph Query API**  
-  * Read-only endpoints to fetch the public identity graph: nodes (identities), edges (sponsorships), stake and reputation metadata.  
+  * Read-only endpoints to fetch the public identity graph: nodes (identities), edges (sponsorships), stake metadata.  
   * Support filters (e.g. by depth, by timestamp range) and aggregate queries (e.g. degree centrality).  
-* **Policy SDK**  
-  * A language-agnostic interface (e.g. JavaScript/TypeScript, Rust, Python) for writing "trust evaluators" that consume graph data and output a trust decision (boolean or score).  
+* **Application SDK**  
+  * A language-agnostic interface (e.g. JavaScript/TypeScript, Rust, Python) for writing identity evaluators that consume graph data and output application-specific decisions.  
 * **Event Hooks**  
-  * Subscribe to on-chain or off-chain events (Mint, Revocation, Slash, Reward) and trigger custom workflows (e.g. notify a DAO, update an off-chain reputation database).  
+  * Subscribe to on-chain or off-chain events (Mint, Revocation, Slash, Reward) and trigger custom workflows.  
 * **Decision Registry**  
-  * A registry contract or distributed registry mapping policy identifiers to evaluator code hashes or endpoints, enabling applications to reference named policies.
+  * A registry contract or distributed registry mapping application identifiers to evaluator code hashes or endpoints.
 
-## **12.2 Reputation-Scoring Plug-ins**
+## **12.2 Application-Specific Metrics**
 
 * **Metric Definitions**  
-  * Standard metrics (e.g. number of successful sponsorships, average sponsorship depth, validator accuracy) exposed in the graph metadata.  
-* **Pluggable Scoring Algorithms**  
-  * Modules that consume raw metrics, apply weightings, thresholds, or machine-learning models, and produce per-identity reputation scores.  
-* **On-Chain Reputation Anchors**  
-  * Optional contracts to record a snapshot of computed reputation scores, so smart contracts or UIs can enforce minimum reputation requirements.  
-* **Reputation Refresh Policies**  
-  * Configurable refresh intervals or event-driven updates (e.g. recalc scores after a configurable number of new blocks or after slashing events).
+  * Standard metrics (e.g. number of successful sponsorships, sponsorship depth, validation accuracy) exposed in the graph metadata.  
+* **Application Logic**  
+  * Modules that consume raw metrics and produce application-specific decisions.  
+* **On-Chain Anchors**  
+  * Optional contracts to record application-specific state, so smart contracts or UIs can enforce application requirements.  
+* **State Update Policies**  
+  * Configurable update intervals or event-driven updates (e.g. after a configurable number of new blocks or after slashing events).
 
 ## **12.4 Custom Reward/Slashing Policies**
 
