@@ -70,12 +70,12 @@ This separation ensures that:
 
 This specification defines the **protocol-level** rules, message flows, data formats, and economic mechanisms required to create, validate, and manage Soul Bound identities on a distributed ledger. It covers:
 
-* Core **message types** and their semantics (ChallengeRequest, SensorPackage, SponsorAttestation, MintRequest, ValidationResponse, RevocationRequest)  
+* Core **message types** and their semantics (ChallengeRequest, SponsorAttestation, MintRequest, ValidationResponse, RevocationRequest)  
 * **Actor state machines** for Candidate, Sponsor, Validator, and Ledger roles  
 * **Wire and on-ledger schemas** (e.g. JSON-Schema) for all protocol messages and records  
 * **Timing & anti-replay controls**, including signed timestamps, nonces, and optional verifiable-delay functions  
 * **Economic mechanisms**: identity-mint stakes, sponsor stakes, validator bonds, slashing, fees, and reward distribution  
-* **Privacy guarantees** via zero-knowledge proofs and hashed sensor data  
+* **Privacy guarantees** via zero-knowledge proofs and attestations  
 * **Decoupled trust semantics**—how external applications or DAOs may interpret the public identity graph
 
 Out of scope for this document (implementation domain):
@@ -91,9 +91,9 @@ Out of scope for this document (implementation domain):
 The Soul Bound Protocol is architected to achieve the following core objectives:
 
 * **Sybil resistance**  
-  Ensure each identity corresponds to a unique, real-world individual by requiring in-person, multi-sensor verification and economically-backed sponsorships.  
+  Ensure each identity corresponds to a unique, real-world individual by requiring in-person verification and economically-backed sponsorships.  
 * **Privacy (zero-knowledge)**  
-  Protect sensitive biometric and sensor data using hashed inputs and zero-knowledge proofs so that verifiers can confirm authenticity without learning raw personal data.  
+  Protect sensitive verification data using zero-knowledge proofs so that verifiers can confirm authenticity without learning raw personal data.  
 * **Interoperability (protocol ≠ software)**  
   Define a clear, implementation-agnostic protocol specification that allows diverse client, validator, and ledger software to interoperate seamlessly.  
 * **Extensibility (decoupled trust semantics)**  
@@ -107,8 +107,6 @@ The Soul Bound Protocol is architected to achieve the following core objectives:
 
 * **Secure Key Storage**  
   Each participant's device securely holds its private keys and protects them from extraction or tampering (e.g., via Secure Enclave or equivalent).  
-* **Reliable Sensor Hardware**  
-  Mobile devices provide accurate, tamper-resistant sensor readings (NFC, accelerometer, microphone, GPS, light) and cryptographically sign hashed outputs.  
 * **Synchronized Time Base**  
   All parties reference a shared notion of time—either via blockchain block heights or loosely synchronized clocks—within an acceptable skew (ΔT).  
 * **Permissionless Ledger**  
@@ -123,14 +121,14 @@ The Soul Bound Protocol is architected to achieve the following core objectives:
 #### **Adversary Goals**
 
 * **Sybil Creation**: Generate a large number of fake or duplicate identities to subvert decentralized governance or reputation systems.  
-* **Data Forgery**: Spoof or replay sensor data to simulate a legitimate in-person verification.  
+* **Data Forgery**: Spoof or replay verification data to simulate a legitimate in-person verification.  
 * **Stake Grinding**: Abuse staking mechanics (e.g., repeatedly minting and slashing to extract fees).  
-* **Privacy Violation**: Attempt to learn raw biometric or sensor data from attestations.  
+* **Privacy Violation**: Attempt to learn raw verification data from attestations.  
 * **Consensus Attack**: Collude validators to approve fraudulent MintRequests or block honest ones.
 
 #### **Adversary Capabilities**
 
-* **Malicious Clients**: Control devices or custom apps that may fabricate sensor outputs or signatures.  
+* **Malicious Clients**: Control devices or custom apps that may fabricate signatures.  
 * **Colluding Sponsors**: Existing identities willing to vouch for sybils in exchange for rewards.  
 * **Compromised Validator Nodes**: Validators that deviate from protocol rules or censor certain submissions.  
 * **Network Adversary**: Ability to intercept, delay, or reorder protocol messages on the P2P network.  
@@ -138,19 +136,17 @@ The Soul Bound Protocol is architected to achieve the following core objectives:
 
 #### **Attack Vectors**
 
-* **Sensor Spoofing & Replay**: Injecting recorded sensor hashes or simulated multi-sensor traces.  
-* **Message Replay**: Reusing old ChallengeRequest, SensorPackage, or SponsorAttestation messages.  
+* **Message Replay**: Reusing old ChallengeRequest or SponsorAttestation messages.  
 * **Staking Abuse**: Minting identities en masse, awaiting slashing window to lapse, then releasing stakes.  
 * **Collusion & Bribery**: Coordinated behavior among sponsors and validators to approve sybil identities.  
 * **Fork or Partition**: Exploiting ledger forks or network partitions to submit conflicting MintRequests.
 
 #### **Mitigations (Refer to Later Sections)**
 
-* **Multi-Sensor Fusion & Anomaly Detection** (Section 4\)  
 * **Signed Timestamps & Nonces** (Section 7\)  
 * **m-of-n Validator Quorum** (Section 5\)  
 * **Slashing Conditions & Economic Disincentives** (Section 8\)  
-* **Zero-Knowledge Proofs & Hashed Data** (Section 4.2)
+* **Zero-Knowledge Proofs** (Section 4.2)
 
 # **2\. Actors, Terminology & Notation**
 
@@ -373,6 +369,18 @@ This section defines the core protocol messages, their senders, purposes, requir
   * `stake`: Amount of tokens staked for minting (≥ S_mint)  
   * `zkProof`: Zero-knowledge proof of protocol compliance
   * `timeAnchor`: Either `timestamp` (Unix epoch) or `blockHeight` (ledger height)  
+* **Time Anchor Selection Rules:**  
+  * Use `timestamp` when:  
+    * Submitting off-chain to validators before on-chain commitment  
+    * Validating against the challenge window (Δ₁)  
+  * Use `blockHeight` when:  
+    * Submitting the final on-chain transaction  
+    * Enforcing stake lock periods  
+    * Calculating probation windows  
+    * Processing slashing conditions  
+  * The same MintRequest may use both anchors at different stages:  
+    1. Initial submission to validators uses `timestamp`  
+    2. Final on-chain transaction uses `blockHeight`  
 * **ZK Proof Requirements:**
   * Proof MUST attest to:
     * Protocol rule compliance
@@ -1116,7 +1124,7 @@ This section states the core security guarantees and invariants that any Soul Bo
     * Verify all signatures and proofs
     * Maintain correct stake requirements
     * Enforce quorum rules (m-of-n)
-    * Protect private keys and sensor data
+    * Protect private keys
 
 * **Economic Enforcement**
   * Validators are incentivized to:
@@ -1334,14 +1342,13 @@ This section sketches a machine-checked model of the Soul Bound Protocol, useful
   5. `Time`: abstract clock or block counter  
 * **Actions**  
   1. `BeginSession(c, s)`: Sponsor `s` issues `ChallengeRequest` to candidate `c`.  
-  2. `SendSensors(c, s)`: Candidate `c` submits `SensorPackage`.  
-  3. `IssueAttestation(s, c)`: Sponsor `s` signs `SponsorAttestation`.  
-  4. `SubmitMint(c)`: Candidate `c` assembles attestations, stake, and ZK proof → `MintRequest`.  
-  5. `Validate(v, m)`: Validator `v` checks `MintRequest` `m` and emits an approval or rejection.  
-  6. `CommitMint`: When ≥ m approvals, ledger appends new identity.  
-  7. `SubmitRevocation(r, id)`: Revoker `r` issues `RevocationRequest` for identity `id`.  
-  8. `ValidateRevoke(v, r)`: Validators process revocation, then `CommitRevoke` if quorum.  
-  9. `Slash(id)`: Protocol slashes stake for a revoked identity `id`.
+  2. `IssueAttestation(s, c)`: Sponsor `s` signs `SponsorAttestation`.  
+  3. `SubmitMint(c)`: Candidate `c` assembles attestations, stake, and ZK proof → `MintRequest`.  
+  4. `Validate(v, m)`: Validator `v` checks `MintRequest` `m` and emits an approval or rejection.  
+  5. `CommitMint`: When ≥ m approvals, ledger appends new identity.  
+  6. `SubmitRevocation(r, id)`: Revoker `r` issues `RevocationRequest` for identity `id`.  
+  7. `ValidateRevoke(v, r)`: Validators process revocation, then `CommitRevoke` if quorum.  
+  8. `Slash(id)`: Protocol slashes stake for a revoked identity `id`.
 
 ## **13.3 Invariants & Temporal Properties**
 
@@ -1416,7 +1423,7 @@ The following parameters are part of the protocol domain and MUST be supported b
 {  
   "deltaTimes": {  
     "challengeResponseWindow": 120,  
-    "sensorToAttestationWindow": 60,  
+    "attestationWindow": 60,  
     "attestationToMintWindow": 300,  
     "validationResponseWindow": 600,  
     "clockSkew": 120,
@@ -1517,13 +1524,6 @@ Note: These parameters are example values for a small-scale deployment. Real-wor
       "responseSchema": "ChallengeAck"  
     },  
     {  
-      "path": "/api/v1/sensor",  
-      "method": "POST",  
-      "description": "Candidate submits SensorPackage",  
-      "requestSchema": "SensorPackage",  
-      "responseSchema": "SensorAck"  
-    },  
-    {  
       "path": "/api/v1/sponsorship",  
       "method": "POST",  
       "description": "Sponsor submits SponsorAttestation",  
@@ -1546,7 +1546,7 @@ Note: These parameters are example values for a small-scale deployment. Real-wor
     },  
     {  
       "path": "/api/v1/revoke",  
-      "method": "POST",  
+      "method": "POST",
       "description": "Submit a RevocationRequest",  
       "requestSchema": "RevocationRequest",  
       "responseSchema": "RevokeAck"  
