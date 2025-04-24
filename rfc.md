@@ -536,7 +536,7 @@ This section walks through the complete lifecycle of identity creation, from ini
      * Economic incentives and penalties
    * Both parties confirm understanding and agreement
    * Sponsor generates fresh sessionId and nonce
-   * Sponsor locks S_sponsor in escrow (remains locked for sponsorship probation period)
+   * Sponsor locks S_sponsor in escrow (remains locked for Δₚ, see Section 14.1)
    * Sponsor sends signed attestation to Candidate containing:
      * sessionId
      * nonce
@@ -563,8 +563,8 @@ This section walks through the complete lifecycle of identity creation, from ini
    * On majority approval:
      * Identity is minted on-chain
      * S_mint remains locked for identity lifetime
-     * S_sponsor remains locked for sponsorship probation period
-     * Rewards are distributed to validators
+     * S_sponsor remains locked for Δₚ (see Section 14.1)
+     * Validator rewards (F_mint + F_sponsor) are distributed to validators based on their participation in validation
 
 ## **6.2 Revocation Process**
 
