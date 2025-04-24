@@ -200,7 +200,6 @@ The protocol defines the following core data types:
 2. **Attestation**
    * Type identifier
    * Session ID
-   * Sensor hashes
    * Timestamp
    * Sponsor signature
 
@@ -929,7 +928,7 @@ Note: All protocol-level timing parameters are defined in Section 14.1 and MUST 
 * **Sequence numbers**  
   * For multi-step exchanges, messages may carry a small integer `sequence`  
     (1, 2, 3…) to enforce correct ordering.  
-  * Replay or reordering (e.g. sending "SponsorAttestation" before "SensorPackage")  
+  * Replay or reordering (e.g. sending "SponsorAttestation" before "ChallengeRequest")  
     is detected and dropped.  
 * **Binding**  
   * Nonce and sequence number are always included in the data that's hashed  
@@ -1323,7 +1322,7 @@ This section sketches a machine-checked model of the Soul Bound Protocol, useful
 ## **13.1 TLA⁺ or Alloy Model Overview**
 
 * **Scope:**  
-  Model the core identity issuance flow (Challenge → SensorPackage → Attestation → Mint → Validation → Commit) plus slashing and revocation.  
+  Model the core identity issuance flow (Challenge → Attestation → Mint → Validation → Commit) plus slashing and revocation.  
 * **Approach:**  
   * In TLA⁺, define a single module `SoulBound` with a `VARIABLES` tuple and a `Next` action.  
   * In Alloy, use signatures for `Identity`, `Session`, `Validator`, and relations for sponsorship and stakes.  
