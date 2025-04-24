@@ -527,50 +527,43 @@ This section walks through the complete lifecycle of identity creation, from ini
 
 ## **6.1 Identity Creation Flow**
 
-1. **Initial Contact**  
-   * Candidate and Sponsor establish communication channel  
-   * Sponsor sends ChallengeRequest with fresh sessionId and nonce
+1. **Initial Contact & Setup**  
+   * Candidate and Sponsor establish secure communication channel  
+   * Sponsor generates fresh sessionId and nonce
+   * Sponsor sends ChallengeRequest to Candidate
+   * Candidate acknowledges receipt and readiness
 
-2. **In-Person Verification**  
-   * Candidate and Sponsor meet in person  
-   * Sponsor verifies Candidate's uniqueness through direct interaction  
-   * Sponsor assesses Candidate's understanding of protocol responsibilities  
+2. **In-Person Verification Process**  
+   * Sponsor and Candidate meet in person
+   * Sponsor verifies Candidate's uniqueness through direct interaction
+   * Sponsor confirms Candidate's understanding of:
+     * Stake requirements and slashing conditions
+     * Protocol responsibilities and security requirements
+     * Economic incentives and penalties
    * Sponsor completes verification and prepares SponsorAttestation
 
-3. **Attestation & Minting**  
-   * Sponsor sends signed SponsorAttestation to Candidate  
-   * Candidate builds MintRequest with attestation  
+3. **Technical Verification & Minting**  
+   * Sponsor sends signed SponsorAttestation to Candidate
+   * Candidate generates new identity key pair
+   * Candidate builds MintRequest with:
+     * Identity public key
+     * Signed attestation
+     * Required stake
+     * Zero-knowledge proof of protocol compliance
    * Candidate submits MintRequest to Validators
 
-4. **Validation & Minting**  
-   * Validators verify MintRequest signatures and attestations  
-   * Validators check Sponsor's stake and validation history
-   * Validators MAY perform additional checks on Sponsor's past behavior
-   * On majority approval, identity is minted on-chain
+4. **Validation & On-Chain Creation**  
+   * Validators verify:
+     * All cryptographic signatures and proofs
+     * Stake amounts meet minimum requirements
+     * Timestamps and anti-replay protections
+     * Sponsor's validation history (optional)
+   * On majority approval:
+     * Identity is minted on-chain
+     * Stake is locked in escrow
+     * Rewards are distributed to validators
 
-## **6.2 Identity Verification Process**
-
-1. **Initial Verification**
-   * Sponsor and Candidate meet in person
-   * Multiple interactions over time
-   * Verification of uniqueness
-   * Confirmation of protocol understanding
-
-2. **Stake Requirements**
-   * Understanding of stake requirements
-   * Knowledge of slashing conditions
-   * Commitment to honest behavior
-   * Willingness to maintain protocol security
-
-3. **Protocol Responsibilities**
-   * Understanding of stake requirements
-   * Knowledge of slashing conditions
-   * Commitment to honest behavior
-   * Willingness to maintain protocol security
-
-This approach focuses on direct verification and economic alignment, creating a robust and decentralized identity system.
-
-## **6.3 Revocation Process**
+## **6.2 Revocation Process**
 
 1. **Revocation Request**  
    * Sponsor or Validator submits RevocationRequest  
