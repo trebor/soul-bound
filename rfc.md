@@ -876,6 +876,16 @@ The protocol defines several timing parameters that all implementations MUST sup
     * Used in: MintRequest → ValidationResponse transition  
     * See Section 13.1 for configured value
 
+* **Time Window Validations**
+  * All implementations MUST:
+    * Add timestamp verification in message processing
+    * Implement time window validations (Δ₁, Δ₂, Δ₃, ΔT)
+    * Verify timestamps are within acceptable ranges
+    * Reject messages with timestamps outside valid windows
+    * Maintain synchronized clocks within ΔT
+    * Use block heights for on-chain time anchoring
+    * Support both Unix epoch and block height timestamps
+
 * **Network-Level Timing Parameters**  
   * Δₚ (Partition Detection Window)
     * Time to detect network partitions  
