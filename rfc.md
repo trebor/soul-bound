@@ -864,33 +864,26 @@ The protocol defines several timing parameters that all implementations MUST sup
   * Δ₁ (Challenge Response Window)
     * Time allowed for Candidate to respond to ChallengeRequest  
     * Used in: ChallengeRequest → SponsorAttestation transition  
-    * See Section 14.1 for configured value
   * Δ₂ (Attestation Window)
     * Time allowed for Sponsor to verify and attest  
     * Used in: ChallengeRequest → SponsorAttestation transition  
-    * See Section 14.1 for configured value
   * Δ₃ (Attestation to Mint Window)
     * Time allowed for Candidate to submit MintRequest  
     * Used in: SponsorAttestation → MintRequest transition  
-    * See Section 14.1 for configured value
   * ΔT (Clock Skew)
     * Maximum allowed difference between local and message timestamps  
     * Used in: All message validation  
-    * See Section 14.1 for configured value
   * ΔV (Validation Response Window)
     * Time allowed for validators to respond to MintRequest  
     * Used in: MintRequest → ValidationResponse transition  
-    * See Section 14.1 for configured value
 
 * **Network-Level Timing Parameters**  
   * Δₚ (Partition Detection Window)
     * Time to detect network partitions  
     * Used in: Validator state machine  
-    * See Section 14.1 for configured value
   * Δᵣ (Validator Reconfiguration Window)
     * Time allowed for validator set changes  
     * Used in: Validator rotation and reconfiguration  
-    * See Section 14.1 for configured value
 
 * **Implementation-Specific Windows**  
   The following windows are left to implementations to define based on their specific requirements:  
