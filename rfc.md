@@ -966,6 +966,11 @@ This section describes the protocol-level economic mechanisms that all implement
   * Must be locked for identity lifetime
   * Slashed for protocol violations
   * Cannot be withdrawn while identity active
+  * Stake Locking Requirements:
+    * Stake MUST be locked in escrow before minting
+    * Lock MUST be maintained for identity lifetime
+    * Early withdrawal attempts MUST be rejected
+    * Lock MUST be enforced by smart contract
 
 * **Minting Fee (F_mint)**
   * Paid to validators
@@ -978,6 +983,11 @@ This section describes the protocol-level economic mechanisms that all implement
   * Must be at least the configured sponsor stake
   * Locked for sponsor duration
   * Slashed for invalid sponsorships
+  * Anti-Stake-Grinding Requirements:
+    * Minimum lock period MUST be enforced
+    * Rapid stake cycling MUST be prevented
+    * Stake reuse MUST be rate-limited
+    * Stake withdrawal MUST have cooling period
 
 * **Sponsor Fee (F_sponsor)**
   * Paid to validators
@@ -988,13 +998,27 @@ This section describes the protocol-level economic mechanisms that all implement
 
 * **Validator Bond (V_bond)**
   * Must exceed S_mint × 10
-  * Locked for validator duration
+  * Serves as security deposit for honest validation
   * Slashed for protocol violations
+  * Validator Set Rotation:
+    * Validators MUST rotate periodically
+    * Rotation schedule MUST be deterministic
+    * Rotation MUST maintain quorum
+    * New validators MUST meet bond requirements
 
 * **Validator Rewards**
-  * Base reward for honest validation
-  * Penalty for invalid validations
-  * Distributed based on validation accuracy
+  * Base reward for each valid MintRequest validation
+  * Slashing for protocol violations
+  * Reward distribution based on:
+    * Timely validation (within ΔV)
+    * Valid signature verification
+    * Valid timestamp validation
+    * Valid stake verification
+    * Valid quorum participation
+  * Economic alignment:
+    * V_bond size ensures honest validation more profitable than slashing
+    * Rewards must exceed opportunity cost of locked bond
+    * Slashing must exceed potential gains from violations
 
 * **Economic Parameters**
   * Must ensure:
