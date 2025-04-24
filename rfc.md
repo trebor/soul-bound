@@ -298,19 +298,16 @@ Below is a concise summary of the full identity issuance workflow:
 1. **ChallengeRequest**  
    * Sponsor → Candidate  
    * Sponsor issues a signed challenge (sessionId, timestamp, nonce).  
-2. **SensorPackage**  
-   * Candidate ↔ Sponsor  
-   * Both devices gather multi-sensor hashes (NFC, accelerometer, audio, etc.) and exchange signed packages.  
-3. **SponsorAttestation**  
+2. **SponsorAttestation**  
    * Sponsor → Candidate  
-   * Sponsor verifies sensor hashes and biometric checks, then signs an attestation.  
-4. **MintRequest**  
+   * Sponsor verifies the candidate and signs an attestation.  
+3. **MintRequest**  
    * Candidate → Validators → Ledger  
    * Candidate assembles the signed attestations, ZK proof, and stake into a MintRequest.  
-5. **ValidationResponse**  
+4. **ValidationResponse**  
    * Validators → Candidate & Sponsor  
    * A decentralized quorum (m-of-n) independently verifies proofs, stakes, and timestamps, then returns "approved" or "rejected."  
-6. **On-Chain Minting**  
+5. **On-Chain Minting**  
    * Ledger commits the new Soul Bound identity token when the required approvals are reached.
 
 ## **3.3 Timing & Freshness Controls (timestamps, block-heights)**
@@ -319,11 +316,11 @@ To prevent replay attacks and ensure data freshness, the protocol mandates:
 
 * **Signed Timestamps**  
   * Every message carries a `timestamp` (Unix epoch) signed by the sender.  
-  * Validators reject messages where `|now – timestamp| > ΔT` (see Section 13.1 for configured value).  
+  * Validators reject messages where `|now – timestamp| > ΔT` (see Section 14.1 for configured value).  
 * **Block-Height Anchoring**  
   * On-chain actions (MintRequest submission, slashing window expiry) reference `blockHeight`.  
   * Validators and smart contracts enforce windows like "submit within N blocks of challenge"  
-    (see Section 13.1 for configured values).  
+    (see Section 14.1 for configured values).  
 * **Session Nonces & IDs**  
   * Each verification session uses a unique `sessionId` (UUID) and challenge `nonce` to bind messages together.  
   * Replayed or out-of-order messages are detected and dropped.  
@@ -347,7 +344,7 @@ This section defines the core protocol messages, their senders, purposes, requir
   * `timestamp`: Unix epoch time of issuance  
   * `nonce`: Cryptographically random value  
 * **Semantics:**  
-  * Candidate must respond within the configured time window Δ₁ (see Section 13.1 for configured value).  
+  * Candidate must respond within the configured time window Δ₁ (see Section 14.1 for configured value).  
   * Future messages in this session must include the same `sessionId` and `nonce`.
 
 ## **4.2 SponsorAttestation**
@@ -533,7 +530,7 @@ This section walks through the complete lifecycle of identity creation, from ini
 
 2. **In-Person Verification**  
    * Candidate and Sponsor meet in person  
-   * Sponsor verifies Candidate's uniqueness through multiple interactions  
+   * Sponsor verifies Candidate's uniqueness through direct interaction  
    * Sponsor assesses Candidate's understanding of protocol responsibilities  
    * Sponsor completes verification and prepares SponsorAttestation
 
@@ -877,11 +874,11 @@ The protocol defines several timing parameters that all implementations MUST sup
 * **Protocol-Level Timing Parameters**  
   * Δ₁ (Challenge Response Window)
     * Time allowed for Candidate to respond to ChallengeRequest  
-    * Used in: ChallengeRequest → SensorPackage transition  
+    * Used in: ChallengeRequest → SponsorAttestation transition  
     * See Section 14.1 for configured value
-  * Δ₂ (Sensor to Attestation Window)
-    * Time allowed for Sponsor to verify and attest sensor data  
-    * Used in: SensorPackage → SponsorAttestation transition  
+  * Δ₂ (Attestation Window)
+    * Time allowed for Sponsor to verify and attest  
+    * Used in: ChallengeRequest → SponsorAttestation transition  
     * See Section 14.1 for configured value
   * Δ₃ (Attestation to Mint Window)
     * Time allowed for Candidate to submit MintRequest  
@@ -1063,9 +1060,9 @@ This section states the core security guarantees and invariants that any Soul Bo
 
 ## **10.1 Unforgeability of Attestations**
 
-* **Invariant:** No party can produce a valid `SponsorAttestation` or `SensorPackage` without physically co-locating two devices and holding the correct private keys.  
+* **Invariant:** No party can produce a valid `SponsorAttestation` without physically co-locating with the candidate and holding the correct private keys.  
 * **Mechanisms:**  
-  * All sensor hashes and session nonces are included in signatures
+  * All session nonces are included in signatures
   * Validators reject any attestation whose signature fails verification
   * Economic incentives ensure validators check signatures correctly
 
@@ -1159,14 +1156,10 @@ This section enumerates expected error conditions, how each actor should detect 
 
 ## **11.1 Timeouts & Session Aborts**
 
-* **ChallengeRequest → SensorPackage**  
-  * If the Candidate does not send `SensorPackage` within Δ₁, the Sponsor aborts the session.  
+* **ChallengeRequest → SponsorAttestation**  
+  * If the Candidate does not receive `SponsorAttestation` within Δ₁, the session is aborted.  
   * Candidate state → **FAILED**; Sponsor state → **ABORTED**.  
   * No tokens are staked yet, so no slashing occurs.  
-* **SensorPackage → SponsorAttestation**  
-  * If the Sponsor doesn't respond with `SponsorAttestation` within Δ₂, Candidate aborts.  
-  * Candidate state → **FAILED**; Sponsor state → **ABORTED**.  
-  * Sponsor may incur a small reputational penalty but no stake is at risk.  
 * **SponsorAttestation → MintRequest**  
   * If the Candidate does not submit `MintRequest` within Δ₃, the session is abandoned.  
   * Any reserved UI/session resources are released; no on-chain stake has been locked yet.  
