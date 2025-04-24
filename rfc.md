@@ -235,6 +235,13 @@ All other data structures and formats are implementation-specific and MAY be cus
   * Represented as an array of validator signatures on the same payload.  
 * **Zero-Knowledge Proofs**  
   * `ZKProof{stmts, witness}`: A proof that the prover knows a `witness` satisfying statements `stmts` without revealing `witness`.  
+  * Implementations MUST support at least one of:
+    * Bulletproofs
+    * zk-SNARKs
+  * All proof systems MUST provide:
+    * Succinctness (proof size sublinear in witness size)
+    * Non-interactivity (no prover-verifier interaction)
+    * Standard security properties (completeness, soundness, zero-knowledge)
 * **Notation**  
   * `∥`: Concatenation operator.  
   * JSON-Schema snippets use `"type": "string"`, `"format": "uuid"`, etc.  
@@ -367,8 +374,21 @@ This section defines the core protocol messages, their senders, purposes, requir
   * `candidateSig`: Signature over attestation bundle using Candidate's private key  
   * `sponsorSig`: Sponsor's attestation signature  
   * `stake`: Amount of tokens staked for minting (≥ S_mint)  
-  * `zkProof`: Zero-knowledge proof of correct sensor checks without revealing raw data  
+  * `zkProof`: Zero-knowledge proof of protocol compliance
   * `timeAnchor`: Either `timestamp` (Unix epoch) or `blockHeight` (ledger height)  
+* **ZK Proof Requirements:**
+  * Proof MUST attest to:
+    * Protocol rule compliance
+    * Valid identity verification
+    * Proper stake commitment
+  * Proof MUST NOT reveal:
+    * Private verification details
+    * Identity-specific information
+    * Privacy-sensitive metadata
+  * Proof MUST be:
+    * Generated using cryptographically secure randomness
+    * Verifiable against public parameters
+    * Succinct and non-interactive
 * **Time Anchor Selection Rules:**  
   * Use `timestamp` when:  
     * Submitting off-chain to validators before on-chain commitment  
@@ -1034,11 +1054,20 @@ This section states the core security guarantees and invariants that any Soul Bo
 
 ## **10.4 Privacy Guarantees**
 
-* **Invariant:** No raw biometric or sensor data is revealed on-chain.  
+* **Invariant:** No private verification details are revealed on-chain.  
 * **Mechanisms:**  
-  * Raw sensor readings never leave device
-  * Only hashes of sensor data are exchanged
-  * ZK proofs attest to correct hash computation
+  * Private verification details never leave device
+  * Only necessary attestations are exchanged
+  * ZK proofs attest to protocol compliance
+  * Privacy-preserving verification:
+    * All verification processed locally
+    * Attestations properly signed
+    * No correlation between sessions
+  * Implementation requirements:
+    * ZK proof code audited
+    * Cryptographic libraries vetted
+    * Security updates applied
+    * Vulnerabilities patched
 
 ## **10.5 Revocation & Slashing**
 
@@ -1121,7 +1150,14 @@ This section enumerates expected error conditions, how each actor should detect 
   * Messages missing required fields (`type`, `sessionId`, etc.) are discarded, with an optional rejection notice.  
 * **ZK Proof Failure**  
   * If the `zkProof` in a `MintRequest` or `RevocationRequest` fails to verify, Validators reject the request.  
+  * Validators MUST check:
+    * Proof validity against public parameters
+    * Protocol rule compliance
+    * No privacy leakage
   * Candidate/Sponsor receive a "rejected: invalid proof" response and may correct or abandon.
+  * Proof failures MUST be logged securely
+  * Error messages MUST be sanitized
+  * Recovery procedures MUST be defined
 
 ## **11.3 Stake Insufficiency Rejections**
 
