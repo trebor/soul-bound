@@ -477,7 +477,8 @@ This section walks through the complete lifecycle of identity creation, from ini
 
 2. **In-Person Verification**  
    * Candidate and Sponsor meet in person  
-   * Sponsor verifies Candidate's identity documents  
+   * Sponsor verifies Candidate's uniqueness through multiple interactions  
+   * Sponsor assesses Candidate's understanding of protocol responsibilities  
    * Sponsor completes verification and prepares SponsorAttestation
 
 3. **Attestation & Minting**  
@@ -490,20 +491,27 @@ This section walks through the complete lifecycle of identity creation, from ini
    * Validators check Sponsor's stake and reputation  
    * On majority approval, identity is minted on-chain
 
-## **6.2 Minting Process**
+## **6.2 Trust Building Process**
 
-1. **Mint Request**  
-   * Candidate submits MintRequest to Validators  
-   * Validators verify signatures and attestations  
-   * Validators check sponsor's stake and reputation  
-   * On majority approval, MintRequest is processed
+1. **Initial Verification**
+   * Sponsor and Candidate meet in person
+   * Multiple interactions over time
+   * Assessment of protocol understanding
+   * Verification of uniqueness
 
-2. **Validation Response**  
-   * Validators return ValidationResponse to Candidate  
-   * Candidate tracks responses until quorum is reached
+2. **Reputation Building**
+   * Trust builds through successful interactions
+   * Multiple sponsors can vouch over time
+   * Economic stakes increase with trust
+   * Long-term relationships valued
 
-3. **On-Chain Minting**  
-   * Ledger commits new identity token on majority approval
+3. **Protocol Responsibilities**
+   * Understanding of stake requirements
+   * Knowledge of slashing conditions
+   * Commitment to honest behavior
+   * Willingness to maintain protocol security
+
+This approach focuses on building trust through direct interaction and economic alignment, creating a robust and decentralized identity system.
 
 ## **6.3 Revocation Process**
 
