@@ -694,16 +694,6 @@ All off-chain protocol messages exchanged peer-to-peer or via RPC MUST conform t
         "timestamp": { "type": "integer", "minimum": 0 }
       }
     },
-    "SensorAck": {
-      "type": "object",
-      "required": ["type", "status", "timestamp"],
-      "properties": {
-        "type": { "const": "SensorAck" },
-        "status": { "type": "string", "enum": ["accepted", "rejected"] },
-        "reason": { "type": "string" },
-        "timestamp": { "type": "integer", "minimum": 0 }
-      }
-    },
     "SponsorshipAck": {
       "type": "object",
       "required": ["type", "status", "timestamp"],
@@ -1469,8 +1459,8 @@ The following parameters are part of the protocol domain and MUST be supported b
     * Security requirements for specific use cases  
   * All timing parameters referenced in the document should use these values:
     * Δ₁ (challenge response): See Section 14.1 for configured value
-    * Δ₂ (sensor to sponsorship): See Section 14.1 for configured value
-    * Δ₃ (sponsorship to mint): See Section 14.1 for configured value
+    * Δ₂ (attestation): See Section 14.1 for configured value
+    * Δ₃ (attestation to mint): See Section 14.1 for configured value
     * ΔT (clock skew): See Section 14.1 for configured value
     * Δₚ (partition detection): See Section 14.1 for configured value
     * Δᵣ (validator reconfiguration): See Section 14.1 for configured value
