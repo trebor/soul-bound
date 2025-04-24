@@ -878,43 +878,33 @@ The protocol defines several timing parameters that all implementations MUST sup
   * Δ₁ (Challenge Response Window)
     * Time allowed for Candidate to respond to ChallengeRequest  
     * Used in: ChallengeRequest → SensorPackage transition  
-    * See Section 13.1 for configured value
+    * See Section 14.1 for configured value
   * Δ₂ (Sensor to Attestation Window)
     * Time allowed for Sponsor to verify and attest sensor data  
     * Used in: SensorPackage → SponsorAttestation transition  
-    * See Section 13.1 for configured value
+    * See Section 14.1 for configured value
   * Δ₃ (Attestation to Mint Window)
     * Time allowed for Candidate to submit MintRequest  
     * Used in: SponsorAttestation → MintRequest transition  
-    * See Section 13.1 for configured value
+    * See Section 14.1 for configured value
   * ΔT (Clock Skew)
     * Maximum allowed difference between local and message timestamps  
     * Used in: All message validation  
-    * See Section 13.1 for configured value
+    * See Section 14.1 for configured value
   * ΔV (Validation Response Window)
     * Time allowed for validators to respond to MintRequest  
     * Used in: MintRequest → ValidationResponse transition  
-    * See Section 13.1 for configured value
-
-* **Time Window Validations**
-  * All implementations MUST:
-    * Add timestamp verification in message processing
-    * Implement time window validations (Δ₁, Δ₂, Δ₃, ΔT)
-    * Verify timestamps are within acceptable ranges
-    * Reject messages with timestamps outside valid windows
-    * Maintain synchronized clocks within ΔT
-    * Use block heights for on-chain time anchoring
-    * Support both Unix epoch and block height timestamps
+    * See Section 14.1 for configured value
 
 * **Network-Level Timing Parameters**  
   * Δₚ (Partition Detection Window)
     * Time to detect network partitions  
     * Used in: Validator state machine  
-    * See Section 13.1 for configured value
+    * See Section 14.1 for configured value
   * Δᵣ (Validator Reconfiguration Window)
     * Time allowed for validator set changes  
     * Used in: Validator rotation and reconfiguration  
-    * See Section 13.1 for configured value
+    * See Section 14.1 for configured value
 
 * **Implementation-Specific Windows**  
   The following windows are left to implementations to define based on their specific requirements:  
@@ -923,7 +913,7 @@ The protocol defines several timing parameters that all implementations MUST sup
   * Cooling-off period (between sponsorships)  
   * Stake lock period (for escrowed tokens)  
 
-Note: All protocol-level timing parameters are defined in Section 13.1 and MUST be supported by all implementations. Implementation-specific windows may vary between deployments but should be clearly documented.
+Note: All protocol-level timing parameters are defined in Section 14.1 and MUST be supported by all implementations. Implementation-specific windows may vary between deployments but should be clearly documented.
 
 ## **8.2 Nonces & Sequence Numbers**
 
@@ -971,6 +961,14 @@ This section describes the protocol-level economic mechanisms that all implement
     * Lock MUST be maintained for identity lifetime
     * Early withdrawal attempts MUST be rejected
     * Lock MUST be enforced by smart contract
+    * Stake Lock Periods:
+      * Minimum lock period: See Section 14.1 for validatorRotationPeriod
+      * Maximum lock period: Identity lifetime
+      * Early withdrawal penalty: See Section 14.1 for slashFraction
+    * Anti-Stake-Grinding Requirements:
+      * Minimum time between stake locks: See Section 14.1 for validatorRotationPeriod
+      * Maximum stake reuse rate: See Section 14.1 for minimumStakeToRewardRatio
+      * Stake withdrawal cooling period: See Section 14.1 for validatorReconfigurationWindow
 
 * **Minting Fee (F_mint)**
   * Paid to validators
@@ -1005,6 +1003,17 @@ This section describes the protocol-level economic mechanisms that all implement
     * Rotation schedule MUST be deterministic
     * Rotation MUST maintain quorum
     * New validators MUST meet bond requirements
+    * Rotation Rules:
+      * Rotation period: See Section 14.1 for validatorRotationPeriod
+      * Minimum validators: See Section 14.1 for minValidators
+      * Maximum validators: See Section 14.1 for maxValidators
+      * Fault tolerance: See Section 14.1 for faultTolerance
+    * Performance Monitoring:
+      * Response time tracking: Must validate within ΔV (See Section 14.1)
+      * Accuracy metrics: Based on validation history
+      * Uptime requirements: Must maintain quorum participation
+      * Slashing conditions: See Section 14.1 for dishonestValidatorPenalty
+      * Reward distribution: See Section 14.1 for honestValidatorReward
 
 * **Validator Rewards**
   * Base reward for each valid MintRequest validation
@@ -1460,12 +1469,12 @@ The following parameters are part of the protocol domain and MUST be supported b
     * Expected device performance  
     * Security requirements for specific use cases  
   * All timing parameters referenced in the document should use these values:
-    * Δ₁ (challenge response): See Section 13.1 for configured value
-    * Δ₂ (sensor to sponsorship): See Section 13.1 for configured value
-    * Δ₃ (sponsorship to mint): See Section 13.1 for configured value
-    * ΔT (clock skew): See Section 13.1 for configured value
-    * Δₚ (partition detection): See Section 13.1 for configured value
-    * Δᵣ (validator reconfiguration): See Section 13.1 for configured value
+    * Δ₁ (challenge response): See Section 14.1 for configured value
+    * Δ₂ (sensor to sponsorship): See Section 14.1 for configured value
+    * Δ₃ (sponsorship to mint): See Section 14.1 for configured value
+    * ΔT (clock skew): See Section 14.1 for configured value
+    * Δₚ (partition detection): See Section 14.1 for configured value
+    * Δᵣ (validator reconfiguration): See Section 14.1 for configured value
 
 * **Stake Sizes**  
   * Example values shown are relative units  
