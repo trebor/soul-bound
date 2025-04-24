@@ -1168,34 +1168,29 @@ This section describes optional interfaces and hook points where applications, D
 
 ## **12.1 Protocol Governance**
 
-All protocol changes and parameter updates MUST be approved through the validator quorum system:
+The protocol follows a decentralized governance model where changes require overwhelming network consensus. There is no formal governance system or privileged actors who can force changes.
 
-* **Parameter Updates**
-  * Changes to timing windows, stake requirements, or quorum rules
-  * Requires m-of-n validator approval
-  * Validators must stake additional tokens for parameter changes
-  * Changes take effect after a configurable delay period
+* **Protocol Changes**
+  * All changes must be backward-compatible where possible
+  * Non-backward-compatible changes create new chains
+  * Network participants freely choose which chain to follow
+  * No single entity can force changes on the network
 
-* **Protocol Upgrades**
-  * New message types or schema changes
-  * Requires m-of-n validator approval
-  * Validators must demonstrate compatibility
-  * Upgrade takes effect at specified block height
+* **Change Process**
+  1. Proposals are discussed openly in the community
+  2. Multiple implementations are encouraged
+  3. Changes are adopted through network consensus
+  4. Old protocol versions remain valid
+  5. No formal voting or quorum requirements
 
-* **Emergency Actions**
-  * Critical security fixes or incident response
-  * Requires higher quorum threshold (e.g., m+1-of-n)
-  * Validators must provide evidence of emergency
-  * Actions are time-limited and subject to review
+* **Security Properties**
+  * No privileged actors or emergency powers
+  * No formal governance system
+  * Changes require overwhelming consensus
+  * Protocol maintains backward compatibility
+  * Network participants determine successful changes
 
-* **Governance Process**
-  1. Proposal submitted with evidence and rationale
-  2. Validators review and vote within time window
-  3. If quorum reached, change is scheduled
-  4. Change takes effect after delay period
-  5. Validators can be slashed for incorrect votes
-
-This ensures that all protocol changes maintain the same security properties as the core protocol, with no privileged actors or centralized control.
+This approach ensures the protocol remains decentralized and resistant to both technical attacks and governance attacks. The security comes from requiring overwhelming consensus for any changes, making it impossible for any single entity or group to force changes on the network.
 
 # **13\. Formal Model (Optional)**
 
