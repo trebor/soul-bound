@@ -242,6 +242,42 @@ All other data structures and formats are implementation-specific and MAY be cus
 
 **Note:** All cryptographic operations must follow industry-standard algorithms (e.g., ECDSA/secp256k1 or Ed25519 for signatures; SHA-256 for hashing; Bulletproofs or zk-SNARKs for zero-knowledge).
 
+## **2.4 Signature Requirements**
+
+The protocol defines the following signature requirements that all implementations MUST support:
+
+1. **Message Signing**
+   * All protocol messages MUST be signed by their sender
+   * Signatures MUST cover the entire message content
+   * Signatures MUST be verifiable against the sender's public key
+
+2. **Signature Schemes**
+   * Implementations MUST support at least one of:
+     * ECDSA with secp256k1 curve
+     * Ed25519
+   * Additional schemes MAY be supported
+   * All schemes MUST provide:
+     * Unforgeability
+     * Non-repudiation
+     * Standard security properties
+
+3. **Nonce Requirements**
+   * All signatures MUST include a nonce to prevent replay attacks
+   * Nonces MUST be cryptographically random
+   * Nonces MUST be included in the signed message content
+   * Nonces MUST be verified by recipients
+
+4. **Multi-Signature Requirements**
+   * Validator quorum signatures MUST be verifiable independently
+   * Each validator's signature MUST cover the same message content
+   * The quorum threshold (m-of-n) MUST be enforced
+
+These requirements ensure that:
+* Messages cannot be forged or modified
+* Replay attacks are prevented
+* Validator quorum decisions are secure
+* Signatures are interoperable across implementations
+
 # **3\. Protocol Overview**
 
 ## **3.1 High-Level Sequence Diagram**
