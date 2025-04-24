@@ -527,40 +527,43 @@ This section walks through the complete lifecycle of identity creation, from ini
 
 ## **6.1 Identity Creation Flow**
 
-1. **Initial Contact & Setup**  
-   * Candidate and Sponsor establish secure communication channel  
-   * Sponsor generates fresh sessionId and nonce
-   * Sponsor sends ChallengeRequest to Candidate
-   * Candidate acknowledges receipt and readiness
-
-2. **In-Person Verification Process**  
+1. **In-Person Initialization**  
    * Sponsor and Candidate meet in person
    * Sponsor verifies Candidate's uniqueness through direct interaction
-   * Sponsor confirms Candidate's understanding of:
+   * Sponsor explains protocol requirements:
      * Stake requirements and slashing conditions
      * Protocol responsibilities and security requirements
      * Economic incentives and penalties
-   * Sponsor completes verification and prepares SponsorAttestation
+   * Both parties confirm understanding and agreement
+   * Sponsor generates fresh sessionId and nonce
+   * Sponsor locks S_sponsor in escrow (remains locked for sponsorship probation period)
+   * Sponsor sends signed attestation to Candidate containing:
+     * sessionId
+     * nonce
+     * timestamp
+     * Sponsor's signature
 
-3. **Technical Verification & Minting**  
-   * Sponsor sends signed SponsorAttestation to Candidate
+2. **Technical Verification & Minting**  
    * Candidate generates new identity key pair
+   * Candidate locks S_mint in escrow (remains locked for identity lifetime)
    * Candidate builds MintRequest with:
      * Identity public key
-     * Signed attestation
-     * Required stake
+     * Signed attestation from Sponsor
+     * Locked S_mint stake
+     * Locked S_sponsor stake
      * Zero-knowledge proof of protocol compliance
    * Candidate submits MintRequest to Validators
 
-4. **Validation & On-Chain Creation**  
+3. **Validation & On-Chain Creation**  
    * Validators verify:
      * All cryptographic signatures and proofs
-     * Stake amounts meet minimum requirements
+     * Both S_mint and S_sponsor are properly locked in escrow
      * Timestamps and anti-replay protections
      * Sponsor's validation history (optional)
    * On majority approval:
      * Identity is minted on-chain
-     * Stake is locked in escrow
+     * S_mint remains locked for identity lifetime
+     * S_sponsor remains locked for sponsorship probation period
      * Rewards are distributed to validators
 
 ## **6.2 Revocation Process**
