@@ -952,6 +952,11 @@ This section describes the protocol-level economic mechanisms that all implement
       * Minimum time between stake locks: See Section 14.1 for validatorRotationPeriod
       * Maximum stake reuse rate: See Section 14.1 for minimumStakeToRewardRatio
       * Stake withdrawal cooling period: See Section 14.1 for validatorReconfigurationWindow
+      * Stake operations MUST include:
+        * Nonce-based operation tracking
+        * Time-locked commitments
+        * Cryptographic proof of stake age
+        * Zero-knowledge proof of stake history
 
 * **Minting Fee (F_mint)**
   * Paid to validators
@@ -969,6 +974,11 @@ This section describes the protocol-level economic mechanisms that all implement
     * Rapid stake cycling MUST be prevented
     * Stake reuse MUST be rate-limited
     * Stake withdrawal MUST have cooling period
+    * Stake operations MUST include:
+      * Nonce-based operation tracking
+      * Time-locked commitments
+      * Cryptographic proof of stake age
+      * Zero-knowledge proof of stake history
 
 * **Sponsor Fee (F_sponsor)**
   * Paid to validators
@@ -997,6 +1007,18 @@ This section describes the protocol-level economic mechanisms that all implement
       * Uptime requirements: Must maintain quorum participation
       * Slashing conditions: See Section 14.1 for dishonestValidatorPenalty
       * Reward distribution: See Section 14.1 for honestValidatorReward
+      * Cryptographic Requirements:
+        * Validator operations MUST include:
+          * Signed timestamps for all actions
+          * Nonce-based operation tracking
+          * Zero-knowledge proof of validation correctness
+          * Cryptographic proof of stake maintenance
+          * Time-locked commitments for rotations
+        * Rotation MUST include:
+          * Cryptographic proof of stake transfer
+          * Zero-knowledge proof of performance history
+          * Signed handover commitments
+          * Time-locked rotation schedule
 
 * **Validator Rewards**
   * Base reward for each valid MintRequest validation
