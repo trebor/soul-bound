@@ -397,7 +397,6 @@ This section defines the core protocol messages, their senders, purposes, requir
   * Use `timestamp` when:  
     * Submitting off-chain to validators before on-chain commitment  
     * Validating against the challenge window (Δ₁)  
-    * Checking sensor data freshness  
   * Use `blockHeight` when:  
     * Submitting the final on-chain transaction  
     * Enforcing stake lock periods  
