@@ -311,11 +311,10 @@ To prevent replay attacks and ensure data freshness, the protocol mandates:
 
 * **Signed Timestamps**  
   * Every message carries a `timestamp` (Unix epoch) signed by the sender.  
-  * Validators reject messages where `|now – timestamp| > ΔT` (see Section 14.1 for configured value).  
+  * Validators reject messages where `|now – timestamp| > ΔT`.  
 * **Block-Height Anchoring**  
   * On-chain actions (MintRequest submission, slashing window expiry) reference `blockHeight`.  
-  * Validators and smart contracts enforce windows like "submit within N blocks of challenge"  
-    (see Section 14.1 for configured values).  
+  * Validators and smart contracts enforce windows like "submit within N blocks of challenge".  
 * **Session Nonces & IDs**  
   * Each verification session uses a unique `sessionId` (UUID) and challenge `nonce` to bind messages together.  
   * Replayed or out-of-order messages are detected and dropped.  
@@ -339,7 +338,7 @@ This section defines the core protocol messages, their senders, purposes, requir
   * `timestamp`: Unix epoch time of issuance  
   * `nonce`: Cryptographically random value  
 * **Semantics:**  
-  * Candidate must respond within the configured time window Δ₁ (see Section 14.1 for configured value).  
+  * Candidate must respond within the configured time window Δ₁.  
   * Future messages in this session must include the same `sessionId` and `nonce`.
 
 ## **4.2 SponsorAttestation**
@@ -529,7 +528,7 @@ This section walks through the complete lifecycle of identity creation, from ini
 
 1. **In-Person Initialization**  
    * Sponsor and Candidate meet in person
-   * Sponsor verifies Candidate's uniqueness through direct interaction
+   * Sponsor verifies Candidate's uniqueness through direct interaction  
    * Sponsor explains protocol requirements:
      * Stake requirements and slashing conditions
      * Protocol responsibilities and security requirements
@@ -949,13 +948,13 @@ This section describes the protocol-level economic mechanisms that all implement
     * Early withdrawal attempts MUST be rejected
     * Lock MUST be enforced by smart contract
     * Stake Lock Periods:
-      * Minimum lock period: See Section 14.1 for validatorRotationPeriod
+      * Minimum lock period: validatorRotationPeriod
       * Maximum lock period: Identity lifetime
-      * Early withdrawal penalty: See Section 14.1 for slashFraction
+      * Early withdrawal penalty: slashFraction
     * Anti-Stake-Grinding Requirements:
-      * Minimum time between stake locks: See Section 14.1 for validatorRotationPeriod
-      * Maximum stake reuse rate: See Section 14.1 for minimumStakeToRewardRatio
-      * Stake withdrawal cooling period: See Section 14.1 for validatorReconfigurationWindow
+      * Minimum time between stake locks: validatorRotationPeriod
+      * Maximum stake reuse rate: minimumStakeToRewardRatio
+      * Stake withdrawal cooling period: validatorReconfigurationWindow
       * Stake operations MUST include:
         * Nonce-based operation tracking
         * Time-locked commitments
@@ -1001,16 +1000,16 @@ This section describes the protocol-level economic mechanisms that all implement
     * Rotation MUST maintain quorum
     * New validators MUST meet bond requirements
     * Rotation Rules:
-      * Rotation period: See Section 14.1 for validatorRotationPeriod
-      * Minimum validators: See Section 14.1 for minValidators
-      * Maximum validators: See Section 14.1 for maxValidators
-      * Fault tolerance: See Section 14.1 for faultTolerance
+      * Rotation period: validatorRotationPeriod
+      * Minimum validators: minValidators
+      * Maximum validators: maxValidators
+      * Fault tolerance: faultTolerance
     * Performance Monitoring:
-      * Response time tracking: Must validate within ΔV (See Section 14.1)
+      * Response time tracking: Must validate within ΔV
       * Accuracy metrics: Based on validation history
       * Uptime requirements: Must maintain quorum participation
-      * Slashing conditions: See Section 14.1 for dishonestValidatorPenalty
-      * Reward distribution: See Section 14.1 for honestValidatorReward
+      * Slashing conditions: dishonestValidatorPenalty
+      * Reward distribution: honestValidatorReward
       * Cryptographic Requirements:
         * Validator operations MUST include:
           * Signed timestamps for all actions
