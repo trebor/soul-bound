@@ -536,7 +536,7 @@ This section walks through the complete lifecycle of identity creation, from ini
      * Economic incentives and penalties
    * Both parties confirm understanding and agreement
    * Sponsor generates fresh sessionId and nonce
-   * Sponsor locks S_sponsor in escrow (remains locked for Δₚ, see Section 14.1)
+   * Sponsor locks S_sponsor in escrow (remains locked for Δₚ)
    * Sponsor sends signed attestation to Candidate containing:
      * sessionId
      * nonce
@@ -563,7 +563,7 @@ This section walks through the complete lifecycle of identity creation, from ini
    * On majority approval:
      * Identity is minted on-chain
      * S_mint remains locked for identity lifetime
-     * S_sponsor remains locked for Δₚ (see Section 14.1)
+     * S_sponsor remains locked for Δₚ
      * Validator rewards (F_mint + F_sponsor) are distributed to validators based on their participation in validation
 
 ## **6.2 Revocation Process**
@@ -1459,12 +1459,12 @@ The following parameters are part of the protocol domain and MUST be supported b
     * Expected device performance  
     * Security requirements for specific use cases  
   * All timing parameters referenced in the document should use these values:
-    * Δ₁ (challenge response): See Section 14.1 for configured value
-    * Δ₂ (attestation): See Section 14.1 for configured value
-    * Δ₃ (attestation to mint): See Section 14.1 for configured value
-    * ΔT (clock skew): See Section 14.1 for configured value
-    * Δₚ (partition detection): See Section 14.1 for configured value
-    * Δᵣ (validator reconfiguration): See Section 14.1 for configured value
+    * Δ₁ (challenge response)
+    * Δ₂ (attestation)
+    * Δ₃ (attestation to mint)
+    * ΔT (clock skew)
+    * Δₚ (partition detection)
+    * Δᵣ (validator reconfiguration)
 
 * **Stake Sizes**  
   * Example values shown are relative units  
