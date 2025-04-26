@@ -536,7 +536,123 @@ This section defines the state machines that govern the behavior of each partici
   * MUST maintain consistent validation criteria across all requests
   * MUST document any additional checks performed
 
-## **5.4 Ledger State Machine**
+## **5.4 Validator Selection Process**
+
+The protocol defines a hybrid validator selection process that combines stake weighting, performance metrics, and verifiable randomness. This process ensures fair and secure validator rotation while maintaining network security and performance.
+
+### **5.4.1 Selection Parameters**
+
+* **Base Parameters** (see Section 14.1 for values)
+  * `minValidators`: Minimum number of validators
+  * `maxValidators`: Maximum number of validators
+  * `validatorRotationPeriod`: Time between rotations
+  * `V_bond`: Minimum validator bond
+
+* **Performance Metrics**
+  * `responseTimeScore`: Based on validation response time within ΔV
+  * `accuracyScore`: Based on validation accuracy and history
+  * `uptimeScore`: Based on validator availability
+  * `stakeScore`: Based on bond size relative to V_bond
+
+* **Selection Weights**
+  * `stakeWeight`: Weight for stake-based selection
+  * `performanceWeight`: Weight for performance-based selection
+  * `performanceMetrics`: [responseTimeScore, accuracyScore, uptimeScore]
+
+### **5.4.2 Selection Algorithm**
+
+1. **Eligibility Check**
+   * Validators must:
+     * Maintain V_bond
+     * Meet minimum performance thresholds
+     * Have sufficient uptime
+     * Not be in probation or slashing period
+
+2. **Score Calculation**
+   * For each eligible validator:
+     * `stakeScore = min(1, bond / V_bond)`
+     * `performanceScore = average(performanceMetrics)`
+     * `totalScore = (stakeScore × stakeWeight) + (performanceScore × performanceWeight)`
+
+3. **Verifiable Random Selection**
+   * Use VRF (Verifiable Random Function) with:
+     * Input: Block hash at rotation time
+     * Validator's private key
+     * Total scores as weights
+   * Output: Random selection with probability proportional to totalScore
+
+4. **Rotation Process**
+   * Occurs every `validatorRotationPeriod`
+   * Process:
+     1. Calculate scores for all eligible validators
+     2. Generate VRF output using block hash
+     3. Select new validator set based on VRF and scores
+     4. Announce new set with cryptographic proof
+     5. Begin handover process
+
+### **5.4.3 Handover Protocol**
+
+* **Pre-Rotation**
+  * Selected validators prepare for role
+  * Verify bond requirements
+  * Initialize validation infrastructure
+
+* **Rotation Window**
+  * Duration: Δᵣ (validator reconfiguration window)
+  * Activities:
+    * Transfer validation responsibilities
+    * Verify new validator readiness
+    * Ensure quorum maintenance
+    * Validate handover signatures
+
+* **Post-Rotation**
+  * New validators active
+  * Old validators in standby
+  * Monitor initial performance
+  * Address any handover issues
+
+### **5.4.4 Security Properties**
+
+* **Selection Security**
+  * VRF ensures unpredictable selection
+  * Stake weighting prevents stake grinding
+  * Performance metrics prevent validator cartels
+  * Cryptographic proofs prevent manipulation
+
+* **Handover Security**
+  * All handovers must be signed
+  * Quorum must be maintained
+  * No single point of failure
+  * Graceful failure handling
+
+### **5.4.5 Implementation Requirements**
+
+* **Validator Requirements**
+  * Maintain V_bond
+  * Track performance metrics
+  * Support VRF computation
+  * Implement handover protocol
+
+* **Network Requirements**
+  * Broadcast selection results
+  * Verify VRF outputs
+  * Monitor validator performance
+  * Handle rotation events
+
+* **Security Requirements**
+  * Secure key management
+  * Anti-sybil measures
+  * Performance monitoring
+  * Slashing conditions
+
+This hybrid selection process ensures:
+* Fair and verifiable validator rotation
+* Strong economic security through stake weighting
+* High performance through metrics-based selection
+* Resistance to manipulation and cartels
+* Scalable and maintainable validator set
+
+## **5.5 Ledger State Machine**
 
 * **Initial State:** `WAIT_TX`  
 * **States:**  
