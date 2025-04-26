@@ -1522,7 +1522,7 @@ This section describes optional interfaces and hook points where applications, D
 * **Governance-Controlled Modules**  
   * Deploy policy contracts that implement `RewardDistributor` and `SlashController` interfaces; allow DAOs to vote on upgrades or parameter changes.
 
-## **12.1 Protocol Governance**
+## **12.5 Protocol Governance**
 
 The protocol follows a decentralized governance model where changes require overwhelming network consensus. There is no formal governance system or privileged actors who can force changes.
 
