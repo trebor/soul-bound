@@ -280,6 +280,33 @@ These requirements ensure that:
 * Validator quorum decisions are secure
 * Signatures are interoperable across implementations
 
+## **2.3 Naming Conventions**
+
+The protocol uses consistent naming patterns for different types of parameters and fields:
+
+* **Protocol Parameters** (defined in Section 14.1)
+  * `F_` prefix for fees (e.g., `F_mint`, `F_sponsor`)
+  * `S_` prefix for stakes (e.g., `S_mint`, `S_sponsor`)
+  * `V_` prefix for validator parameters (e.g., `V_bond`)
+  * `Δ` prefix for timing parameters (e.g., `ΔT`, `ΔV`)
+
+* **Message Fields** (in JSON schemas)
+  * camelCase for all fields (e.g., `mintFee`, `sponsorFee`, `stake`)
+  * Field names correspond to protocol parameters:
+    * `mintFee` corresponds to `F_mint`
+    * `sponsorFee` corresponds to `F_sponsor`
+    * `stake` corresponds to `S_mint` or `S_sponsor` depending on context
+
+* **Timing Parameters**
+  * Numeric subscripts for sequence (Δ₁, Δ₂, Δ₃)
+  * Letter suffixes for specific purposes (ΔT, ΔV)
+  * All timing parameters are defined in Section 14.1
+
+This naming convention ensures clear distinction between:
+* Protocol-level parameters (with prefixes)
+* Message-level fields (camelCase)
+* Timing parameters (Δ prefix)
+
 # **3\. Protocol Overview**
 
 ## **3.1 High-Level Sequence Diagram**
@@ -365,6 +392,8 @@ This section defines the core protocol messages, their senders, purposes, requir
   * `candidateSig`: Signature over attestation bundle using Candidate's private key  
   * `sponsorSig`: Sponsor's attestation signature  
   * `stake`: Amount of tokens staked for minting (≥ S_mint)  
+  * `mintFee`: Fee paid to validators for minting
+  * `sponsorFee`: Fee paid to validators for sponsorship
   * `zkProof`: Zero-knowledge proof of protocol compliance
   * `timeAnchor`: Either `timestamp` (Unix epoch) or `blockHeight` (ledger height)  
 * **Time Anchor Selection Rules:**  
@@ -501,6 +530,8 @@ This section defines the state machines that govern the behavior of each partici
   * MUST verify all cryptographic proofs and signatures
   * MUST check stake amounts meet minimum requirements
   * MUST validate timestamps and anti-replay protections
+  * MUST verify mint fee (F_mint) is included and correct
+  * MUST verify sponsor fee (F_sponsor) is included and correct
   * MAY check Sponsor's validation history and past behavior
   * MUST maintain consistent validation criteria across all requests
   * MUST document any additional checks performed
@@ -550,6 +581,8 @@ This section walks through the complete lifecycle of identity creation, from ini
      * Signed attestation from Sponsor
      * Locked S_mint stake
      * Locked S_sponsor stake
+     * Mint fee (F_mint)
+     * Sponsor fee (F_sponsor)
      * Zero-knowledge proof of protocol compliance
    * Candidate submits MintRequest to Validators
 
@@ -557,13 +590,16 @@ This section walks through the complete lifecycle of identity creation, from ini
    * Validators verify:
      * All cryptographic signatures and proofs
      * Both S_mint and S_sponsor are properly locked in escrow
+     * Mint fee (F_mint) and sponsor fee (F_sponsor) are included and correct
      * Timestamps and anti-replay protections
      * Sponsor's validation history (optional)
    * On majority approval:
      * Identity is minted on-chain
      * S_mint remains locked for identity lifetime
      * S_sponsor remains locked for Δₚ
-     * Validator rewards (F_mint + F_sponsor) are distributed to validators based on their participation in validation
+     * Mint fee (F_mint) is distributed to validators
+     * Sponsor fee (F_sponsor) is distributed to validators
+     * Validator rewards are distributed based on their participation in validation
 
 ## **6.2 Revocation Process**
 
@@ -623,14 +659,16 @@ All off-chain protocol messages exchanged peer-to-peer or via RPC MUST conform t
     },  
     "MintRequest": {  
       "type": "object",  
-      "required": ["type","identityPubKey","sessionId","candidateSig","sponsorSig","stake","zkProof","timestamp"],
+      "required": ["type","identityPubKey","sessionId","candidateSig","sponsorSig","stake","mintFee","sponsorFee","zkProof","timestamp"],
       "properties": {  
         "type":           { "const": "MintRequest" },  
         "identityPubKey": { "type": "string" },  
         "sessionId":      { "type": "string", "format": "uuid" },  
         "candidateSig":   { "type": "string" },  
         "sponsorSig":     { "type": "string" },  
-        "stake":          { "type": "number", "minimum": 0 },  
+        "stake":          { "type": "number", "minimum": 0, "description": "Must be ≥ S_mint (protocol parameter)" },  
+        "mintFee":        { "type": "number", "minimum": 0, "description": "Must be ≥ F_mint (protocol parameter)" },  
+        "sponsorFee":     { "type": "number", "minimum": 0, "description": "Must be ≥ F_sponsor (protocol parameter)" },  
         "zkProof":        { "type": "string" },  
         "timestamp":      { "type": "integer", "minimum": 0 },
         "blockHeight":    { "type": "integer", "minimum": 0 }
@@ -725,6 +763,21 @@ All off-chain protocol messages exchanged peer-to-peer or via RPC MUST conform t
         "reason": { "type": "string" },
         "timestamp": { "type": "integer", "minimum": 0 }
       }
+    },
+    "SponsorRequest": {  
+      "type": "object",  
+      "required": ["type","identityPubKey","sessionId","candidateSig","sponsorSig","stake","sponsorFee","timestamp"],
+      "properties": {  
+        "type":           { "const": "SponsorRequest" },  
+        "identityPubKey": { "type": "string" },  
+        "sessionId":      { "type": "string", "format": "uuid" },  
+        "candidateSig":   { "type": "string" },  
+        "sponsorSig":     { "type": "string" },  
+        "stake":          { "type": "number", "minimum": 0, "description": "Must be ≥ S_sponsor (protocol parameter)" },  
+        "sponsorFee":     { "type": "number", "minimum": 0, "description": "Must be ≥ F_sponsor (protocol parameter)" },  
+        "timestamp":      { "type": "integer", "minimum": 0 },
+        "blockHeight":    { "type": "integer", "minimum": 0 }
+      }  
     }
   }  
 }
@@ -811,6 +864,8 @@ To see concrete payloads for each message type, consult:
     "candidateSig": "3045022100...",  
     "sponsorSig": "3046022100...",  
     "stake": 100,  
+    "mintFee": 1,  
+    "sponsorFee": 0.5,  
     "zkProof": "zkSNARK_proof_blob...",
     "timestamp": 1633046420  
   },
@@ -1198,6 +1253,15 @@ This section enumerates expected error conditions, how each actor should detect 
   * Sponsor attempts to vouch without locking the required tokens.
   * Session is aborted and Sponsor receives a "stake too low" error.
   * No attestation is recorded.
+
+* **Fee Insufficiency Rejections**
+  * MintRequest Fee < F_mint
+    * Validators and Ledger smart contracts check `mintFee ≥ F_mint`.
+    * If the fee is insufficient, the transaction is reverted or the request is rejected with error code `INSUFFICIENT_MINT_FEE`.
+  * Sponsor Fee Insufficient
+    * Sponsor attempts to vouch without paying the required F_sponsor.
+    * Session is aborted and Sponsor receives a "sponsor fee too low" error.
+    * No attestation is recorded.
 
 ## **11.4 Replay or Duplicate Sessions**
 
