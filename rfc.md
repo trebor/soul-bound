@@ -1908,6 +1908,8 @@ Note: These parameters are example values for a small-scale deployment. Real-wor
 
 ## **14.4 References & Further Reading**
 
+* [Soul Bound Identity](https://nfinite.games/soulbound)  
+  nfinite.games (2025)  
 * [Bitcoin: A Peer-to-Peer Electronic Cash System](https://bitcoin.org/bitcoin.pdf)  
   Satoshi Nakamoto (2008)  
 * [Bulletproofs: Short Proofs for Confidential Transactions and More](https://eprint.iacr.org/2017/1066.pdf)  
