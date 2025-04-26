@@ -1164,136 +1164,153 @@ These combined mechanisms ensure every action in the protocol is fresh, ordered,
 
 # **9\. Economic Mechanisms**
 
-This section describes the protocol-level economic mechanisms that all implementations MUST support. While the core mechanisms are fixed by the protocol, implementations may add additional economic features as described in Section 1.2.
+This section describes the protocol-level economic mechanisms. All values are cryptographically enforced through smart contracts and zero-knowledge proofs.
 
 ## **9.1 Identity-Minting Stakes & Fees**
 
 * **Minting Stake (S_mint)**
-  * Must be locked for identity lifetime
-  * Slashed for protocol violations
-  * Cannot be withdrawn while identity active
-  * Stake Locking Requirements:
-    * Stake MUST be locked in escrow before minting
-    * Lock MUST be maintained for identity lifetime
-    * Early withdrawal attempts MUST be rejected
-    * Lock MUST be enforced by smart contract
-    * Stake Lock Periods:
+  * Locked for identity lifetime through smart contract
+  * Slashing enforced by protocol rules
+  * Withdrawal prevented by cryptographic timelock
+  * Stake Locking Properties:
+    * Escrow enforced by smart contract
+    * Timelock proven through VDF
+    * Early withdrawal prevented cryptographically
+    * Smart contract enforces:
       * Minimum lock period: validatorRotationPeriod
       * Maximum lock period: Identity lifetime
       * Early withdrawal penalty: slashFraction
-    * Anti-Stake-Grinding Requirements:
-      * Minimum time between stake locks: validatorRotationPeriod
-      * Maximum stake reuse rate: minimumStakeToRewardRatio
-      * Stake withdrawal cooling period: validatorReconfigurationWindow
-      * Stake operations MUST include:
-        * Nonce-based operation tracking
+    * Anti-Stake-Grinding Properties:
+      * Minimum time between stakes proven by VDF
+      * Maximum stake reuse rate enforced on-chain
+      * Cooling period enforced by timelock
+      * Operations verified through:
+        * Nonce-based replay prevention
         * Time-locked commitments
-        * Cryptographic proof of stake age
-        * Zero-knowledge proof of stake history
+        * Stake age proofs
+        * Zero-knowledge history proofs
 
 * **Minting Fee (F_mint)**
-  * Paid to validators
-  * Covers verification costs
-  * Distributed based on validation accuracy
+  * Distribution enforced by smart contract
+  * Verification costs covered through protocol fees
+  * Reward allocation based on cryptographic proofs
 
-## **9.2 Sponsor Stakes & Slashing**
+## **9.2 Network Effects & Economic Scaling**
 
-* **Sponsor Stake (S_sponsor)**
-  * Must be at least the configured sponsor stake
-  * Locked for sponsor duration
-  * Slashed for invalid sponsorships
-  * Anti-Stake-Grinding Requirements:
-    * Minimum lock period MUST be enforced
-    * Rapid stake cycling MUST be prevented
-    * Stake reuse MUST be rate-limited
-    * Stake withdrawal MUST have cooling period
-    * Stake operations MUST include:
-      * Nonce-based operation tracking
-      * Time-locked commitments
-      * Cryptographic proof of stake age
-      * Zero-knowledge proof of stake history
+* **Network Growth Incentives**
+  * Reward scaling formula: networkGrowthBonus = sqrt(totalActiveStake / minimumNetworkStake)
+  * Properties:
+    * Sub-linear growth prevents centralization
+    * Minimum network stake ensures baseline security
+    * Growth bonus capped cryptographically
+    * All values proven through ZK circuits
 
-* **Sponsor Fee (F_sponsor)**
-  * Paid to validators
-  * Covers verification costs
-  * Distributed based on validation accuracy
+* **Dynamic Parameter Adjustment**
+  * Parameters adjust based on:
+    * Network size (proven through stake tracking)
+    * Validator performance (proven through metrics)
+    * Economic conditions (proven through on-chain data)
+  * Adjustment mechanisms:
+    * Exponential slashing curve: penalty = baseSlash * (violationCount ^ slashingExponent)
+    * Reward decay: reward = baseReward * (0.5 ^ (timeSinceStart / rewardHalfLife))
+    * Stake requirements: minStake = baseStake * networkSecurityFactor
+    * All formulas enforced through smart contracts
+
+* **Economic Security Properties**
+  * Minimum stake requirements scale with network size
+  * Slashing penalties increase with violation count
+  * Rewards decay to prevent early-mover advantages
+  * All properties cryptographically enforced
 
 ## **9.3 Validator Bonds & Rewards**
 
 * **Validator Bond (V_bond)**
-  * Must exceed S_mint × 10
-  * Serves as security deposit for honest validation
-  * Slashed for protocol violations
-  * Validator Set Rotation:
-    * Validators MUST rotate periodically
-    * Rotation schedule MUST be deterministic
-    * Rotation MUST maintain quorum
-    * New validators MUST meet bond requirements
-    * Rotation Rules:
+  * Minimum: S_mint × networkSecurityFactor
+  * Security deposit enforced by smart contract
+  * Slashing executed through protocol rules
+  * Validator Set Properties:
+    * Rotation enforced by VDF
+    * Schedule determined by block height
+    * Quorum maintained cryptographically
+    * Bond requirements proven on-chain
+    * Properties:
       * Rotation period: validatorRotationPeriod
       * Minimum validators: minValidators
       * Maximum validators: maxValidators
       * Fault tolerance: faultTolerance
-    * Performance Monitoring:
-      * Response time tracking: Must validate within ΔV
-      * Accuracy metrics: Based on validation history
-      * Uptime requirements: Must maintain quorum participation
-      * Slashing conditions: dishonestValidatorPenalty
-      * Reward distribution: honestValidatorReward
+    * Performance Verification:
+      * Response time proven through timestamps
+      * Accuracy proven through consensus
+      * Uptime proven through participation
+      * Slashing enforced by smart contract
+      * Rewards distributed by formula
       * Cryptographic Requirements:
-        * Validator operations MUST include:
-          * Signed timestamps for all actions
-          * Nonce-based operation tracking
-          * Zero-knowledge proof of validation correctness
-          * Cryptographic proof of stake maintenance
-          * Time-locked commitments for rotations
-        * Rotation MUST include:
-          * Cryptographic proof of stake transfer
-          * Zero-knowledge proof of performance history
-          * Signed handover commitments
-          * Time-locked rotation schedule
+        * Operations verified through:
+          * Signed timestamp chains
+          * Nonce-based replay prevention
+          * ZK proofs of correctness
+          * Stake maintenance proofs
+          * Timelock commitments
+        * Rotation verified through:
+          * Stake transfer proofs
+          * Performance history proofs
+          * Handover commitments
+          * Timelock schedules
 
 * **Validator Rewards**
-  * Base reward for each valid MintRequest validation
-  * Slashing for protocol violations
-  * Reward distribution based on:
-    * Timely validation (within ΔV)
-    * Valid signature verification
-    * Valid timestamp validation
-    * Valid stake verification
-    * Valid quorum participation
+  * Base reward enforced by smart contract
+  * Slashing executed through protocol rules
+  * Distribution based on:
+    * Timely validation (proven by timestamps)
+    * Signature verification (cryptographic)
+    * Timestamp validation (VDF-based)
+    * Stake verification (on-chain)
+    * Quorum participation (proven)
   * Economic alignment:
-    * V_bond size ensures honest validation more profitable than slashing
-    * Rewards must exceed opportunity cost of locked bond
-    * Slashing must exceed potential gains from violations
+    * Bond size > Potential slashing gains
+    * Rewards > Opportunity cost
+    * Slashing > Violation benefits
+    * All inequalities proven in ZK
 
-* **Economic Parameters**
-  * Must ensure:
-    * Honest behavior more profitable
-    * Malicious behavior unprofitable
-    * Cost of attack exceeds benefits
+## **9.4 Treasury & Fee Distribution**
 
-## **9.4 Identity Maintenance Requirements**
+* **Protocol Fee Structure**
+  * Network fee: networkFee × transactionValue
+  * Treasury fee: treasuryFee × transactionValue
+  * Validator reward: validatorRewardFraction × F_mint
+  * All fees enforced by smart contract
 
-The following are the strict requirements for maintaining a valid Soul Bound identity. Violation of these requirements may result in slashing of escrowed stake or revocation of identity.
+* **Distribution Mechanism**
+  * Automatic execution through smart contracts
+  * Proportional allocation based on stake
+  * Performance-based multipliers
+  * Cryptographic proof of distribution
 
-* **Core Requirements**
-  * Do not attempt to create multiple identities
-  * Do not sponsor fraudulent identities
-  * Do not violate protocol rules during verification
-  * Maintain sufficient stake for any active sponsorships
-  * Do not share private keys or verification devices
+* **Treasury Management**
+  * Funds controlled by protocol rules
+  * Spending requires quorum approval
+  * Usage tracked on-chain
+  * All operations provably correct
 
-* **Consequences**
-  The following consequences only apply to violations of core requirements:
-  * Slashing of escrowed stake for:
-    * Fraudulent behavior
-    * Protocol rule violations
-    * Sponsorship fraud
-  * Temporary suspension of verification rights (only during investigation)
-  * Required additional security measures (if security is compromised)
+## **9.5 Economic Security Proofs**
 
-Note: These are the minimum protocol-level requirements. Implementations may add additional requirements or maintenance tasks as described in Section 1.2.
+* **Sybil Resistance**
+  * Cost of N identities = N × (S_mint + F_mint)
+  * Linear scaling proven through ZK circuits
+  * No economies of scale in identity creation
+  * All costs cryptographically enforced
+
+* **Incentive Alignment**
+  * Honest behavior profit > Dishonest maximum gain
+  * Slashing penalty > Potential attack benefit
+  * Reward > Opportunity cost of stake
+  * All inequalities proven in ZK circuits
+
+* **Network Security**
+  * Minimum stake requirements scale with network
+  * Validator bonds exceed attack incentives
+  * Quorum requirements prevent centralization
+  * All properties cryptographically enforced
 
 # **10\. Security Properties & Invariants**
 
@@ -1699,11 +1716,15 @@ The following parameters are part of the protocol domain and MUST be supported b
     "V_bond": 1000,
     "minimumStakeIncrement": 1,
     "slashFraction": 0.5,
-    "validatorRewardFraction": 0.1
+    "validatorRewardFraction": 0.1,
+    "networkSecurityFactor": 10,
+    "minimumNetworkStake": 10000
   },
   "fees": {
     "F_mint": 1,
-    "F_sponsor": 0.5
+    "F_sponsor": 0.5,
+    "networkFee": 0.1,
+    "treasuryFee": 0.1
   },
   "quorum": {  
     "n": 5,  
@@ -1712,7 +1733,8 @@ The following parameters are part of the protocol domain and MUST be supported b
       "minValidators": 3,
       "maxValidators": 100,
       "faultTolerance": 0.33,
-      "validatorRotationPeriod": 86400
+      "validatorRotationPeriod": 86400,
+      "minimumActiveStake": 5000
     }
   },
   "economicParameters": {
@@ -1720,7 +1742,21 @@ The following parameters are part of the protocol domain and MUST be supported b
     "dishonestValidatorPenalty": 2.0,
     "honestSponsorReward": 0.5,
     "dishonestSponsorPenalty": 1.5,
-    "minimumStakeToRewardRatio": 10
+    "minimumStakeToRewardRatio": 10,
+    "rewardHalfLife": 2592000,
+    "slashingCurve": "exponential",
+    "slashingParameters": {
+      "baseSlashFraction": 0.5,
+      "maxSlashFraction": 1.0,
+      "slashingExponent": 2,
+      "violationCountThreshold": 3
+    },
+    "rewardFormulas": {
+      "validatorBaseReward": "F_mint * validatorRewardFraction",
+      "sponsorBaseReward": "F_sponsor * (1 - networkFee - treasuryFee)",
+      "networkGrowthBonus": "sqrt(totalActiveStake / minimumNetworkStake)",
+      "performanceMultiplier": "min(1, accuracyScore * uptimeScore * responseTimeScore)"
+    }
   }
 }
 ```
