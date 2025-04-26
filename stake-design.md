@@ -4,9 +4,9 @@
 
 | Stake Type | Actor | Purpose | Amount | Lock Period | Slashing Conditions | Notes |
 |------------|-------|---------|--------|-------------|---------------------|-------|
-| Identity Minting Stake (S_mint) | Candidate | Required to create a new identity | 100 units | Identity lifetime | - Fraudulent identity creation<br>- Protocol violations<br>- Multiple identity attempts | Cannot be withdrawn while identity is active |
-| Sponsor Stake (S_sponsor) | Sponsor | Required to vouch for a new identity | 10 units | Duration of sponsorship | - Sponsoring fraudulent identities<br>- Protocol violations during verification<br>- False attestations | Must be maintained for active sponsorships |
-| Validator Bond (V_bond) | Validator | Required to participate in validation | 1000 units (10×S_mint) | While active as validator | - Invalid validations<br>- Protocol violations<br>- Censorship<br>- Non-participation | Must exceed S_mint × 10 |
+| Identity Minting Stake (S_mint) | Candidate | Required to create a new identity | S_mint units | Identity lifetime | - Fraudulent identity creation<br>- Protocol violations<br>- Multiple identity attempts | Cannot be withdrawn while identity is active |
+| Sponsor Stake (S_sponsor) | Sponsor | Required to vouch for a new identity | S_sponsor units | Duration of sponsorship | - Sponsoring fraudulent identities<br>- Protocol violations during verification<br>- False attestations | Must be maintained for active sponsorships |
+| Validator Bond (V_bond) | Validator | Required to participate in validation | V_bond units | While active as validator | - Invalid validations<br>- Protocol violations<br>- Censorship<br>- Non-participation | Must exceed S_mint × networkSecurityFactor |
 
 ## Stake Operations
 
@@ -23,104 +23,121 @@
 
 | Violation | Affected Stake | Slashing Amount | Cascading Effect |
 |-----------|---------------|-----------------|------------------|
-| Fraudulent Identity Creation | S_mint | 100% | None |
-| False Sponsorship | S_sponsor | 100% | Direct sponsor loses 50% |
-| Invalid Validation | V_bond | 100% | None |
-| Protocol Violation | All stakes | 100% | Direct sponsor loses 50% |
-| Multiple Identity Attempt | S_mint | 100% | None |
-| Censorship | V_bond | 100% | None |
+| Fraudulent Identity Creation | S_mint | slashFraction | None |
+| False Sponsorship | S_sponsor | slashFraction | Direct sponsor loses sponsorSlashFraction |
+| Invalid Validation | V_bond | slashFraction | None |
+| Protocol Violation | All stakes | slashFraction | Direct sponsor loses sponsorSlashFraction |
+| Multiple Identity Attempt | S_mint | slashFraction | None |
+| Censorship | V_bond | slashFraction | None |
 | Non-participation | V_bond | Proportional to missed validations | None |
 
 ## Stake Management Rules
 
 1. **Locking Requirements**
    - All stakes must be locked before participation
-   - Minimum amounts must be met
-   - Availability must be verified
+   - Minimum amounts defined by protocol parameters
+   - Lock periods enforced by smart contract
 
 2. **Withdrawal Rules**
    - Stakes cannot be withdrawn while active
-   - Cooling periods must be observed
-   - No pending violations allowed
+   - Must wait for rotation period
+   - No pending violations
 
 3. **Slashing Rules**
-   - Immediate upon violation detection
+   - Full slashing for protocol violations
    - Partial slashing for sponsors based on violation type
-   - Cascading effects follow tree structure
+   - Cascading effects defined by protocol
 
 4. **Governance**
    - Stake amounts configurable via governance
    - Minimum stake ratios must be maintained
-   - Parameters can be adjusted based on network conditions
+   - Changes require quorum approval
 
 5. **Cascading Slashing Example**
    ```
-   Node A (sponsor)
-   └── Node B (sponsored)
-       └── Node C (sponsored)
-           └── Node D (sponsored)
+   A -> B -> C -> D
    ```
    If Node D is slashed:
-   - Node D loses 100% of stake
-   - Node C (direct sponsor) loses 50% of stake
-   - Node B (grand-sponsor) loses 25% of stake
-   - Node A (great-grand-sponsor) loses 12.5% of stake
+   - Node D loses slashFraction of stake
+   - Node C (direct sponsor) loses sponsorSlashFraction of stake
+   - Node B (grand-sponsor) loses (sponsorSlashFraction/2) of stake
+   - Node A (great-grand-sponsor) loses (sponsorSlashFraction/4) of stake
 
-## Notes and Considerations
+## Economic Analysis
 
 1. **Economic Security**
    - Stake amounts must be high enough to deter malicious behavior
    - Slashing must exceed potential gains from violations
-   - Honest behavior must be more profitable than malicious behavior
+   - Rewards must exceed opportunity cost
 
 2. **Network Stability**
-   - Cascading effects must be carefully balanced
-   - Unfair impact on honest participants must be minimized
-   - System must remain stable under various attack scenarios
+   - Minimum stake requirements scale with network size
+   - Validator bonds exceed attack incentives
+   - Quorum requirements prevent centralization
 
 3. **Implementation Considerations**
-   - Clear rules for violation detection
    - Efficient slashing execution
    - Proper handling of partial slashing
-   - Accurate tracking of sponsorship relationships
+   - Clear documentation of stake requirements
 
 4. **Future Considerations**
    - Dynamic stake requirements based on network size
    - Adaptive slashing based on violation severity
-   - Additional stake types for specialized roles 
+   - Additional stake types for specialized roles
+
+## Actor Incentives
+
+| Actor | Required Stake | Rewards | Risks | Notes |
+|-------|---------------|---------|-------|-------|
+| **Sponsor** | S_sponsor | - Base reward per successful sponsorship (F_sponsor)<br>- Reputation building for future sponsorships<br>- Potential for higher rewards based on sponsorship history | - slashFraction stake slashing for false sponsorships<br>- sponsorSlashFraction stake slashing for sponsored node violations<br>- Reputation damage for failed sponsorships | - Rewards must exceed opportunity cost of locked stake<br>- Must carefully vet candidates to avoid slashing<br>- Long-term value in building good sponsorship history |
+| **Validator** | V_bond | - Base reward per valid validation (F_mint)<br>- Performance-based rewards<br>- Honest validator bonus<br>- Additional rewards for high accuracy | - slashFraction bond slashing for invalid validations<br>- Proportional slashing for missed validations<br>- Removal from validator set for poor performance | - Bond size ensures honest validation more profitable than slashing<br>- Must maintain high uptime and accuracy<br>- Rewards must exceed opportunity cost of locked bond |
+| **Identity Holder** | S_mint | - Ability to participate in the network<br>- Potential to become a sponsor<br>- Access to network services and applications | - slashFraction stake slashing for protocol violations<br>- Loss of identity status if revoked | - Value comes from network participation<br>- Must maintain honest behavior<br>- Long-term value in building reputation |
+
+## Reward Structure
+
+1. **Sponsor Rewards**
+   - Base reward: F_sponsor
+   - Performance bonus: sponsorBonus
+   - Reputation multiplier: reputationMultiplier
+   - Slashing for:
+   - False sponsorships (slashFraction stake)
+   - Sponsored node violations (sponsorSlashFraction stake)
+
+2. **Validator Rewards**
+   - Base reward: F_mint
+   - Performance bonus: validatorBonus
+   - Honest validator reward
+   - Accuracy bonus: accuracyBonus
+   - Slashing for:
+   - Invalid validations (slashFraction bond)
+   - Missed validations (proportional to missed count)
 
 ## Economic Incentives and Rewards
 
 | Role | Investment Required | Potential Rewards | Risk Factors | Profitability Considerations |
 |------|---------------------|-------------------|--------------|-----------------------------|
-| **Sponsor** | S_sponsor (10 units) | - Base reward per successful sponsorship (F_sponsor = 0.5 units)<br>- Reputation building for future sponsorships<br>- Potential for higher rewards based on sponsorship history | - 100% stake slashing for false sponsorships<br>- 50% stake slashing for sponsored node violations<br>- Reputation damage for failed sponsorships | - Rewards must exceed opportunity cost of locked stake<br>- Must carefully vet candidates to avoid slashing<br>- Long-term value in building good sponsorship history |
-| **Validator** | V_bond (1000 units) | - Base reward per valid validation (F_mint = 1 unit)<br>- Performance-based rewards<br>- Honest validator bonus (1.0 units per validation)<br>- Additional rewards for high accuracy | - 100% bond slashing for invalid validations<br>- Proportional slashing for missed validations<br>- Removal from validator set for poor performance | - Bond size ensures honest validation more profitable than slashing<br>- Must maintain high uptime and accuracy<br>- Rewards must exceed opportunity cost of locked bond |
-| **Identity Holder** | S_mint (100 units) | - Ability to participate in the network<br>- Potential to become a sponsor<br>- Access to network services and applications | - 100% stake slashing for protocol violations<br>- Loss of identity status if revoked | - Value comes from network participation<br>- Must maintain honest behavior<br>- Long-term value in building reputation |
+| **Sponsor** | S_sponsor (S_sponsor units) | - Base reward per successful sponsorship (F_sponsor)<br>- Reputation building for future sponsorships<br>- Potential for higher rewards based on sponsorship history | - slashFraction stake slashing for false sponsorships<br>- sponsorSlashFraction stake slashing for sponsored node violations<br>- Reputation damage for failed sponsorships | - Rewards must exceed opportunity cost of locked stake<br>- Must carefully vet candidates to avoid slashing<br>- Long-term value in building good sponsorship history |
+| **Validator** | V_bond (V_bond units) | - Base reward per valid validation (F_mint)<br>- Performance-based rewards<br>- Honest validator bonus<br>- Additional rewards for high accuracy | - slashFraction bond slashing for invalid validations<br>- Proportional slashing for missed validations<br>- Removal from validator set for poor performance | - Bond size ensures honest validation more profitable than slashing<br>- Must maintain high uptime and accuracy<br>- Rewards must exceed opportunity cost of locked bond |
+| **Identity Holder** | S_mint (S_mint units) | - Ability to participate in the network<br>- Potential to become a sponsor<br>- Access to network services and applications | - slashFraction stake slashing for protocol violations<br>- Loss of identity status if revoked | - Value comes from network participation<br>- Must maintain honest behavior<br>- Long-term value in building reputation |
 
 ### Reward Distribution Mechanics
 
 1. **Sponsor Rewards**
-   - Base reward (F_sponsor) for each successful sponsorship
-   - Additional rewards based on:
-     - Sponsorship success rate
-     - Longevity of sponsored identities
-     - Number of successful sponsorships
-   - Rewards distributed after sponsorship period ends
+   - Base reward: F_sponsor
+   - Performance bonus: sponsorBonus
+   - Reputation multiplier: reputationMultiplier
    - Slashing for:
-     - False sponsorships (100% stake)
-     - Sponsored node violations (50% stake)
+     - False sponsorships (slashFraction stake)
+     - Sponsored node violations (sponsorSlashFraction stake)
 
 2. **Validator Rewards**
-   - Base reward (F_mint) for each valid validation
-   - Performance bonuses:
-     - Honest validator reward (1.0 units)
-     - Accuracy-based multipliers
-     - Uptime incentives
-   - Rewards distributed per validation
+   - Base reward: F_mint
+   - Performance bonus: validatorBonus
+   - Honest validator reward
+   - Accuracy bonus: accuracyBonus
    - Slashing for:
-     - Invalid validations (100% bond)
-     - Missed validations (proportional)
-     - Protocol violations (100% bond)
+     - Invalid validations (slashFraction bond)
+     - Missed validations (proportional to missed count)
 
 3. **Economic Security Parameters**
    - Honest validator reward > dishonest validator penalty
@@ -132,16 +149,16 @@
 
 1. **Successful Sponsor**
    ```
-   Investment: 10 units (S_sponsor)
-   Rewards per sponsorship: 0.5 units (F_sponsor)
+   Investment: S_sponsor units
+   Rewards per sponsorship: F_sponsor
    Successful sponsorships needed to break even: 20
    Additional rewards from reputation: Variable
    ```
 
 2. **Active Validator**
    ```
-   Investment: 1000 units (V_bond)
-   Rewards per validation: 1 unit (F_mint)
+   Investment: V_bond units
+   Rewards per validation: F_mint
    Additional honest validator reward: 1.0 units
    Validations needed to break even: ~500
    Performance bonuses: Variable

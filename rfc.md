@@ -1099,28 +1099,47 @@ The protocol defines several timing parameters that all implementations MUST sup
 
 * **Protocol-Level Timing Parameters**  
   * Δ₁ (Challenge Response Window)
-    * Time allowed for Candidate to respond to ChallengeRequest  
-    * Used in: ChallengeRequest → SponsorAttestation transition  
+    * Time allowed for Candidate to respond to ChallengeRequest (Δ₁)
+    * Enforced through signed timestamps and nonce verification
+    * Used in: ChallengeRequest → SponsorAttestation transition
+    * Validation: `|timestamp_sponsor_attestation - timestamp_challenge| ≤ Δ₁`
+  
   * Δ₂ (Attestation Window)
-    * Time allowed for Sponsor to verify and attest  
-    * Used in: ChallengeRequest → SponsorAttestation transition  
+    * Time allowed for Sponsor to verify and attest (Δ₂)
+    * Enforced through signed timestamps and sequence numbers
+    * Used in: ChallengeRequest → SponsorAttestation transition
+    * Validation: `|timestamp_sponsor_attestation - timestamp_challenge| ≤ Δ₂`
+  
   * Δ₃ (Attestation to Mint Window)
-    * Time allowed for Candidate to submit MintRequest  
-    * Used in: SponsorAttestation → MintRequest transition  
+    * Time allowed for Candidate to submit MintRequest (Δ₃)
+    * Enforced through signed timestamps and block-height anchoring
+    * Used in: SponsorAttestation → MintRequest transition
+    * Validation: `|timestamp_mint_request - timestamp_sponsor_attestation| ≤ Δ₃`
+  
   * ΔT (Clock Skew)
-    * Maximum allowed difference between local and message timestamps  
-    * Used in: All message validation  
+    * Maximum allowed difference between local and message timestamps (ΔT)
+    * Enforced through signed timestamps and validator consensus
+    * Used in: All message validation
+    * Validation: `|local_time - message_timestamp| ≤ ΔT`
+  
   * ΔV (Validation Response Window)
-    * Time allowed for validators to respond to MintRequest  
-    * Used in: MintRequest → ValidationResponse transition  
+    * Time allowed for validators to respond to MintRequest (ΔV)
+    * Enforced through signed timestamps and quorum rules
+    * Used in: MintRequest → ValidationResponse transition
+    * Validation: `|timestamp_validation_response - timestamp_mint_request| ≤ ΔV`
 
 * **Network-Level Timing Parameters**  
   * Δₚ (Partition Detection Window)
-    * Time to detect network partitions  
-    * Used in: Validator state machine  
+    * Time to detect network partitions (Δₚ)
+    * Enforced through validator state machine and quorum rules
+    * Used in: Validator state machine
+    * Validation: `time_since_last_quorum > Δₚ`
+  
   * Δᵣ (Validator Reconfiguration Window)
-    * Time allowed for validator set changes  
-    * Used in: Validator rotation and reconfiguration  
+    * Time allowed for validator set changes (Δᵣ)
+    * Enforced through smart contracts and governance rules
+    * Used in: Validator rotation and reconfiguration
+    * Validation: `time_since_last_rotation ≥ Δᵣ`
 
 * **Implementation-Specific Windows**  
   The following windows are left to implementations to define based on their specific requirements:  
@@ -1137,14 +1156,19 @@ Note: All protocol-level timing parameters are defined in Section 14.1 and MUST 
   * Each ChallengeRequest includes a cryptographic `nonce` (random bit-string)  
     that ties all subsequent messages in that session together.  
   * Validators track used nonces to reject duplicates or replays.  
+  * Nonce validation: `nonce ∉ seen_nonces`
+  
 * **Sequence numbers**  
   * For multi-step exchanges, messages may carry a small integer `sequence`  
     (1, 2, 3…) to enforce correct ordering.  
   * Replay or reordering (e.g. sending "SponsorAttestation" before "ChallengeRequest")  
     is detected and dropped.  
+  * Sequence validation: `sequence = expected_sequence`
+  
 * **Binding**  
   * Nonce and sequence number are always included in the data that's hashed  
     and signed by each actor, preventing mutation or reuse.
+  * Validation: `signature_valid(message ∥ nonce ∥ sequence)`
 
 ## **8.3 Verifiable Delay Functions (optional)**
 
@@ -1159,6 +1183,7 @@ Note: All protocol-level timing parameters are defined in Section 14.1 and MUST 
   * Include `vdfOut` and its proof in the MintRequest or RevocationRequest when a  
     mandatory delay is required.  
   * Validators reject submissions lacking a valid, timely VDF proof.
+  * Validation: `vdf_proof_valid(vdfOut, difficulty_parameter)`
 
 These combined mechanisms ensure every action in the protocol is fresh, ordered, and tamper-evident—making replay or preplay attacks economically and technically infeasible.
 
