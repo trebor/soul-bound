@@ -945,13 +945,13 @@ All on-chain transactions and stored records (identity nodes, edges, slashes, re
   "definitions": {  
     "IdentityRecord": {  
       "type": "object",  
-      "required": ["identityPubKey","sponsorPubKey","mintTxHash","timestamp","stake"],
+      "required": ["identityPubKey","sponsorPubKey","txHash","timestamp","stake"],
       "properties": {  
         "identityPubKey": { "type": "string" },  
         "sponsorPubKey":  { "type": "string" },  
-        "mintTxHash":     { "type": "string" },  
+        "txHash":         { "type": "string" },  
         "timestamp":      { "type": "integer" },  
-        "stake":          { "type": "number" }  
+        "stake":          { "type": "number", "minimum": 0, "description": "Must be ≥ S_mint (protocol parameter)" }  
       }  
     },  
     "SponsorshipEdge": {  
@@ -965,11 +965,11 @@ All on-chain transactions and stored records (identity nodes, edges, slashes, re
     },  
     "RevocationRecord": {  
       "type": "object",  
-      "required": ["identityPubKey","revokerPubKey","revocationTxHash","timestamp","evidenceHash"],
+      "required": ["identityPubKey","revokerPubKey","txHash","timestamp","evidenceHash"],
       "properties": {  
         "identityPubKey":  { "type": "string" },  
         "revokerPubKey":   { "type": "string" },  
-        "revocationTxHash":{ "type": "string" },  
+        "txHash":          { "type": "string" },  
         "timestamp":       { "type": "integer" },  
         "evidenceHash":    { "type": "string" }  
       }  
@@ -979,7 +979,7 @@ All on-chain transactions and stored records (identity nodes, edges, slashes, re
       "required": ["recipientPubKey","amount","reason","txHash","timestamp"],
       "properties": {  
         "recipientPubKey": { "type": "string" },  
-        "amount":          { "type": "number" },  
+        "amount":          { "type": "number", "minimum": 0, "description": "Must be ≥ F_mint or F_sponsor (protocol parameter)" },  
         "reason":          { "type": "string" },  
         "txHash":          { "type": "string" },  
         "timestamp":       { "type": "integer" }  
