@@ -192,27 +192,27 @@ All other aspects are implementation-specific and MAY be customized by different
 The protocol defines the following core data types:
 
 1. **Identity**
-   * Public key
-   * Stake amount
+   * `identityPubKey`
+   * `stake` (S_mint)
    * Status (active/revoked)
    * Creation timestamp
 
 2. **Attestation**
    * Type identifier
-   * Session ID
-   * Timestamp
-   * Sponsor signature
+   * `sessionId`
+   * `timestamp`
+   * `sponsorSig`
 
 3. **Transaction**
    * Type (create/revoke/slash)
-   * Identity reference
-   * Stake amount
+   * `identityPubKey`
+   * `stake` (S_mint or S_sponsor)
    * Signatures
-   * Timestamp
+   * `timestamp`
 
 4. **Validator Set**
    * List of validator public keys
-   * Stake weights
+   * `stake` weights
    * Quorum threshold
    * Status (active/removed)
 
@@ -1289,6 +1289,7 @@ This section states the core security guarantees and invariants that any Soul Bo
 * **Invariant:** The cost to create N identities grows linearly in N.  
 * **Mechanisms:**  
   * Verification requirements and slashing
+  * Token stakes (S_mint, S_sponsor)
   * Protocol-enforced limits on sponsorships
 
 ## **10.4 Privacy Guarantees**
