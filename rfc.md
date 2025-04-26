@@ -2,7 +2,7 @@
 
 ## **1.1 Purpose & Audience**
 
-This document defines the **Soul Bound Protocol**, a decentralized, privacy-preserving framework for creating digital identities that are strongly anchored to real-world, in-person verification events. By treating Soul Bound as a *protocol* rather than a single software product, we enable multiple interoperable implementations to:
+This document defines the **Soul Bound Protocol**, a decentralized, privacy-preserving framework for creating digital identities that are strongly anchored to real-world verification events. By treating Soul Bound as a *protocol* rather than a single software product, we enable multiple interoperable implementations to:
 
 * Generate and manage non-transferable identity tokens on a distributed ledger  
 * Record sponsorship stakes in a standardized, auditable format  
@@ -10,7 +10,7 @@ This document defines the **Soul Bound Protocol**, a decentralized, privacy-pres
 * Embed economic incentives (staking, slashing) to align honest behavior and deter fraud
 
 The protocol is designed to make it economically and practically infeasible to create fraudulent identities at scale, while still allowing for legitimate identity creation. This is achieved through a combination of:
-* In-person verification requirements that cannot be easily automated
+* Verification requirements that cannot be easily automated
 * Economic stakes that make fraud costly
 * Decentralized validation that prevents single points of failure
 * Privacy-preserving mechanisms that protect user data
@@ -52,7 +52,7 @@ This document strictly separates requirements into two distinct domains:
 * Client application architecture
 * Local storage and caching strategies
 * Performance optimizations
-* Hardware security module (HSM) implementations
+* Verification methods and processes
 * Off-chain trust and reputation algorithms
 * Specific blockchain deployment details
 * Network parameters and gas optimizations
@@ -81,7 +81,7 @@ This specification defines the **protocol-level** rules, message flows, data for
 Out of scope for this document (implementation domain):
 
 * **User interface** or UX design for client applications  
-* **Hardware security module** (HSM) or secure-element implementation details  
+* **Verification methods** or specific implementation details  
 * **Off-chain trust & reputation algorithms** beyond the public graph interface  
 * **Formal machine-checked models** (e.g. TLA⁺, Alloy) – see Section 12 for reference, if desired  
 * **Specific blockchain deployment** details (network parameters, gas costs, layer-2 integrations)
@@ -91,7 +91,7 @@ Out of scope for this document (implementation domain):
 The Soul Bound Protocol is architected to achieve the following core objectives:
 
 * **Sybil resistance**  
-  Ensure each identity corresponds to a unique, real-world individual by requiring in-person verification and economically-backed sponsorships.  
+  Ensure each identity corresponds to a unique, real-world individual through verification requirements and economically-backed sponsorships.  
 * **Privacy (zero-knowledge)**  
   Protect sensitive verification data using zero-knowledge proofs so that verifiers can confirm authenticity without learning raw personal data.  
 * **Interoperability (protocol ≠ software)**  
@@ -121,7 +121,7 @@ The Soul Bound Protocol is architected to achieve the following core objectives:
 #### **Adversary Goals**
 
 * **Sybil Creation**: Generate a large number of fake or duplicate identities to subvert decentralized governance or reputation systems.  
-* **Data Forgery**: Spoof or replay verification data to simulate a legitimate in-person verification.  
+* **Data Forgery**: Spoof or replay verification data to simulate legitimate verification.  
 * **Stake Grinding**: Abuse staking mechanics (e.g., repeatedly minting and slashing to extract fees).  
 * **Privacy Violation**: Attempt to learn raw verification data from attestations.  
 * **Consensus Attack**: Collude validators to approve fraudulent MintRequests or block honest ones.
@@ -1288,8 +1288,7 @@ This section states the core security guarantees and invariants that any Soul Bo
 
 * **Invariant:** The cost to create N identities grows linearly in N.  
 * **Mechanisms:**  
-  * In-person verification required
-  * Token stakes and slashing
+  * Verification requirements and slashing
   * Protocol-enforced limits on sponsorships
 
 ## **10.4 Privacy Guarantees**
