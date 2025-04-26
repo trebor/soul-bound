@@ -221,28 +221,46 @@ All other data structures and formats are implementation-specific and MAY be cus
 ## **2.3 Cryptographic Primitives & Notational Conventions**
 
 * **Hash Function**  
-  * `H(m)`: Collision-resistant hash of message `m`.  
+  * `H(m)`: SHA-256 hash of message `m`.  
 * **Digital Signatures**  
   * `Sig_X(m)`: Signature by actor X over message `m` using `SK_X`.  
   * Verification: `Verify(PK_X, m, Sig_X(m)) → true|false`.  
+  * Implementations MUST support:
+    * Ed25519 for high-performance environments
+    * secp256k1 for Ethereum compatibility
+  * All signatures MUST include:
+    * Nonce for replay protection
+    * Timestamp for freshness
+    * Message hash for integrity
 * **Multi-Signature / Threshold**  
   * `m-of-n`: At least `m` signatures required out of `n` validators.  
+  * Implementations MUST support:
+    * BLS signatures for efficient aggregation
+    * FROST for threshold signatures
   * Represented as an array of validator signatures on the same payload.  
 * **Zero-Knowledge Proofs**  
   * `ZKProof{stmts, witness}`: A proof that the prover knows a `witness` satisfying statements `stmts` without revealing `witness`.  
-  * Implementations MUST support at least one of:
-    * Bulletproofs
-    * zk-SNARKs
+  * Implementations MUST support:
+    * Groth16 zk-SNARKs for succinct proofs
+    * Bulletproofs for transparent proofs
   * All proof systems MUST provide:
-    * Succinctness (proof size sublinear in witness size)
+    * Succinctness (proof size < 1KB for Groth16, < 2KB for Bulletproofs)
     * Non-interactivity (no prover-verifier interaction)
     * Standard security properties (completeness, soundness, zero-knowledge)
+* **Verifiable Delay Functions**  
+  * `VDF(x, t)`: Proof that t sequential steps were performed on input x
+  * Implementations MUST support:
+    * Wesolowski's VDF for efficient verification
+  * VDFs are OPTIONAL and used only for:
+    * Enforcing minimum elapsed time
+    * Preventing stake grinding
+    * Rate limiting operations
 * **Notation**  
   * `∥`: Concatenation operator.  
   * JSON-Schema snippets use `"type": "string"`, `"format": "uuid"`, etc.  
   * All protocol messages include a `"type"` field and the actor's signature over the entire JSON payload.
 
-**Note:** All cryptographic operations must follow industry-standard algorithms (e.g., ECDSA/secp256k1 or Ed25519 for signatures; SHA-256 for hashing; Bulletproofs or zk-SNARKs for zero-knowledge).
+**Note:** All cryptographic operations must follow industry-standard algorithms and implementations. Implementations MUST provide cryptographic proofs of correctness for all operations.
 
 ## **2.4 Signature Requirements**
 
