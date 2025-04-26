@@ -817,9 +817,9 @@ All off-chain protocol messages exchanged peer-to-peer or via RPC MUST conform t
         "sessionId":      { "type": "string", "format": "uuid" },  
         "candidateSig":   { "type": "string" },  
         "sponsorSig":     { "type": "string" },  
-        "stake":          { "type": "number", "minimum": 0, "description": "Must be ≥ S_mint (protocol parameter)" },  
-        "mintFee":        { "type": "number", "minimum": 0, "description": "Must be ≥ F_mint (protocol parameter)" },  
-        "sponsorFee":     { "type": "number", "minimum": 0, "description": "Must be ≥ F_sponsor (protocol parameter)" },  
+        "stake":          { "type": "number", "minimum": 0, "description": "Must be ≥ S_mint" },  
+        "mintFee":        { "type": "number", "minimum": 0, "description": "Must be ≥ F_mint" },  
+        "sponsorFee":     { "type": "number", "minimum": 0, "description": "Must be ≥ F_sponsor" },  
         "zkProof":        { "type": "string" },  
         "timestamp":      { "type": "integer", "minimum": 0 },
         "blockHeight":    { "type": "integer", "minimum": 0 }
@@ -924,8 +924,8 @@ All off-chain protocol messages exchanged peer-to-peer or via RPC MUST conform t
         "sessionId":      { "type": "string", "format": "uuid" },  
         "candidateSig":   { "type": "string" },  
         "sponsorSig":     { "type": "string" },  
-        "stake":          { "type": "number", "minimum": 0, "description": "Must be ≥ S_sponsor (protocol parameter)" },  
-        "sponsorFee":     { "type": "number", "minimum": 0, "description": "Must be ≥ F_sponsor (protocol parameter)" },  
+        "stake":          { "type": "number", "minimum": 0, "description": "Must be ≥ S_sponsor" },  
+        "sponsorFee":     { "type": "number", "minimum": 0, "description": "Must be ≥ F_sponsor" },  
         "timestamp":      { "type": "integer", "minimum": 0 },
         "blockHeight":    { "type": "integer", "minimum": 0 }
       }  
@@ -951,7 +951,7 @@ All on-chain transactions and stored records (identity nodes, edges, slashes, re
         "sponsorPubKey":  { "type": "string" },  
         "txHash":         { "type": "string" },  
         "timestamp":      { "type": "integer" },  
-        "stake":          { "type": "number", "minimum": 0, "description": "Must be ≥ S_mint (protocol parameter)" }  
+        "stake":          { "type": "number", "minimum": 0, "description": "Must be ≥ S_mint" }  
       }  
     },  
     "SponsorshipEdge": {  
@@ -979,7 +979,7 @@ All on-chain transactions and stored records (identity nodes, edges, slashes, re
       "required": ["recipientPubKey","amount","reason","txHash","timestamp"],
       "properties": {  
         "recipientPubKey": { "type": "string" },  
-        "amount":          { "type": "number", "minimum": 0, "description": "Must be ≥ F_mint or F_sponsor (protocol parameter)" },  
+        "amount":          { "type": "number", "minimum": 0, "description": "Must be ≥ F_mint or F_sponsor" },  
         "reason":          { "type": "string" },  
         "txHash":          { "type": "string" },  
         "timestamp":       { "type": "integer" }  
