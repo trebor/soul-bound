@@ -559,7 +559,63 @@ The protocol defines a hybrid validator selection process that combines stake we
   * `performanceWeight`: Weight for performance-based selection
   * `performanceMetrics`: [responseTimeScore, accuracyScore, uptimeScore]
 
-### **5.4.2 Selection Algorithm**
+### **5.4.2 Performance Metrics Calculation**
+
+The protocol defines performance metrics based on on-chain data and cryptographic proofs to ensure objective, verifiable measurement of validator performance.
+
+* **Response Time Score**
+  * Calculated from ValidationResponse messages in the ledger
+  * Formula: `responseTimeScore = 1 - (avgResponseTime / ΔV)`
+  * Where:
+    * `avgResponseTime`: Average time between MintRequest and ValidationResponse
+    * `ΔV`: Maximum allowed response time (from Section 14.1)
+  * Bounded between 0 and 1
+  * Requires cryptographic proof of message timestamps
+
+* **Accuracy Score**
+  * Based on validation history recorded in the ledger
+  * Formula: `accuracyScore = (correctValidations - incorrectValidations) / totalValidations`
+  * Where:
+    * `correctValidations`: Validations matching final consensus
+    * `incorrectValidations`: Validations differing from final consensus
+    * `totalValidations`: Total validation attempts
+  * Each validation must be cryptographically signed
+  * Final consensus determined by m-of-n quorum
+
+* **Uptime Score**
+  * Calculated from validator participation in validation rounds
+  * Formula: `uptimeScore = participatedRounds / totalRounds`
+  * Where:
+    * `participatedRounds`: Number of rounds with valid ValidationResponse
+    * `totalRounds`: Total validation rounds in measurement period
+  * Requires proof of participation via signed messages
+  * Measurement period: last `validatorRotationPeriod`
+
+* **Metric Verification**
+  * All metrics must be:
+    * Calculated from on-chain data
+    * Verifiable through cryptographic proofs
+    * Resistant to manipulation
+    * Computable by any network participant
+  * Verification process:
+    1. Collect relevant ledger entries
+    2. Verify cryptographic signatures
+    3. Calculate metrics using defined formulas
+    4. Generate proof of calculation
+    5. Submit proof with metric values
+
+* **Anti-Gaming Measures**
+  * Metrics incorporate:
+    * Time-based decay for older data
+    * Minimum sample size requirements
+    * Penalties for attempted manipulation
+    * Cryptographic proof of metric integrity
+  * Manipulation attempts result in:
+    * Slashing of validator bond
+    * Temporary exclusion from selection
+    * Required additional security measures
+
+### **5.4.3 Selection Algorithm**
 
 1. **Eligibility Check**
    * Validators must:
@@ -589,27 +645,6 @@ The protocol defines a hybrid validator selection process that combines stake we
      3. Select new validator set based on VRF and scores
      4. Announce new set with cryptographic proof
      5. Begin handover process
-
-### **5.4.3 Handover Protocol**
-
-* **Pre-Rotation**
-  * Selected validators prepare for role
-  * Verify bond requirements
-  * Initialize validation infrastructure
-
-* **Rotation Window**
-  * Duration: Δᵣ (validator reconfiguration window)
-  * Activities:
-    * Transfer validation responsibilities
-    * Verify new validator readiness
-    * Ensure quorum maintenance
-    * Validate handover signatures
-
-* **Post-Rotation**
-  * New validators active
-  * Old validators in standby
-  * Monitor initial performance
-  * Address any handover issues
 
 ### **5.4.4 Security Properties**
 
