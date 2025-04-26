@@ -280,7 +280,7 @@ These requirements ensure that:
 * Validator quorum decisions are secure
 * Signatures are interoperable across implementations
 
-## **2.3 Naming Conventions**
+## **2.5 Naming Conventions**
 
 The protocol uses consistent naming patterns for different types of parameters and fields:
 
@@ -1475,6 +1475,41 @@ This section describes optional interfaces and hook points where applications, D
   * Optional contracts to record application-specific state, so smart contracts or UIs can enforce application requirements.  
 * **State Update Policies**  
   * Configurable update intervals or event-driven updates (e.g. after a configurable number of new blocks or after slashing events).
+
+## **12.3 Implementation-Specific Extensions**
+
+* **Extension Design Principles**
+  * Extensions should be designed to maintain the protocol's cryptographic security properties
+  * All security-critical operations must be verifiable through cryptographic proofs
+  * Extensions should not require trust in implementation details
+  * Common extension patterns:
+    * Additional verification methods with ZK proofs
+    * Custom stake management with on-chain verification
+    * Enhanced privacy through cryptographic primitives
+    * Validator selection with verifiable randomness
+    * Monitoring through cryptographic attestations
+
+* **Security Considerations**
+  * Extensions must be designed to:
+    * Maintain zero-knowledge properties where required
+    * Preserve unforgeability of attestations
+    * Keep stake requirements cryptographically enforced
+    * Ensure validator quorum rules remain intact
+    * Protect against replay and timing attacks
+
+* **Extension Examples**
+  * Additional verification methods:
+    * Multi-signature schemes for enhanced security
+    * Threshold signatures for distributed verification
+    * Time-locked commitments with verifiable delay functions
+  * Enhanced stake management:
+    * Dynamic stake requirements with on-chain verification
+    * Stake delegation with cryptographic authorization
+    * Stake pooling with verifiable distribution rules
+  * Privacy enhancements:
+    * Ring signatures for anonymous attestations
+    * Homomorphic encryption for private computations
+    * Secure multi-party computation for joint verification
 
 ## **12.4 Custom Reward/Slashing Policies**
 
