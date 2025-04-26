@@ -222,45 +222,58 @@ All other data structures and formats are implementation-specific and MAY be cus
 
 * **Hash Function**  
   * `H(m)`: SHA-256 hash of message `m`.  
+  * Cryptographic properties:
+    * Collision resistance
+    * Preimage resistance
+    * Second preimage resistance
 * **Digital Signatures**  
   * `Sig_X(m)`: Signature by actor X over message `m` using `SK_X`.  
   * Verification: `Verify(PK_X, m, Sig_X(m)) → true|false`.  
-  * Implementations MUST support:
-    * Ed25519 for high-performance environments
-    * secp256k1 for Ethereum compatibility
-  * All signatures MUST include:
-    * Nonce for replay protection
-    * Timestamp for freshness
-    * Message hash for integrity
+  * Cryptographic properties:
+    * Unforgeability under chosen message attack
+    * Non-repudiation
+    * Existential unforgeability
+  * Implementation properties:
+    * Nonce-based replay protection
+    * Timestamp-based freshness
+    * Message hash integrity
 * **Multi-Signature / Threshold**  
   * `m-of-n`: At least `m` signatures required out of `n` validators.  
-  * Implementations MUST support:
-    * BLS signatures for efficient aggregation
-    * FROST for threshold signatures
-  * Represented as an array of validator signatures on the same payload.  
+  * Cryptographic properties:
+    * Unforgeability of aggregate signature
+    * Independence of individual signatures
+    * Verifiability of threshold satisfaction
+  * Implementation properties:
+    * BLS-based aggregation
+    * FROST-based threshold
+    * Array-based representation
 * **Zero-Knowledge Proofs**  
   * `ZKProof{stmts, witness}`: A proof that the prover knows a `witness` satisfying statements `stmts` without revealing `witness`.  
-  * Implementations MUST support:
-    * Groth16 zk-SNARKs for succinct proofs
-    * Bulletproofs for transparent proofs
-  * All proof systems MUST provide:
-    * Succinctness (proof size < 1KB for Groth16, < 2KB for Bulletproofs)
-    * Non-interactivity (no prover-verifier interaction)
-    * Standard security properties (completeness, soundness, zero-knowledge)
+  * Cryptographic properties:
+    * Completeness
+    * Soundness
+    * Zero-knowledge
+    * Succinctness
+    * Non-interactivity
+  * Implementation properties:
+    * Groth16-based proofs
+    * Bulletproofs-based proofs
 * **Verifiable Delay Functions**  
   * `VDF(x, t)`: Proof that t sequential steps were performed on input x
-  * Implementations MUST support:
-    * Wesolowski's VDF for efficient verification
-  * VDFs are OPTIONAL and used only for:
-    * Enforcing minimum elapsed time
-    * Preventing stake grinding
-    * Rate limiting operations
+  * Cryptographic properties:
+    * Sequentiality
+    * Verifiability
+    * Uniqueness
+  * Implementation properties:
+    * Wesolowski-based verification
+    * Time-based enforcement
+    * Rate-limiting enforcement
 * **Notation**  
   * `∥`: Concatenation operator.  
   * JSON-Schema snippets use `"type": "string"`, `"format": "uuid"`, etc.  
-  * All protocol messages include a `"type"` field and the actor's signature over the entire JSON payload.
+  * Protocol messages include a `"type"` field and the actor's signature over the entire JSON payload.
 
-**Note:** All cryptographic operations must follow industry-standard algorithms and implementations. Implementations MUST provide cryptographic proofs of correctness for all operations.
+**Note:** Each operation provides cryptographic proof of its security properties.
 
 ## **2.4 Signature Requirements**
 
