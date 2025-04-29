@@ -1751,14 +1751,22 @@ The following parameters are part of the protocol domain and MUST be supported b
     "treasuryFee": 0.1
   },
   "quorum": {  
-    "n": 5,  
-    "m": 3,
     "scaling": {
-      "minValidators": 3,
-      "maxValidators": 100,
-      "faultTolerance": 0.33,
+      "minValidators": 7,
+      "maxValidators": 1000,
+      "faultTolerance": 0.2,
       "validatorRotationPeriod": 86400,
-      "minimumActiveStake": 5000
+      "minimumActiveStake": 5000,
+      "quorumFormula": {
+        "baseValidators": 7,
+        "scalingFunction": "logarithmic",
+        "parameters": {
+          "base": 10,
+          "minimumQuorumFraction": 0.67,
+          "maximumQuorumFraction": 0.8,
+          "maxValidatorsAtScale": 1000
+        }
+      }
     }
   },
   "economicParameters": {
@@ -1808,20 +1816,33 @@ The following parameters are part of the protocol domain and MUST be supported b
   * Governance should allow dynamic adjustment of these parameters  
 
 * **Quorum Parameters**  
-  * The example configuration (n=5, m=3) provides:  
-    * Basic fault tolerance (withstands 2 faulty validators)  
-    * Reasonable latency for small networks  
-    * Balance between security and performance  
-  * For larger networks, quorum parameters should scale according to:  
-    * `n = max(3, min(100, ceil(total_validators * 0.2)))`  
-    * `m = ceil(n * (1 - fault_tolerance))`  
-    * Where `fault_tolerance` is typically 0.33 (one-third)  
-  * Considerations for quorum scaling:  
-    * Network size and geographic distribution  
-    * Expected validator reliability  
-    * Desired fault tolerance  
-    * Performance requirements  
-    * Economic security requirements  
+  * The validator set size and quorum requirements scale sublinearly based on network size:
+    * Minimum validator set: 7 validators
+    * Maximum validator set: 1000 validators (increased from 100)
+    * Fault tolerance: 20%
+    * Quorum calculation:
+      * Base size: 7 validators
+      * For networks > 7 validators: n = min(1000, max(7, ceil(log_base(total_validators) * scaling_factor)))
+      * Where:
+        * base = 10 (logarithmic base)
+        * scaling_factor = 100 (to reach maxValidators at scale)
+      * This ensures:
+        * Minimum quorum of 5 out of 7 (71%)
+        * Maximum quorum of 800 out of 1000 (80%)
+        * Logarithmic scaling between these bounds
+        * Example scaling:
+          * 100 users → ~20 validators
+          * 1,000 users → ~30 validators
+          * 1,000,000 users → ~60 validators
+          * 1,000,000,000 users → ~90 validators
+  * Considerations for quorum scaling:
+    * Network size and geographic distribution
+    * Expected validator reliability
+    * Desired fault tolerance
+    * Performance requirements
+    * Economic security requirements
+    * Resistance to collusion attacks
+    * System scalability
 
 * **Implementation Notes**  
   * All parameters should be configurable via governance  
