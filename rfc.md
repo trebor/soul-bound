@@ -108,7 +108,7 @@ The Soul Bound Protocol is architected to achieve the following core objectives:
 * **Secure Key Storage**  
   Each participant's device securely holds its private keys and protects them from extraction or tampering (e.g., via Secure Enclave or equivalent).  
 * **Synchronized Time Base**  
-  All parties reference a shared notion of time—either via blockchain block heights or loosely synchronized clocks—within an acceptable skew (ΔT).  
+  All parties reference a shared notion of time—either via blockchain block heights or loosely synchronized clocks—within an acceptable skew (Δ_clock).  
 * **Permissionless Ledger**  
   A decentralized ledger exists that supports immutable recording of identity events, stakes, slashing, and rewards, and exposes timestamps or block heights for freshness checks.  
 * **Economic Stake Availability**  
@@ -319,7 +319,7 @@ The protocol uses consistent naming patterns for different types of parameters a
   * `F_` prefix for fees (e.g., `F_mint`, `F_sponsor`)
   * `S_` prefix for stakes (e.g., `S_mint`, `S_sponsor`)
   * `V_` prefix for validator parameters (e.g., `V_bond`)
-  * `Δ` prefix for timing parameters (e.g., `ΔT`, `ΔV`)
+  * `Δ` prefix for timing parameters (e.g., `Δ_clock`, `Δ_valid`)
 
 * **Message Fields** (in JSON schemas)
   * camelCase for all fields (e.g., `mintFee`, `sponsorFee`, `stake`)
@@ -330,7 +330,7 @@ The protocol uses consistent naming patterns for different types of parameters a
 
 * **Timing Parameters**
   * Numeric subscripts for sequence (Δ₁, Δ₂, Δ₃)
-  * Letter suffixes for specific purposes (ΔT, ΔV)
+  * Letter suffixes for specific purposes (Δ_clock, Δ_valid)
   * All timing parameters are defined in Section 14.1
 
 This naming convention ensures clear distinction between:
@@ -369,7 +369,7 @@ To prevent replay attacks and ensure data freshness, the protocol mandates:
 
 * **Signed Timestamps**  
   * Every message carries a `timestamp` (Unix epoch) signed by the sender.  
-  * Validators reject messages where `|now – timestamp| > ΔT`.  
+  * Validators reject messages where `|now – timestamp| > Δ_clock`.  
 * **Block-Height Anchoring**  
   * On-chain actions (MintRequest submission, slashing window expiry) reference `blockHeight`.  
   * Validators and smart contracts enforce windows like "submit within N blocks of challenge".  
@@ -396,7 +396,7 @@ This section defines the core protocol messages, their senders, purposes, requir
   * `timestamp`: Unix epoch time of issuance  
   * `nonce`: Cryptographically random value  
 * **Semantics:**  
-  * Candidate must respond within the configured time window Δ₁.  
+  * Candidate must respond within the configured time window Δ_challenge.  
   * Future messages in this session must include the same `sessionId` and `nonce`.
 
 ## **4.2 SponsorAttestation**
@@ -410,7 +410,7 @@ This section defines the core protocol messages, their senders, purposes, requir
   * `sponsorSig`: Signature over `sessionId∥timestamp` using Sponsor's private key  
 * **Semantics:**  
   * Candidate collects this signed attestation to build the MintRequest.  
-  * Valid only if attestation is within Δ₂ of ChallengeRequest.
+  * Valid only if attestation is within Δ_verify of ChallengeRequest.
 
 ## **4.3 MintRequest**
 
@@ -430,7 +430,7 @@ This section defines the core protocol messages, their senders, purposes, requir
 * **Time Anchor Selection Rules:**  
   * Use `timestamp` when:  
     * Submitting off-chain to validators before on-chain commitment  
-    * Validating against the challenge window (Δ₁)  
+    * Validating against the challenge window (Δ_challenge)  
     * Checking message freshness and ordering
   * Use `blockHeight` when:  
     * Submitting the final on-chain transaction  
@@ -458,7 +458,7 @@ This section defines the core protocol messages, their senders, purposes, requir
   * Validators reject if `stake` is insufficient or proofs/timestamps invalid.  
   * On m-of-n approvals, the Ledger commits the new identity token.  
   * Time validation rules:  
-    * Off-chain: `|localTime – timestamp| ≤ ΔT`  
+    * Off-chain: `|localTime – timestamp| ≤ Δ_clock`  
     * On-chain: `currentHeight – blockHeight ≤ N` (where N is the maximum submission window)
 
 ## **4.4 ValidationResponse**
@@ -580,7 +580,7 @@ The protocol defines a hybrid validator selection process that combines stake we
   * `V_bond`: Minimum validator bond
 
 * **Performance Metrics**
-  * `responseTimeScore`: Based on validation response time within ΔV
+  * `responseTimeScore`: Based on validation response time within Δ_valid
   * `accuracyScore`: Based on validation accuracy and history
   * `uptimeScore`: Based on validator availability
   * `stakeScore`: Based on bond size relative to V_bond
@@ -596,10 +596,10 @@ The protocol defines performance metrics based on on-chain data and cryptographi
 
 * **Response Time Score**
   * Calculated from ValidationResponse messages in the ledger
-  * Formula: `responseTimeScore = 1 - (avgResponseTime / ΔV)`
+  * Formula: `responseTimeScore = 1 - (avgResponseTime / Δ_valid)`
   * Where:
     * `avgResponseTime`: Average time between MintRequest and ValidationResponse
-    * `ΔV`: Maximum allowed response time (from Section 14.1)
+    * `Δ_valid`: Maximum allowed response time (from Section 14.1)
   * Bounded between 0 and 1
   * Requires cryptographic proof of message timestamps
 
@@ -748,7 +748,7 @@ This section walks through the complete lifecycle of identity creation, from ini
      * Economic incentives and penalties
    * Both parties confirm understanding and agreement
    * Sponsor generates fresh sessionId and nonce
-   * Sponsor locks S_sponsor in escrow (remains locked for Δₚ)
+   * Sponsor locks S_sponsor in escrow (remains locked for Δ_part)
    * Sponsor sends signed attestation to Candidate containing:
      * sessionId
      * nonce
@@ -778,7 +778,7 @@ This section walks through the complete lifecycle of identity creation, from ini
    * On majority approval:
      * Identity is minted on-chain
      * S_mint remains locked for identity lifetime
-     * S_sponsor remains locked for Δₚ
+     * S_sponsor remains locked for Δ_part
      * Mint fee (F_mint) is distributed to validators
      * Sponsor fee (F_sponsor) is distributed to validators
      * Validator rewards are distributed based on their participation in validation
@@ -1395,7 +1395,7 @@ This section states the core security guarantees and invariants that any Soul Bo
 * **Core Security Properties**
   * All implementations MUST:
     * Follow the protocol message formats exactly
-    * Enforce all timing windows (Δ₁, Δ₂, Δ₃, ΔT)
+    * Enforce all timing windows (Δ_challenge, Δ_verify, Δ_mint, Δ_clock)
     * Verify all signatures and proofs
     * Maintain correct stake requirements
     * Enforce quorum rules (m-of-n)
@@ -1440,14 +1440,14 @@ This section enumerates expected error conditions, how each actor should detect 
 ## **11.1 Timeouts & Session Aborts**
 
 * **ChallengeRequest → SponsorAttestation**  
-  * If the Candidate does not receive `SponsorAttestation` within Δ₁, the session is aborted.  
+  * If the Candidate does not receive `SponsorAttestation` within Δ_challenge, the session is aborted.  
   * Candidate state → **FAILED**; Sponsor state → **ABORTED**.  
   * No tokens are staked yet, so no slashing occurs.  
 * **SponsorAttestation → MintRequest**  
-  * If the Candidate does not submit `MintRequest` within Δ₃, the session is abandoned.  
+  * If the Candidate does not submit `MintRequest` within Δ_mint, the session is abandoned.  
   * Any reserved UI/session resources are released; no on-chain stake has been locked yet.  
 * **Awaiting ValidationResponse**  
-  * If quorum is not reached before ΔV, Candidate/Sponsor treat the session as **FAILED**.  
+  * If quorum is not reached before Δ_valid, Candidate/Sponsor treat the session as **FAILED**.  
   * If stake was locked, Candidate may reclaim or forfeit it based on policy (see economic rules).
 
 ## **11.2 Signature or Proof Verification Failures**
@@ -1504,14 +1504,14 @@ This section enumerates expected error conditions, how each actor should detect 
 * **Equivocation by Validators**  
   * If a Validator signs conflicting `ValidationResponse` for the same `sessionId`, that Validator's bond (`V_bond`) is slashed for double-voting.  
   * The protocol enforces slashing of the validator's bond, with the exact amount determined by governance parameters.  
-  * Slashing occurs after the validator reconfiguration window (Δᵣ) to allow for appeals.
+  * Slashing occurs after the validator reconfiguration window (Δ_rotate) to allow for appeals.
 
 * **Censorship or Non-Participation**  
   * Validators that repeatedly fail to vote or respond within time windows face protocol-enforced penalties:  
     * Slashing of bond proportional to missed validations  
     * Temporary suspension after multiple violations  
     * Removal from active validator set after severe offenses  
-  * Detection occurs within the partition detection window (Δₚ)
+  * Detection occurs within the partition detection window (Δ_part)
 
 ## **11.6 Error Reporting Conventions:**
 
