@@ -83,7 +83,7 @@
 4. **Future Considerations**
    - Dynamic stake requirements based on network size
    - Adaptive slashing based on violation severity
-   - Additional stake types for specialized roles
+   - Additional stake types for specialized roles 
 
 ## Actor Incentives
 
