@@ -1098,48 +1098,48 @@ To guarantee message freshness and prevent replay attacks, the protocol mandates
 The protocol defines several timing parameters that all implementations MUST support. These parameters are critical for ensuring message freshness and preventing replay attacks.
 
 * **Protocol-Level Timing Parameters**  
-  * Δ₁ (Challenge Response Window)
-    * Time allowed for Candidate to respond to ChallengeRequest (Δ₁)
+  * Δ_challenge (Challenge Response Window)
+    * Time allowed for Candidate to respond to ChallengeRequest (Δ_challenge)
     * Enforced through signed timestamps and nonce verification
     * Used in: ChallengeRequest → SponsorAttestation transition
-    * Validation: `|timestamp_sponsor_attestation - timestamp_challenge| ≤ Δ₁`
+    * Validation: `|timestamp_sponsor_attestation - timestamp_challenge| ≤ Δ_challenge`
   
-  * Δ₂ (Attestation Window)
-    * Time allowed for Sponsor to verify and attest (Δ₂)
+  * Δ_verify (Attestation Window)
+    * Time allowed for Sponsor to verify and attest (Δ_verify)
     * Enforced through signed timestamps and sequence numbers
     * Used in: ChallengeRequest → SponsorAttestation transition
-    * Validation: `|timestamp_sponsor_attestation - timestamp_challenge| ≤ Δ₂`
+    * Validation: `|timestamp_sponsor_attestation - timestamp_challenge| ≤ Δ_verify`
   
-  * Δ₃ (Attestation to Mint Window)
-    * Time allowed for Candidate to submit MintRequest (Δ₃)
+  * Δ_mint (Attestation to Mint Window)
+    * Time allowed for Candidate to submit MintRequest (Δ_mint)
     * Enforced through signed timestamps and block-height anchoring
     * Used in: SponsorAttestation → MintRequest transition
-    * Validation: `|timestamp_mint_request - timestamp_sponsor_attestation| ≤ Δ₃`
+    * Validation: `|timestamp_mint_request - timestamp_sponsor_attestation| ≤ Δ_mint`
   
-  * ΔT (Clock Skew)
-    * Maximum allowed difference between local and message timestamps (ΔT)
+  * Δ_clock (Clock Skew)
+    * Maximum allowed difference between local and message timestamps (Δ_clock)
     * Enforced through signed timestamps and validator consensus
     * Used in: All message validation
-    * Validation: `|local_time - message_timestamp| ≤ ΔT`
+    * Validation: `|local_time - message_timestamp| ≤ Δ_clock`
   
-  * ΔV (Validation Response Window)
-    * Time allowed for validators to respond to MintRequest (ΔV)
+  * Δ_valid (Validation Response Window)
+    * Time allowed for validators to respond to MintRequest (Δ_valid)
     * Enforced through signed timestamps and quorum rules
     * Used in: MintRequest → ValidationResponse transition
-    * Validation: `|timestamp_validation_response - timestamp_mint_request| ≤ ΔV`
+    * Validation: `|timestamp_validation_response - timestamp_mint_request| ≤ Δ_valid`
 
 * **Network-Level Timing Parameters**  
-  * Δₚ (Partition Detection Window)
-    * Time to detect network partitions (Δₚ)
+  * Δ_part (Partition Detection Window)
+    * Time to detect network partitions (Δ_part)
     * Enforced through validator state machine and quorum rules
     * Used in: Validator state machine
-    * Validation: `time_since_last_quorum > Δₚ`
+    * Validation: `time_since_last_quorum > Δ_part`
   
-  * Δᵣ (Validator Reconfiguration Window)
-    * Time allowed for validator set changes (Δᵣ)
+  * Δ_rotate (Validator Reconfiguration Window)
+    * Time allowed for validator set changes (Δ_rotate)
     * Enforced through smart contracts and governance rules
     * Used in: Validator rotation and reconfiguration
-    * Validation: `time_since_last_rotation ≥ Δᵣ`
+    * Validation: `time_since_last_rotation ≥ Δ_rotate`
 
 * **Implementation-Specific Windows**  
   The following windows are left to implementations to define based on their specific requirements:  
@@ -1793,12 +1793,12 @@ The following parameters are part of the protocol domain and MUST be supported b
     * Expected device performance  
     * Security requirements for specific use cases  
   * All timing parameters referenced in the document should use these values:
-    * Δ₁ (challenge response)
-    * Δ₂ (attestation)
-    * Δ₃ (attestation to mint)
-    * ΔT (clock skew)
-    * Δₚ (partition detection)
-    * Δᵣ (validator reconfiguration)
+    * Δ_challenge (challenge response)
+    * Δ_verify (attestation)
+    * Δ_mint (attestation to mint)
+    * Δ_clock (clock skew)
+    * Δ_part (partition detection)
+    * Δ_rotate (validator reconfiguration)
 
 * **Stake Sizes**  
   * Example values shown are relative units  
