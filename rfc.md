@@ -1753,18 +1753,15 @@ The following parameters are part of the protocol domain and MUST be supported b
   "quorum": {  
     "scaling": {
       "minValidators": 7,
-      "maxValidators": 1000,
+      "maxValidators": 100,
       "faultTolerance": 0.2,
       "validatorRotationPeriod": 86400,
       "minimumActiveStake": 5000,
       "quorumFormula": {
-        "baseValidators": 7,
-        "scalingFunction": "logarithmic",
+        "scalingFunction": "sqrt",
         "parameters": {
-          "base": 10,
           "minimumQuorumFraction": 0.67,
-          "maximumQuorumFraction": 0.8,
-          "maxValidatorsAtScale": 1000
+          "maximumQuorumFraction": 0.8
         }
       }
     }
@@ -1816,25 +1813,26 @@ The following parameters are part of the protocol domain and MUST be supported b
   * Governance should allow dynamic adjustment of these parameters  
 
 * **Quorum Parameters**  
-  * The validator set size and quorum requirements scale sublinearly based on network size:
-    * Minimum validator set: 7 validators
-    * Maximum validator set: 1000 validators (increased from 100)
-    * Fault tolerance: 20%
-    * Quorum calculation:
-      * Base size: 7 validators
-      * For networks > 7 validators: n = min(1000, max(7, ceil(log_base(total_validators) * scaling_factor)))
-      * Where:
-        * base = 10 (logarithmic base)
-        * scaling_factor = 100 (to reach maxValidators at scale)
-      * This ensures:
-        * Minimum quorum of 5 out of 7 (71%)
-        * Maximum quorum of 800 out of 1000 (80%)
-        * Logarithmic scaling between these bounds
-        * Example scaling:
-          * 100 users → ~20 validators
-          * 1,000 users → ~30 validators
-          * 1,000,000 users → ~60 validators
-          * 1,000,000,000 users → ~90 validators
+  * The validator set size follows a square root scaling function:
+    * Formula: n = min(100, max(2, ceil(√x)))
+    * This ensures:
+      * x=1 → 2 validators (bootstrap)
+      * x=4 → 2 validators
+      * x=9 → 3 validators
+      * x=16 → 4 validators
+      * x=25 → 5 validators
+      * x=36 → 6 validators
+      * x=49 → 7 validators
+      * x=100 → 10 validators
+      * x=10000 → 100 validators
+      * x=1000000 → 100 validators (capped)
+    * Quorum size: m = ceil(n * (1 - fault_tolerance))
+  * Properties of the scaling function:
+    * Bootstrap-friendly: Starts at 2 validators
+    * Monotonic: Always increases with network size
+    * Sublinear: Square root growth prevents validator explosion
+    * Continuous: No jumps or phase transitions
+    * Capped: Maximum of 100 validators
   * Considerations for quorum scaling:
     * Network size and geographic distribution
     * Expected validator reliability
