@@ -12,9 +12,9 @@ The Soul Bound Protocol implements a stake-based security model to ensure the in
    - Rewards align participant interests with network health
 
 2. **Scalable Trust**
-   - Validator set size scales with network growth
-   - Quorum requirements maintain security at all scales
    - Stake amounts balance security with accessibility
+   - Progressive stake requirements for different roles
+   - Dynamic adjustment based on network conditions
 
 3. **Progressive Participation**
    - Three-tiered stake system (Identity, Sponsor, Validator)
@@ -32,7 +32,6 @@ This document is organized into the following sections:
 - Stake Types and Requirements: Details of each stake type and their conditions
 - Stake Operations: Rules for locking and withdrawing stakes
 - Slashing Conditions: Consequences for protocol violations
-- Validator Scaling: Security model for network growth
 - Economic Analysis: Incentive structures and security parameters
 - Actor Incentives: Detailed breakdown of participant roles and rewards
 
@@ -67,29 +66,6 @@ This document is organized into the following sections:
 | Censorship | V_bond | 50% (slashFraction) | None |
 | Non-participation | V_bond | Proportional to missed validations | None |
 
-## Validator Scaling and Security
-
-The validator set size follows a square root scaling function:
-- Formula: n = min(100, max(2, ceil(√x)))
-- Where x is the number of network participants
-- This ensures:
-  - x=1 → 2 validators (bootstrap)
-  - x=4 → 2 validators
-  - x=9 → 3 validators
-  - x=16 → 4 validators
-  - x=25 → 5 validators
-  - x=36 → 6 validators
-  - x=49 → 7 validators
-  - x=100 → 10 validators
-  - x=10000 → 100 validators
-  - x=1000000 → 100 validators (capped)
-
-Quorum requirements:
-- Minimum validators: 7
-- Maximum validators: 100
-- Fault tolerance: 20%
-- Quorum size: m = ceil(n * (1 - fault_tolerance))
-
 ## Stake Management Rules
 
 1. **Locking Requirements**
@@ -112,26 +88,15 @@ Quorum requirements:
    - Minimum stake ratios must be maintained
    - Changes require quorum approval
 
-## Economic Analysis
+## Economic Analysis and Incentives
 
-1. **Economic Security**
-   - Stake amounts must be high enough to deter malicious behavior
-   - Slashing must exceed potential gains from violations
-   - Rewards must exceed opportunity cost
+### Core Parameters
+- Honest validator reward > dishonest validator penalty
+- Sponsor reward > sponsor stake
+- Bond size > potential gains from cheating
+- Slashing amounts > potential profits from violations
 
-2. **Network Stability**
-   - Minimum stake requirements scale with network size
-   - Validator bonds exceed attack incentives
-   - Quorum requirements prevent centralization
-   - Validator set scales with square root of network size
-
-3. **Implementation Considerations**
-   - Efficient slashing execution
-   - Proper handling of partial slashing
-   - Clear documentation of stake requirements
-   - Dynamic validator set management
-
-## Actor Incentives
+### Actor Incentives and Rewards
 
 | Actor | Required Stake | Rewards | Risks | Notes |
 |-------|---------------|---------|-------|-------|
@@ -139,46 +104,7 @@ Quorum requirements:
 | **Validator** | 1000 units (V_bond) | - Base reward per valid validation (1.0 units)<br>- Performance-based rewards<br>- Honest validator bonus<br>- Additional rewards for high accuracy | - 50% bond slashing for invalid validations<br>- Proportional slashing for missed validations<br>- Removal from validator set for poor performance | - Bond size ensures honest validation more profitable than slashing<br>- Must maintain high uptime and accuracy<br>- Rewards must exceed opportunity cost of locked bond |
 | **Identity Holder** | 100 units (S_mint) | - Ability to participate in the network<br>- Potential to become a sponsor<br>- Access to network services and applications | - 50% stake slashing for protocol violations<br>- Loss of identity status if revoked | - Value comes from network participation<br>- Must maintain honest behavior<br>- Long-term value in building reputation |
 
-## Reward Structure
-
-1. **Sponsor Rewards**
-   - Base reward: 0.5 units (F_sponsor)
-   - Performance bonus: sponsorBonus
-   - Reputation multiplier: reputationMultiplier
-   - Slashing for:
-     - False sponsorships (50% stake)
-     - Sponsored node violations (50% stake)
-
-2. **Validator Rewards**
-   - Base reward: 1.0 units (F_mint)
-   - Performance bonus: validatorBonus
-   - Honest validator reward
-   - Accuracy bonus: accuracyBonus
-   - Slashing for:
-     - Invalid validations (50% bond)
-     - Missed validations (proportional to missed count)
-
-## Economic Security Parameters
-
-1. **Core Parameters**
-   - Honest validator reward > dishonest validator penalty
-   - Sponsor reward > sponsor stake
-   - Bond size > potential gains from cheating
-   - Slashing amounts > potential profits from violations
-
-2. **Network Growth**
-   - Validator set scales with √network_size
-   - Maximum 100 validators
-   - Minimum 7 validators
-   - 20% fault tolerance
-
-3. **Economic Scaling**
-   - Rewards scale with network participation
-   - Slashing scales with violation severity
-   - Stake requirements maintain security
-   - Validator set scales efficiently
-
-## Example Scenarios
+### Example Scenarios
 
 1. **Successful Sponsor**
    ```
