@@ -51,12 +51,12 @@ This document outlines various scenarios and how they would play out according t
 6. **Identity Creation (t=601s)**
    - Identity is minted on-chain
    - S_mint remains locked for identity lifetime
-   - S_sponsor remains locked for Δₚ
+   - S_sponsor remains locked for Δ_part
    - Validator rewards distributed
 
 **Outcome:**
 - Alice has a valid Soul Bound identity
-- Bob's sponsor stake is locked for Δₚ
+- Bob's sponsor stake is locked for Δ_part
 - Validators receive rewards
 - All protocol requirements satisfied
 
@@ -243,7 +243,7 @@ This document outlines various scenarios and how they would play out according t
    - Partition A validators approve
    - Partition B validators unaware of request
    - Quorum not reached (3/5 < m=3)
-   - Request times out after ΔV
+   - Request times out after Δ_valid
 
 4. **Partition Resolution (t=3600s)**
    - Network heals
@@ -273,7 +273,7 @@ This document outlines various scenarios and how they would play out according t
    - Laura receives and acknowledges
 
 2. **Delayed Attestation (t=180s)**
-   - Laura delays beyond Δ₁ (120s)
+   - Laura delays beyond Δ_challenge (120s)
    - Mike's SponsorAttestation arrives late
    - Validators detect timestamp violation
    - Session automatically aborted

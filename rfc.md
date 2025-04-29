@@ -329,8 +329,7 @@ The protocol uses consistent naming patterns for different types of parameters a
     * `stake` corresponds to `S_mint` or `S_sponsor` depending on context
 
 * **Timing Parameters**
-  * Numeric subscripts for sequence (Δ₁, Δ₂, Δ₃)
-  * Letter suffixes for specific purposes (Δ_clock, Δ_valid)
+  * Descriptive subscripts for specific purposes (Δ_challenge, Δ_verify, Δ_mint, Δ_clock, Δ_valid, Δ_part, Δ_rotate)
   * All timing parameters are defined in Section 14.1
 
 This naming convention ensures clear distinction between:
