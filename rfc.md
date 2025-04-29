@@ -1336,6 +1336,73 @@ This section describes the protocol-level economic mechanisms. All values are cr
   * Quorum requirements prevent centralization
   * All properties cryptographically enforced
 
+## **9.5 Cross-Platform Identity Abuse & Enhanced Slashing**
+
+* **Cross-Platform Detection**
+  * Protocol maintains a global identity graph with:
+    * Merkle tree of identity commitments
+    * Zero-knowledge proofs of uniqueness
+    * Cryptographic evidence chains
+  * Validators monitor for suspicious patterns using:
+    * Verifiable random sampling
+    * Threshold signatures for pattern detection
+    * Multi-party computation for privacy-preserving analysis
+  * Detection mechanisms:
+    * ZK proofs of identity uniqueness
+    * Verifiable delay functions for time-based analysis
+    * Threshold signatures for consensus on patterns
+    * Cryptographic evidence chains for auditability
+
+* **Enhanced Slashing Conditions**
+  * **Identity Reuse Violation**
+    * Base slashing: 50% of S_mint
+    * Progressive slashing with cryptographic guarantees:
+      * First violation: 50% of S_mint (proven by ZK proof)
+      * Second violation: 75% of S_mint (proven by VDF)
+      * Third violation: 100% of S_mint (proven by threshold signature)
+    * Cascading effects with cryptographic proofs:
+      * All associated sponsors slashed at 50% (proven by MPC)
+      * Validators who approved slashed at 25% (proven by ZK)
+  
+  * **Cross-Platform Abuse**
+    * Base slashing: 75% of S_mint
+    * Additional penalties with cryptographic guarantees:
+      * All associated stakes slashed (proven by ZK)
+      * Identity permanently revoked (proven by VDF)
+      * Blacklist enforced by threshold signatures
+      * Evidence recorded on-chain with ZK proofs
+
+* **Anti-Gaming Measures**
+  * **Sybil Resistance**
+    * Minimum stake requirements scale with network size
+    * ZK proofs of stake uniqueness
+    * VDF-based cooling periods between violations
+    * Threshold signatures for violation detection
+  
+  * **Collusion Resistance**
+    * Validator rotation with VRF selection
+    * MPC-based consensus on violations
+    * ZK proofs of validator independence
+    * Cryptographic evidence chains for auditability
+  
+  * **Economic Security**
+    * Slashing amounts exceed potential gains
+    * Progressive penalties with cryptographic guarantees
+    * Permanent consequences for severe violations
+    * All economic calculations proven by ZK circuits
+
+* **Implementation Requirements**
+  * Smart contracts enforce:
+    * Progressive slashing schedules with ZK proofs
+    * Cross-platform coordination through MPC
+    * Evidence verification via threshold signatures
+    * Stake distribution with cryptographic guarantees
+  * Validators must:
+    * Monitor for abuse patterns using VDFs
+    * Verify evidence cryptographically
+    * Enforce slashing conditions with ZK proofs
+    * Maintain security parameters through MPC
+
 # **10\. Security Properties & Invariants**
 
 This section states the core security guarantees and invariants that any Soul Bound implementation must uphold. These properties ensure that identities are real, unique, fresh, private, and that economic penalties enforce honest behavior.
