@@ -2,26 +2,26 @@
 
 ## Introduction
 
-The Soul Bound Protocol implements a stake-based security model to ensure the integrity and reliability of identity verification and validation processes. This document outlines the economic and security mechanisms that govern participation in the network.
+The Soul Bound Protocol implements a stake-based security model to ensure the integrity and reliability of identity verification and validation processes. This document outlines the economic and security mechanisms that govern participation in the network. [See RFC Section 9](../rfc.md#9-economic-mechanisms)
 
 ### Key Principles
 
-1. **Economic Security**
+1. **Economic Security** [See RFC Section 9.5](../rfc.md#95-economic-security-proofs)
    - Stake requirements create financial incentives for honest behavior
    - Slashing mechanisms deter malicious actions
    - Rewards align participant interests with network health
 
-2. **Scalable Trust**
+2. **Scalable Trust** [See RFC Section 9.2](../rfc.md#92-network-effects--economic-scaling)
    - Stake amounts balance security with accessibility
    - Progressive stake requirements for different roles
    - Dynamic adjustment based on network conditions
 
-3. **Progressive Participation**
+3. **Progressive Participation** [See RFC Section 9.3](../rfc.md#93-validator-bonds--rewards)
    - Three-tiered stake system (Identity, Sponsor, Validator)
    - Clear progression path for network participants
    - Graduated responsibilities and rewards
 
-4. **Dynamic Governance**
+4. **Dynamic Governance** [See RFC Section 12.4](../rfc.md#124-custom-rewardslashing-policies)
    - Stake-based voting for protocol changes
    - Transparent slashing conditions
    - Adjustable parameters based on network conditions
@@ -29,32 +29,32 @@ The Soul Bound Protocol implements a stake-based security model to ensure the in
 ### Document Structure
 
 This document is organized into the following sections:
-- Stake Types and Requirements: Details of each stake type and their conditions
-- Stake Operations: Rules for locking and withdrawing stakes
-- Slashing Conditions: Consequences for protocol violations
-- Economic Analysis: Incentive structures and security parameters
-- Actor Incentives: Detailed breakdown of participant roles and rewards
+- Stake Types and Requirements: Details of each stake type and their conditions [See RFC Section 9.1](../rfc.md#91-identity-minting-stakes--fees)
+- Stake Operations: Rules for locking and withdrawing stakes [See RFC Section 9.1](../rfc.md#91-identity-minting-stakes--fees)
+- Slashing Conditions: Consequences for protocol violations [See RFC Section 9.5](../rfc.md#95-economic-security-proofs)
+- Economic Analysis: Incentive structures and security parameters [See RFC Section 9.2](../rfc.md#92-network-effects--economic-scaling)
+- Actor Incentives: Detailed breakdown of participant roles and rewards [See RFC Section 9.3](../rfc.md#93-validator-bonds--rewards)
 
-## Stake Types and Requirements
+## Stake Types and Requirements [See RFC Section 9.1](../rfc.md#91-identity-minting-stakes--fees)
 
 | Stake Type | Actor | Purpose | Amount | Lock Period | Slashing Conditions | Notes |
 |------------|-------|---------|--------|-------------|---------------------|-------|
-| Identity Minting Stake (S_mint) | Candidate | Required to create a new identity | 100 units | Identity lifetime | - Fraudulent identity creation<br>- Protocol violations<br>- Multiple identity attempts | Cannot be withdrawn while identity is active |
-| Sponsor Stake (S_sponsor) | Sponsor | Required to vouch for a new identity | 10 units | Duration of sponsorship | - Sponsoring fraudulent identities<br>- Protocol violations during verification<br>- False attestations | Must be maintained for active sponsorships |
-| Validator Bond (V_bond) | Validator | Required to participate in validation | 1000 units | While active as validator | - Invalid validations<br>- Protocol violations<br>- Censorship<br>- Non-participation | Must exceed S_mint × networkSecurityFactor (10) |
+| Identity Minting Stake (S_mint) | Candidate | Required to create a new identity | 100 units | Identity lifetime | - Fraudulent identity creation<br>- Protocol violations<br>- Multiple identity attempts | Cannot be withdrawn while identity is active<br>[See RFC Section 9.1](../rfc.md#91-identity-minting-stakes--fees) |
+| Sponsor Stake (S_sponsor) | Sponsor | Required to vouch for a new identity | 10 units | Duration of sponsorship | - Sponsoring fraudulent identities<br>- Protocol violations during verification<br>- False attestations | Must be maintained for active sponsorships<br>[See RFC Section 9.1](../rfc.md#91-identity-minting-stakes--fees) |
+| Validator Bond (V_bond) | Validator | Required to participate in validation | 1000 units | While active as validator | - Invalid validations<br>- Protocol violations<br>- Censorship<br>- Non-participation | Must exceed S_mint × networkSecurityFactor (10)<br>[See RFC Section 9.3](../rfc.md#93-validator-bonds--rewards) |
 
-## Stake Operations
+## Stake Operations [See RFC Section 9.1](../rfc.md#91-identity-minting-stakes--fees)
 
 | Operation | Actor | Stake Type | Conditions | Notes |
 |-----------|-------|------------|------------|-------|
-| Locking | Candidate | S_mint | - Must meet minimum amount (100 units)<br>- Must be available | Required before minting |
-| Locking | Sponsor | S_sponsor | - Must meet minimum amount (10 units)<br>- Must be available | Required before sponsorship |
-| Locking | Validator | V_bond | - Must meet minimum amount (1000 units)<br>- Must be available | Required to join validator set |
-| Withdrawal | Identity Holder | S_mint | - Identity must be revoked<br>- No active sponsorships | Cannot withdraw while active |
-| Withdrawal | Sponsor | S_sponsor | - Sponsorship period ended<br>- No active violations | Must wait for cooling period |
-| Withdrawal | Validator | V_bond | - Not in active validator set<br>- No pending violations | Must wait for rotation period |
+| Locking | Candidate | S_mint | - Must meet minimum amount (100 units)<br>- Must be available | Required before minting<br>[See RFC Section 9.1](../rfc.md#91-identity-minting-stakes--fees) |
+| Locking | Sponsor | S_sponsor | - Must meet minimum amount (10 units)<br>- Must be available | Required before sponsorship<br>[See RFC Section 9.1](../rfc.md#91-identity-minting-stakes--fees) |
+| Locking | Validator | V_bond | - Must meet minimum amount (1000 units)<br>- Must be available | Required to join validator set<br>[See RFC Section 9.3](../rfc.md#93-validator-bonds--rewards) |
+| Withdrawal | Identity Holder | S_mint | - Identity must be revoked<br>- No active sponsorships | Cannot withdraw while active<br>[See RFC Section 9.1](../rfc.md#91-identity-minting-stakes--fees) |
+| Withdrawal | Sponsor | S_sponsor | - Sponsorship period ended<br>- No active violations | Must wait for cooling period<br>[See RFC Section 9.1](../rfc.md#91-identity-minting-stakes--fees) |
+| Withdrawal | Validator | V_bond | - Not in active validator set<br>- No pending violations | Must wait for rotation period<br>[See RFC Section 9.3](../rfc.md#93-validator-bonds--rewards) |
 
-## Slashing Conditions
+## Slashing Conditions [See RFC Section 9.5](../rfc.md#95-economic-security-proofs)
 
 | Violation | Affected Stake | Slashing Amount | Cascading Effect |
 |-----------|---------------|-----------------|------------------|
@@ -66,7 +66,7 @@ This document is organized into the following sections:
 | Censorship | V_bond | 50% (slashFraction) | None |
 | Non-participation | V_bond | Proportional to missed validations | None |
 
-## Stake Management Rules
+## Stake Management Rules [See RFC Section 9.1](../rfc.md#91-identity-minting-stakes--fees)
 
 1. **Locking Requirements**
    - All stakes must be locked before participation
@@ -78,25 +78,25 @@ This document is organized into the following sections:
    - Must wait for rotation period
    - No pending violations
 
-3. **Slashing Rules**
+3. **Slashing Rules** [See RFC Section 9.5](../rfc.md#95-economic-security-proofs)
    - Full slashing for protocol violations
    - Partial slashing for sponsors based on violation type
    - Cascading effects defined by protocol
 
-4. **Governance**
+4. **Governance** [See RFC Section 12.4](../rfc.md#124-custom-rewardslashing-policies)
    - Stake amounts configurable via governance
    - Minimum stake ratios must be maintained
    - Changes require quorum approval
 
-## Economic Analysis and Incentives
+## Economic Analysis and Incentives [See RFC Section 9.2](../rfc.md#92-network-effects--economic-scaling)
 
-### Core Parameters
+### Core Parameters [See RFC Section 14.1](../rfc.md#141-parameter-recommendations-δs-stake-sizes-quorum)
 - Honest validator reward > dishonest validator penalty
 - Sponsor reward > sponsor stake
 - Bond size > potential gains from cheating
 - Slashing amounts > potential profits from violations
 
-### Actor Incentives and Rewards
+### Actor Incentives and Rewards [See RFC Section 9.3](../rfc.md#93-validator-bonds--rewards)
 
 | Actor | Required Stake | Rewards | Risks | Notes |
 |-------|---------------|---------|-------|-------|
@@ -104,7 +104,7 @@ This document is organized into the following sections:
 | **Validator** | 1000 units (V_bond) | - Base reward per valid validation (1.0 units)<br>- Performance-based rewards<br>- Honest validator bonus<br>- Additional rewards for high accuracy | - 50% bond slashing for invalid validations<br>- Proportional slashing for missed validations<br>- Removal from validator set for poor performance | - Bond size ensures honest validation more profitable than slashing<br>- Must maintain high uptime and accuracy<br>- Rewards must exceed opportunity cost of locked bond |
 | **Identity Holder** | 100 units (S_mint) | - Ability to participate in the network<br>- Potential to become a sponsor<br>- Access to network services and applications | - 50% stake slashing for protocol violations<br>- Loss of identity status if revoked | - Value comes from network participation<br>- Must maintain honest behavior<br>- Long-term value in building reputation |
 
-### Example Scenarios
+### Example Scenarios [See RFC Section 9.2](../rfc.md#92-network-effects--economic-scaling)
 
 1. **Successful Sponsor**
    ```
@@ -123,7 +123,7 @@ This document is organized into the following sections:
    Performance bonuses: Variable
    ```
 
-3. **Risk-Reward Balance**
+3. **Risk-Reward Balance** [See RFC Section 9.5](../rfc.md#95-economic-security-proofs)
    - Honest behavior must be more profitable than malicious behavior
    - Slashing must exceed potential gains from violations
    - Rewards must justify stake opportunity cost
